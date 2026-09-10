@@ -1,9 +1,8 @@
 ﻿@using ODK.Core.Features
 @using ODK.Core.Utils
-@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Models.Admin.Events.EventSettingsFormViewModel
-@inject IRequestStore RequestStore
+@model EventSettingsFormViewModel
 @{
     var dayOfWeekOptions = DateUtils
         .DaysOfWeek(DayOfWeek.Monday)
@@ -51,7 +50,7 @@
        upgrade prompt rather than a silently disabled section. *@
     @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.ScheduledEmailsEnabled)
     {
-        Chapter = RequestStore.ChapterOrDefault,        
+        Chapter = Model.Chapter,
         Class = "mb-3",
         Feature = SiteFeatureType.ScheduledEventEmails,
         ContentFunc =

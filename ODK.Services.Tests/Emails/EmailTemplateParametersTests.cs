@@ -10,6 +10,7 @@ using ODK.Core.Countries;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
+using ODK.Core.Topics;
 using ODK.Core.Venues;
 using ODK.Services.Emails;
 using ODK.Services.Emails.Parameters;
@@ -162,12 +163,58 @@ public static class EmailTemplateParametersTests
             };
         }
 
+        if (parametersType == typeof(EventWaitlistPromotionParameters))
+        {
+            return new EventWaitlistPromotionParameters(Chapter(), Event(), CultureInfo.InvariantCulture)
+            {
+                Url = "value"
+            };
+        }
+
+        if (parametersType == typeof(MemberLeftParameters))
+        {
+            return new MemberLeftParameters(Member(), CultureInfo.InvariantCulture, TimeZoneInfo.Utc)
+            {
+                JoinedUtc = SampleDate,
+                Reason = "value"
+            };
+        }
+
+        if (parametersType == typeof(MemberTopicsParameters))
+        {
+            return new MemberTopicsParameters(Topics());
+        }
+
+        if (parametersType == typeof(NewGroupAdminParameters))
+        {
+            return new NewGroupAdminParameters(Chapter())
+            {
+                GroupsUrl = "value"
+            };
+        }
+
+        if (parametersType == typeof(NewTopicAdminParameters))
+        {
+            return new NewTopicAdminParameters(Topics())
+            {
+                Url = "value"
+            };
+        }
+
         if (parametersType == typeof(PaymentNotificationParameters))
         {
             return new PaymentNotificationParameters(Currency())
             {
                 Amount = 1.23M,
                 Reference = "value"
+            };
+        }
+
+        if (parametersType == typeof(SiteWelcomeParameters))
+        {
+            return new SiteWelcomeParameters(Member())
+            {
+                GroupsUrl = "value"
             };
         }
 
@@ -255,6 +302,11 @@ public static class EmailTemplateParametersTests
         throw new NotSupportedException(
             $"No sample value for {type.Name}. Add one so parameters holding it stay covered.");
     }
+
+    private static IReadOnlyCollection<INewTopic> Topics() =>
+    [
+        new NewMemberTopic { Topic = "Test topic", TopicGroup = "Test topic group" }
+    ];
 
     private static Venue Venue() => new()
     {

@@ -1,4 +1,5 @@
 ﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
@@ -177,7 +178,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     }
 
     public async Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(
-        IServiceRequest request, Guid? chapterId)
+        IServiceRequest request, Chapter? chapter)
     {
         var (environment, platform, memberId) =
             (request.Environment, request.Platform, request.CurrentMemberIdOrDefault);
@@ -200,7 +201,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
                 ? x.MemberSiteSubscriptionRecordRepository.GetDtoByMemberId(memberId.Value)
                 : DefaultDeferredQuerySingleOrDefault.For<MemberSiteSubscriptionDto>(),
             x => x.CurrencyRepository.GetByMemberIdOrDefault(memberId),
-            x => x.CurrencyRepository.GetByChapterIdOrDefault(chapterId));
+            x => x.CurrencyRepository.GetByChapterIdOrDefault(chapter?.Id));
 
         var currency = memberCurrency ?? chapterCurrency;
 
@@ -228,9 +229,11 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             .Where(x => x.SiteSubscription.IsActive(x.Prices))
             .Select(x => new SiteSubscriptionListItemViewModel
             {
+                Chapter = chapter,
                 IsCurrentMemberActiveSubscription =
                     memberSubscriptionDto?.MemberSiteSubscription.SiteSubscriptionId == x.SiteSubscription.Id &&
                     externalSubscription?.Status == ExternalSubscriptionStatus.Active,
+                Platform = platform,
                 Prices = x.Prices
                     .Where(price => currency == null || price.CurrencyId == currency.Id)
                     .ToArray(),
@@ -240,6 +243,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
         return new SiteSubscriptionsViewModel
         {
+            Chapter = chapter,
             Currencies = currencies,
             Currency = currency,
             CurrentMember = currentMember,

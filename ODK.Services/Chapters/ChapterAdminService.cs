@@ -318,6 +318,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         await _memberEmailService.SendNewGroupEmail(
             request,
+            chapter,
             siteAdmins);
 
         return ServiceResult<Chapter?>.Successful(chapter);
@@ -1033,7 +1034,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ChapterLocationAdminPageViewModel> GetChapterLocationViewModel(
         IMemberChapterAdminServiceRequest request)
     {
-        var chapter = request.Chapter;
+        var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (country, location) = await GetChapterAdminRestrictedContent(
             request,
@@ -1044,6 +1045,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             Chapter = chapter,
             Country = country,
+            Platform = platform,
             Location = location
         };
     }
@@ -1339,7 +1341,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var siteSubscriptionsViewModel = await _siteSubscriptionService.GetSiteSubscriptionsViewModel(
             MemberServiceRequest.Create(owner, request),
-            chapter.Id);
+            chapter);
 
         return siteSubscriptionsViewModel;
     }

@@ -480,7 +480,8 @@ public static class EmailServiceTests
             [new EmailAddressee("member@example.com", "Test Member")],
             "{title} subject",
             "<p>{title}</p>",
-            recipientType);
+            recipientType,
+            parameters: null);
 
         sent.Should().NotBeNull();
         return sent!;

@@ -160,13 +160,13 @@ public class AccountViewModelService : IAccountViewModelService
             .Query()
             .ForEnvironment(environment)
             .ForMember(currentMember.Id)
+            .ForChapter(chapter.Id)
             .WithChapter()
             .GetAll()
             .Run();
 
         return new MemberChapterPaymentsPageViewModel
         {
-            Chapter = chapter,
             CurrentMember = currentMember,
             Payments = payments
                 .Select(x => new MemberPaymentsPageViewModelPayment(x))

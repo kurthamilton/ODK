@@ -61,5 +61,56 @@ public enum EmailType
     EventCommentReply = 18,
 
     [Display(Name = "Payment notification")]
-    PaymentNotification = 19
+    PaymentNotification = 19,
+
+    [Display(Name = "Group approved")]
+    GroupApproved = 20,
+
+    [Display(Name = "Membership approved")]
+    MemberApproved = 21,
+
+    [Display(Name = "Site welcome")]
+    SiteWelcome = 22,
+
+    [Display(Name = "Site subscription expired")]
+    SiteSubscriptionExpired = 23,
+
+    [Display(Name = "New group (admin)")]
+    NewGroupAdmin = 24,
+
+    [Display(Name = "Event waitlist place")]
+    EventWaitlistPromotion = 25,
+
+    [Display(Name = "Member left (admin)")]
+    MemberLeftAdmin = 26,
+
+    [Display(Name = "Contact message reply")]
+    ContactRequestReply = 27,
+
+    [Display(Name = "Site contact message reply")]
+    SiteContactRequestReply = 28,
+
+    [Display(Name = "New topics (admin)")]
+    NewTopicAdmin = 29,
+
+    [Display(Name = "Topics approved")]
+    TopicsApproved = 30,
+
+    [Display(Name = "Topics rejected")]
+    TopicsRejected = 31,
+
+    [Display(Name = "Conversation message")]
+    ConversationMessage = 32,
+
+    [Display(Name = "Conversation message (admin)")]
+    ConversationMessageAdmin = 33,
+
+    [Display(Name = "Site conversation message")]
+    SiteConversationMessage = 34,
+
+    [Display(Name = "Site conversation message (admin)")]
+    SiteConversationMessageAdmin = 35,
+
+    [Display(Name = "Membership removed")]
+    MemberRemoved = 36
 }

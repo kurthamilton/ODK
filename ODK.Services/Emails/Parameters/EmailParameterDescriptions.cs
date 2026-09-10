@@ -17,12 +17,17 @@ public static class EmailParameterDescriptions
             ["account.urls.activate"] = "Link the recipient follows to activate their account",
             ["account.urls.confirmEmailAddressUpdate"] =
                 "Link the recipient follows to confirm their new email address",
+            ["account.urls.groups"] = "Link to the recipient's own groups",
             ["account.urls.login"] = "Link to the login page",
             ["account.urls.passwordReset"] = "Link the recipient follows to choose a new password",
+            ["account.urls.siteSubscription"] = "Link to the recipient's subscription page",
             ["account.urls.unsubscribe"] = "Link the recipient follows to stop receiving these emails",
             ["admin.urls.member"] = "Link to the member's profile in the group's admin area",
             ["body"] = "The email being sent, rendered into this layout",
             ["comment.text"] = "The comment that was posted",
+            ["conversation.message"] = "The message that was sent",
+            ["conversation.subject"] = "The subject the conversation was started under",
+            ["conversation.url"] = "Link to the conversation",
             ["event.date"] = "The event's date, written out in full",
             ["event.id"] = "The event's identifier, for building your own links",
             ["event.location"] = "The name of the event's venue",
@@ -38,13 +43,23 @@ public static class EmailParameterDescriptions
                 "Link the recipient follows to decline their invite and have the details you imported "
                 + "about them deleted",
             ["member.firstName"] = "The recipient's first name",
+            ["member.joined"] = "The date the member joined your group",
+            ["member.leftReason"] =
+                "The reason the member gave for leaving, or a dash where they gave none",
+            ["member.name"] = "The member's full name",
             ["member.properties"] = "The answers the member gave when joining, as a list",
+            ["member.removedReason"] =
+                "The reason given for removing the member, or a dash where none was given",
             ["message.from"] = "The name and email address the message came from",
+            ["message.reply"] = "The reply being sent",
             ["message.text"] = "The message that was sent",
             ["message.url"] = "Link to the message in the group's admin area",
+            ["newGroup.name"] = "The name of the group that was created",
             ["payment.amount"] = "The amount paid, with its currency symbol",
             ["payment.reference"] = "The payment's reference, for matching it against your records",
             ["platform.url"] = "Link to the platform's home page",
+            ["siteadmin.urls.groups"] = "Link to the groups list in the site admin area",
+            ["siteadmin.urls.topics"] = "Link to the topic approval page in the site admin area",
             ["subscription.amount"] = "The amount paid, with its currency symbol",
             ["subscription.disabledDate"] = "The date the membership stops working",
             ["subscription.end"] = "The date the subscription being paid for runs to",
@@ -53,7 +68,8 @@ public static class EmailParameterDescriptions
             ["theme.body.color"] = "The theme's body text colour",
             ["theme.header.background"] = "The theme's header background colour",
             ["theme.header.color"] = "The theme's header text colour",
-            ["title"] = "The wording emails use to refer to your group"
+            ["title"] = "The wording emails use to refer to your group",
+            ["topics"] = "The topics this email is about, as a table"
         };
 
     /// <summary>

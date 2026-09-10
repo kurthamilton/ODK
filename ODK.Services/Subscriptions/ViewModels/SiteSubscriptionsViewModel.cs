@@ -1,6 +1,6 @@
-﻿using ODK.Core.Countries;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Members;
-using ODK.Core.Payments;
 using ODK.Data.Core.Members;
 using ODK.Services.Payments;
 
@@ -8,6 +8,8 @@ namespace ODK.Services.Subscriptions.ViewModels;
 
 public class SiteSubscriptionsViewModel
 {
+    public required Chapter? Chapter { get; init; }
+
     public required IReadOnlyCollection<Currency> Currencies { get; init; }
 
     public required Currency? Currency { get; init; }

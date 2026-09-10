@@ -11,6 +11,13 @@
 /// </remarks>
 public abstract class EmailTypeParameters : IEmailParameters
 {
+    /// <summary>
+    /// Stands in for a value the send has nothing to put in, where the template names it on a line of its
+    /// own. A stored template cannot drop that line, so it reads as a line with nothing against it rather
+    /// than as a sentence about something that did not happen.
+    /// </summary>
+    protected const string NoValue = "-";
+
     public IReadOnlyDictionary<string, string> ToDictionary()
     {
         var values = new Dictionary<string, string>(EmailParameterComparer.Default);

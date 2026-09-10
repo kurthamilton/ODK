@@ -237,17 +237,6 @@ public class EmailService : IEmailService
         IEnumerable<EmailAddressee> to,
         string subject,
         string body,
-        EmailRecipientType recipientType)
-    {
-        return await SendEmail(request, chapter, to, subject, body, recipientType, parameters: null);
-    }
-
-    public async Task<ServiceResult> SendEmail(
-        IServiceRequest request,
-        Chapter? chapter,
-        IEnumerable<EmailAddressee> to,
-        string subject,
-        string body,
         EmailRecipientType recipientType,
         IEmailParameters? parameters)
     {
@@ -259,26 +248,6 @@ public class EmailService : IEmailService
             RecipientType = recipientType,
             Subject = subject,
             To = to.ToArray()
-        });
-    }
-
-    public async Task<ServiceResult> SendMemberEmail(
-        IServiceRequest request,
-        Chapter? chapter,
-        EmailAddressee to,
-        string subject,
-        string body,
-        EmailRecipientType recipientType,
-        IEmailParameters? parameters)
-    {
-        return await SendEmail(request, new SendEmailOptions
-        {
-            BodyHtml = body,
-            Chapter = chapter,
-            RecipientType = recipientType,
-            Subject = subject,
-            To = [to],
-            Parameters = parameters
         });
     }
 

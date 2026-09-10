@@ -1,11 +1,9 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Services.Emails.Parameters
-@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Admin.Emails
 @using ODK.Web.Razor.Models.Components
 @model ChapterEmailContentViewModel
-@inject IRequestStore RequestStore
 @{
     // Each field holds what the group sends - the same fallback the send path applies, so the form shows the
     // email as it will go out rather than an empty box where the group has not overridden anything.
@@ -52,7 +50,7 @@
         @await Html.PartialAsync("Components/_UpgradeButton", new UpgradeButtonViewModel
         {
             Chapter = Model.Chapter,
-            Platform = RequestStore.Platform
+            Platform = Model.Platform
         })
     </div>
 }

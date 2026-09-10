@@ -9,6 +9,7 @@
 
     var chapter = Model.Chapter;
     var member = Model.CurrentMember;
+    var platform = Model.Platform;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -20,7 +21,8 @@
         MenuTitle = "Account",
         MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
         {
-            Chapter = chapter
+            Chapter = chapter,
+            Platform = platform
         }),
         BodyContentFunc =
             @<div>

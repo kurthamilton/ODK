@@ -22,7 +22,7 @@
 else
 {
     var siteSubscriptions = await SiteSubscriptionService
-        .GetSiteSubscriptionsViewModel(Model.ServiceRequest, chapterId: null);
+        .GetSiteSubscriptionsViewModel(Model.ServiceRequest, chapter: null);
 
     @await Html.PartialAsync("Home/_HomeContent", new HomeContentViewModel
     {

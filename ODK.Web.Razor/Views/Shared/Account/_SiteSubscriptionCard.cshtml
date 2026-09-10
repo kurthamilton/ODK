@@ -2,10 +2,8 @@
 @using ODK.Core.Subscriptions
 @using ODK.Services.Subscriptions.ViewModels
 @using ODK.Web.Common.Routes
-@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @inject IOdkRoutes OdkRoutes
-@inject IRequestStore RequestStore
 @model SiteSubscriptionListItemViewModel
 @{
     var subscription = Model.Subscription;
@@ -15,8 +13,8 @@
         .ToArray();
 
     @*ODK platform only has chapter site subscriptions*@
-    var chapter = RequestStore.Platform == PlatformType.DrunkenKnitwits
-        ? RequestStore.Chapter
+    var chapter = Model.Platform == PlatformType.DrunkenKnitwits
+        ? Model.Chapter
         : null;
 }
 

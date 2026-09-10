@@ -162,7 +162,7 @@ public class GroupAdminRoutes
         => Members(chapter).Child($"/{memberId}");
 
     public GroupAdminRoute MemberApprovals(Chapter chapter)
-        => Members(chapter).Child("/approvals", ChapterAdminSecurable.MemberApprovals, PlatformType.Default);
+        => Members(chapter).Child("/approvals", ChapterAdminSecurable.MemberApprovals);
 
     public GroupAdminRoute MemberConversations(Chapter chapter, Guid memberId)
         => Member(chapter, memberId).Child("/conversations", ChapterAdminSecurable.Conversations);

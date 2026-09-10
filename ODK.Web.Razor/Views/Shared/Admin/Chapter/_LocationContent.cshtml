@@ -1,15 +1,13 @@
 ﻿@using ODK.Core.Platforms
 @using ODK.Services.Chapters.ViewModels
-@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SiteAdmin
 @model ChapterLocationAdminPageViewModel
-@inject IRequestStore RequestStore
 
 @* Group-owner page on Group Squirrel, site-admin page on Drunken Knitwits, which has no
    browse-by-distance - so only one of them can mention it. *@
 @await Html.PartialAsync("Components/_AdminPageDescription",
-    RequestStore.Platform == PlatformType.DrunkenKnitwits
+    Model.Platform == PlatformType.DrunkenKnitwits
         ? "Where this group is based."
         : "Where your group is based. Used when people browse for groups near them.")
 

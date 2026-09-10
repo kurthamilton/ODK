@@ -18,7 +18,7 @@
     }
 
     var viewModel = await SiteSubscriptionService.GetSiteSubscriptionsViewModel(
-        Model.ServiceRequest, chapterId: null);
+        Model.ServiceRequest, chapter: null);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

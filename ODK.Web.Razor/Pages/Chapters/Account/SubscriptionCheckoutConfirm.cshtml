@@ -34,7 +34,8 @@
         MenuTitle = "Account",
         MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
         {
-            Chapter = Model.Chapter
+            Chapter = Model.Chapter,
+            Platform = Model.Platform
         }),
         BodyContentFunc =
             @<div>

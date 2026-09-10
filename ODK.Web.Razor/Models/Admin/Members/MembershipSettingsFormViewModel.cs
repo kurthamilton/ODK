@@ -1,4 +1,6 @@
-﻿namespace ODK.Web.Razor.Models.Admin.Members;
+﻿using ODK.Core.Chapters;
+
+namespace ODK.Web.Razor.Models.Admin.Members;
 
 public class MembershipSettingsFormViewModel : MembershipSettingsFormSubmitViewModel
 {
@@ -7,4 +9,6 @@ public class MembershipSettingsFormViewModel : MembershipSettingsFormSubmitViewM
     /// an upgrade prompt does.
     /// </summary>
     public required bool CanApproveMembers { get; init; }
+
+    public required Chapter Chapter { get; init; }
 }

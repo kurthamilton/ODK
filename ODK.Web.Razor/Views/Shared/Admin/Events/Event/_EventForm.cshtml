@@ -1,12 +1,10 @@
 ﻿@using ODK.Core.Features
 @using ODK.Web.Common.Routes
-@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Components
 @model EventFormViewModel
 @inject IOdkRoutes OdkRoutes
-@inject IRequestStore RequestStore
 @{
     var venueOptions = Model.Venues
         .OrderBy(x => x.Name)
@@ -130,7 +128,7 @@
 
     @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscriptionFeatures)
     {
-        Chapter = RequestStore.ChapterOrDefault,
+        Chapter = Model.Chapter,
         Feature = SiteFeatureType.EventTickets,
         ContentFunc =
             @<div>

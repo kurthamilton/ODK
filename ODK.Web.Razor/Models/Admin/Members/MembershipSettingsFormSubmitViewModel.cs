@@ -4,7 +4,7 @@ namespace ODK.Web.Razor.Models.Admin.Members;
 
 public class MembershipSettingsFormSubmitViewModel
 {
-    [DisplayName("Approve new members")]
+    [DisplayName("New members require approval")]
     public bool ApproveNewMembers { get; set; }
 
     [DisplayName("Membership enabled")]

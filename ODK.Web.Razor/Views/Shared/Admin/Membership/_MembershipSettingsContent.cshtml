@@ -21,6 +21,7 @@
             {
                 ApproveNewMembers = membershipSettings?.ApproveNewMembers ?? false,
                 CanApproveMembers = Model.OwnerSubscriptionFeatures.Contains(SiteFeatureType.ApproveMembers),
+                Chapter = Model.Chapter,
                 Enabled = membershipSettings?.Enabled ?? false,
                 MembershipDisabledAfter = membershipSettings?.MembershipDisabledAfterDaysExpired ?? 0,
                 MembershipExpiringWarningDays = membershipSettings?.MembershipExpiringWarningDays ?? 0,

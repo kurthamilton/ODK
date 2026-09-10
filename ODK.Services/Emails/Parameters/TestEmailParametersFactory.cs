@@ -4,6 +4,7 @@ using ODK.Core.Countries;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
+using ODK.Core.Topics;
 using ODK.Core.Venues;
 using ODK.Services.Web;
 
@@ -16,6 +17,10 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
     private const string EventName = "EVENT NAME";
 
     private const string PaymentReference = "PAYMENT REFERENCE";
+
+    private const string TopicName = "TOPIC";
+
+    private const string TopicGroupName = "TOPIC GROUP";
 
     private const string VenueName = "VENUE NAME";
 
@@ -64,6 +69,14 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
         PublishedUtc = DateTime.UtcNow
     };
 
+    /* Two rows rather than one, so the table an admin previews shows what several look like stacked - a
+       single row reads as though the parameter only ever holds one. */
+    private static IReadOnlyCollection<INewTopic> TestTopics() =>
+    [
+        new NewMemberTopic { Topic = TopicName, TopicGroup = TopicGroupName },
+        new NewMemberTopic { Topic = $"{TopicName} 2", TopicGroup = TopicGroupName }
+    ];
+
     private static Venue TestVenue() => new()
     {
         Name = VenueName
@@ -88,6 +101,23 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
                     ? urlProvider.MessageAdminUrl(chapter, Guid.Empty)
                     : urlProvider.MessageSiteAdminUrl(Guid.Empty)
             },
+            EmailType.ContactRequestReply or
+            EmailType.SiteContactRequestReply => new ContactRequestReplyParameters
+            {
+                ReplyHtml = "<p>Test reply</p>",
+                Text = "Test contact message"
+            },
+            EmailType.ConversationMessage or
+            EmailType.ConversationMessageAdmin => chapter != null
+                ? new ConversationParameters
+                {
+                    Message = "Test message",
+                    Subject = "Test conversation",
+                    Url = type == EmailType.ConversationMessage
+                        ? urlProvider.ConversationUrl(chapter, Guid.Empty)
+                        : urlProvider.ConversationAdminUrl(chapter, Guid.Empty)
+                }
+                : null,
             EmailType.DuplicateEmail => new DuplicateEmailParameters
             {
                 LoginUrl = urlProvider.LoginUrl(chapter)
@@ -112,6 +142,12 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
                     Url = urlProvider.EventUrl(chapter, "TEST")
                 }
                 : null,
+            EmailType.EventWaitlistPromotion => chapter != null
+                ? new EventWaitlistPromotionParameters(chapter, TestEvent(), culture)
+                {
+                    Url = urlProvider.EventUrl(chapter, "TEST")
+                }
+                : null,
             EmailType.MemberImportActivation => new MemberImportActivationParameters
             {
                 Url = urlProvider.ActivateAccountUrl(chapter, "TEST")
@@ -121,6 +157,23 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
                 {
                     RefuseUrl = urlProvider.RefuseInviteUrl(chapter, "TEST"),
                     Url = urlProvider.AcceptInviteUrl(chapter, "TEST")
+                }
+                : null,
+            EmailType.MemberLeftAdmin => chapter != null
+                ? new MemberLeftParameters(member, culture, chapter.TimeZone)
+                {
+                    JoinedUtc = DateTime.UtcNow.AddMonths(-6),
+                    Reason = "Test reason"
+                }
+                : null,
+            EmailType.MemberRemoved => new MemberRemovedParameters
+            {
+                Reason = "Test reason"
+            },
+            EmailType.NewGroupAdmin => chapter != null
+                ? new NewGroupAdminParameters(chapter)
+                {
+                    GroupsUrl = urlProvider.SiteAdminGroups()
                 }
                 : null,
             EmailType.NewMember => chapter != null
@@ -140,6 +193,10 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
                         .ToString()
                 }
                 : null,
+            EmailType.NewTopicAdmin => new NewTopicAdminParameters(TestTopics())
+            {
+                Url = urlProvider.TopicApprovalUrl()
+            },
             EmailType.PasswordReset => new PasswordResetParameters
             {
                 Url = urlProvider.PasswordReset(chapter, "TEST")
@@ -149,6 +206,23 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
             {
                 Amount = 1.23M,
                 Reference = PaymentReference
+            },
+            EmailType.SiteConversationMessage or
+            EmailType.SiteConversationMessageAdmin => new ConversationParameters
+            {
+                Message = "Test message",
+                Subject = "Test conversation",
+                Url = type == EmailType.SiteConversationMessage
+                    ? urlProvider.SiteConversationUrl(Guid.Empty)
+                    : urlProvider.SiteConversationAdminUrl(Guid.Empty)
+            },
+            EmailType.SiteSubscriptionExpired => new SiteSubscriptionExpiredParameters
+            {
+                SubscriptionUrl = urlProvider.MemberSiteSubscriptionUrl()
+            },
+            EmailType.SiteWelcome => new SiteWelcomeParameters(member)
+            {
+                GroupsUrl = urlProvider.GroupsUrl()
             },
             EmailType.SubscriptionConfirmation => new SubscriptionConfirmationParameters(
                 new Currency { Symbol = "X" }, member, culture)
@@ -164,6 +238,8 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
                 DisabledUtc = DateTime.UtcNow,
                 ExpiresUtc = DateTime.UtcNow
             },
+            EmailType.TopicsApproved or
+            EmailType.TopicsRejected => new MemberTopicsParameters(TestTopics()),
             _ => null
         };
 }
