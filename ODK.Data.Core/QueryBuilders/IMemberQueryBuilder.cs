@@ -7,6 +7,11 @@ namespace ODK.Data.Core.QueryBuilders;
 public interface IMemberQueryBuilder : IDatabaseEntityQueryBuilder<Member, IMemberQueryBuilder>
 {
     /// <summary>
+    /// Every member but <paramref name="memberId"/>, for a count or a list that is about the others.
+    /// </summary>
+    IMemberQueryBuilder Excluding(Guid memberId);
+
+    /// <summary>
     /// Members whose signup was flagged as likely automated. Uses the flag recorded at signup, so changing
     /// the score threshold doesn't change who this returns.
     /// </summary>

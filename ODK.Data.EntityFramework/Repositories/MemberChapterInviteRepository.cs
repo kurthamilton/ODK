@@ -37,6 +37,10 @@ public class MemberChapterInviteRepository : WriteRepositoryBase<MemberChapterIn
             ? Set().Where(x => x.Token == token).DeferredSingleOrDefault()
             : DefaultDeferredQuerySingleOrDefault.For<MemberChapterInvite>();
 
+    public IDeferredQuery<int> GetCountByChapterId(Guid chapterId) => Set()
+        .Where(x => x.ChapterId == chapterId)
+        .DeferredCount();
+
     public IDeferredQueryMultiple<MemberChapterInvite> GetCreatedBefore(DateTime createdBeforeUtc) =>
         (from invite in Set()
          join member in Set<Member>() on invite.MemberId equals member.Id

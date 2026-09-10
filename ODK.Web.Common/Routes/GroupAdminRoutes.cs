@@ -93,6 +93,12 @@ public class GroupAdminRoutes
         _ => ""
     });
 
+    public GroupAdminRoute GroupAdminLink(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => Events(chapter),
+        _ => Group(chapter)
+    };
+
     public GroupAdminRoute Home(Chapter chapter) => Events(chapter);
 
     public GroupAdminRoute Image(Chapter chapter) => Platform switch

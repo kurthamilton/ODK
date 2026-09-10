@@ -46,7 +46,7 @@
         MenuTitle = "Site admin",
         MenuContentFunc = _ => Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
         {
-            MenuItems = menuItems,
+            MenuItemGroups = [menuItems],
             Root = true
         })
     })

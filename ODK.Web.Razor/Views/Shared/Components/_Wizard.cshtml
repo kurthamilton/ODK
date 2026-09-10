@@ -15,6 +15,10 @@
         ?.Index ?? 0;
 }
 
+@* Navigation is driven by odk.wizard.js rather than by Bootstrap's own data-bs-toggle="collapse":
+   leaving a page depends on its fields validating, and a rule that asks the server cannot be awaited
+   inside show.bs.collapse, whose preventDefault has to be synchronous. So a button carries only its
+   destination and the script owns the move. *@
 <div class="accordion accordion--transition-0" id="@baseId" data-wizard>
     @for (var i = 0; i < Model.Pages.Count; i++)
     {
@@ -30,7 +34,6 @@
                     @for (var j = 0; j < Model.Pages.Count; j++)
                     {
                         var menuPage = Model.Pages.ElementAt(j);
-                        var menuPageId = pageIds[j];
 
                         var active = j == i;
                         var disabled = j > i;
@@ -47,7 +50,7 @@
                             else
                             {
                                 <button class="nav-link @(active ? "active" : null) @(disabled ? "disabled" : null)"
-                                        data-bs-toggle="collapse" data-bs-target="#@menuPageId" type="button">
+                                        data-wizard-goto="@j" type="button">
                                     @menuPage.Title
                                 </button>
                             }
@@ -60,7 +63,6 @@
 
             @if (i < Model.Pages.Count - 1)
             {
-                var nextId = pageIds[i + 1];
                 var buttonText = !string.IsNullOrEmpty(page.ButtonText)
                     ? page.ButtonText
                     : "Next";
@@ -75,8 +77,7 @@
                     }
                     else
                     {
-                        <button type="button" class="btn btn-primary"
-                                data-bs-toggle="collapse" data-bs-target="#@nextId">
+                        <button type="button" class="btn btn-primary" data-wizard-next>
                             <span>@buttonText</span>
                             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ChevronRight))
                         </button>

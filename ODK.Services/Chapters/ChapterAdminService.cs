@@ -828,7 +828,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             image,
             newestMembers,
             heldInvites,
-            waitingToBeInvited
+            waitingToBeInvited,
+            otherMembers,
+            invites
         ) = await _unitOfWork.Run(
             x => canSeeApprovals
                 ? x.MemberChapterRepository.Query(platform).ForChapter(chapter.Id).Approved(false).Count()
@@ -859,6 +861,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 : new DefaultDeferredQuery<int>(0),
             x => canSeeImports
                 ? x.MemberChapterImportRepository.Query(q => q.InChapter(chapter.Id)).Count()
+                : new DefaultDeferredQuery<int>(0),
+            x => canSeeImports
+                ? x.MemberRepository.Query().InChapter(chapter.Id).Excluding(currentMember.Id).Count()
+                : new DefaultDeferredQuery<int>(0),
+            // Sent or held: an invite nobody has accepted yet still means the members have been brought in.
+            x => canSeeImports
+                ? x.MemberChapterInviteRepository.GetCountByChapterId(chapter.Id)
                 : new DefaultDeferredQuery<int>(0));
 
         var hasImage = image != null;
@@ -872,6 +881,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             NeedsImage = canSeeImage && !hasImage,
             NeedsImageToPublish = awaitingPublication && !hasImage,
             NewestMembers = canSeeMembers ? newestMembers : null,
+            PromptMemberImport =
+                canSeeImports && otherMembers == 0 && waitingToBeInvited == 0 && invites == 0,
             UnrepliedContactMessages = canSeeMessages ? unrepliedMessages : null,
             WaitingToBeInvited = canSeeImports ? waitingToBeInvited : null,
             UpcomingEvents = canSeeEvents ? upcomingEvents : null

@@ -12,6 +12,14 @@ namespace ODK.Services.Chapters.ViewModels;
 public class GroupDashboardViewModel
 {
     /// <summary>
+    /// Whether the group is approved and unpublished, so publishing is what it is waiting for - whether or
+    /// not something is still blocking it. This is what shows the publish section, which owns both faces
+    /// of publication: it offers the action or accounts for what is standing in the way, and
+    /// <see cref="CanPublish"/> says which of the two it is.
+    /// </summary>
+    public bool AwaitingPublication => CanPublish || NeedsImageToPublish;
+
+    /// <summary>
     /// Whether the group is approved, unpublished and has the picture publication requires, so publishing
     /// is the outstanding action.
     /// </summary>
@@ -21,11 +29,11 @@ public class GroupDashboardViewModel
 
     /// <summary>
     /// Whether anything is waiting on an admin. A list that is mostly zeroes teaches people to ignore it,
-    /// so the section says everything is clear rather than listing empty rows.
+    /// so the section says everything is clear rather than listing empty rows. Publication is deliberately
+    /// absent: it is the publish section's subject, and an action reported in both places reads as two.
     /// </summary>
     public bool HasRequiredActions =>
-        CanPublish ||
-        NeedsImage ||
+        NeedsImageAsAction ||
         MembersAwaitingApproval > 0 ||
         UnrepliedContactMessages > 0 ||
         WaitingToBeInvited > 0;
@@ -45,8 +53,15 @@ public class GroupDashboardViewModel
     public required bool NeedsImage { get; init; }
 
     /// <summary>
+    /// Whether the missing picture is an action in its own right, which it is wherever publication is not
+    /// waiting on it - a group not approved yet, or one already published. The picture is reported once,
+    /// and where it blocks publication the publish section is where it is reported.
+    /// </summary>
+    public bool NeedsImageAsAction => NeedsImage && !NeedsImageToPublish;
+
+    /// <summary>
     /// Whether the missing picture is the only thing standing between the group and being published, so
-    /// the action can say what adding one unblocks.
+    /// the publish section can name it as the blocker.
     /// </summary>
     public required bool NeedsImageToPublish { get; init; }
 
@@ -55,6 +70,14 @@ public class GroupDashboardViewModel
     /// page.
     /// </summary>
     public required IReadOnlyCollection<MemberChapterWithAvatarDto>? NewestMembers { get; init; }
+
+    /// <summary>
+    /// Whether to invite the admin to bring an existing group's members across: nobody else has joined,
+    /// nothing has been uploaded or invited, and they can reach the import page. Deliberately not part of
+    /// <see cref="HasRequiredActions"/> - a group with one member is a working group, not one with
+    /// something outstanding.
+    /// </summary>
+    public required bool PromptMemberImport { get; init; }
 
     public required int? UnrepliedContactMessages { get; init; }
 

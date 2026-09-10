@@ -46,8 +46,8 @@
                                         {
                                             @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
                                             {
-                                                Icon = IconType.Settings,
-                                                Route = Model.OdkRoutes.GroupAdmin.Events(chapter.Chapter),
+                                                Icon = IconType.Wrench,
+                                                Route = Model.OdkRoutes.GroupAdmin.GroupAdminLink(chapter.Chapter),
                                                 Text = "Manage"
                                             })
                                         }                                        

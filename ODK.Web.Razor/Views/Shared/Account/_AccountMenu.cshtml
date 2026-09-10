@@ -55,7 +55,7 @@
     @await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
     {
         Active = activeMenuItem,
-        MenuItems = menuItems,
+        MenuItemGroups = [menuItems],
         Root = true
     })
 </div>

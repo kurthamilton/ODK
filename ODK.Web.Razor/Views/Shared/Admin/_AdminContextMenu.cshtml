@@ -13,7 +13,7 @@
     HideCaret = true,
     MenuItems = new[]
     {
-        new MenuItem { Icon = IconType.Settings, Text = "Admin", Link = OdkRoutes.GroupAdmin.Home(Model.Chapter).Path },
+        new MenuItem { Icon = IconType.Wrench, Text = "Admin", Link = OdkRoutes.GroupAdmin.GroupAdminLink(Model.Chapter).Path },
         new MenuItem { Icon = IconType.CalendarPlus, Text = "Create event", Link = OdkRoutes.GroupAdmin.EventCreate(Model.Chapter).Path },
         new MenuItem { Icon = IconType.Members, Text = "Members", Link = OdkRoutes.GroupAdmin.Members(Model.Chapter).Path }
     }

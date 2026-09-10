@@ -8,17 +8,65 @@
 @using ODK.Web.Razor.Models.Components
 @model GroupDashboardViewModel
 @inject IOdkRoutes OdkRoutes
+@{
+    var headingType = HeadingType.H5;
+}
 
 <div class="section-stack">
+    @* First, and only while the group is waiting to be published: publishing is what an approved group
+       nobody can see yet is for, and the section owns both faces of it - the action and whatever is
+       standing in the way of it. *@
+    @if (Model.AwaitingPublication)
+    {
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Publish this group",
+                Type = headingType
+            },
+            BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Groups/_GroupDashboardPublish", Model)</div>
+        })
+    }
+
     @await Html.PartialAsync("Components/_Panel", new PanelViewModel
     {
         Heading = new HeadingViewModel
         {
             Title = "Needs your attention",
-            Type = HeadingType.H4
+            Type = headingType
         },
         BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Groups/_GroupDashboardActions", Model)</div>
     })
+
+    @if (Model.PromptMemberImport)
+    {
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Import members",
+                Type = headingType
+            },
+            BodyContentFunc =
+                @<div>
+                    <p>
+                        Nobody else has joined this group yet. If you already run it somewhere else,
+                        upload your member list and everyone on it is invited to join you here.
+                    </p>
+                    <p class="text-muted">
+                        Nobody is emailed until you send the invites.
+                    </p>
+                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                    {
+                        Class = "btn btn-primary",
+                        Icon = IconType.Upload,
+                        Route = OdkRoutes.GroupAdmin.MembersImport(Model.Chapter),
+                        Text = "Import members"
+                    })
+                </div>
+        })
+    }
 
     @if (Model.UpcomingEvents != null)
     {
@@ -32,7 +80,7 @@
             Heading = new HeadingViewModel
             {
                 Title = "Upcoming events",
-                Type = HeadingType.H4
+                Type = headingType
             },
             TitleEndContentFunc = @<a href="@OdkRoutes.GroupAdmin.Events(Model.Chapter).Path">See all</a>,
             BodyContentFunc =
@@ -78,7 +126,7 @@
             Heading = new HeadingViewModel
             {
                 Title = "Newest members",
-                Type = HeadingType.H4
+                Type = headingType
             },
             TitleEndContentFunc = @<a href="@OdkRoutes.GroupAdmin.Members(Model.Chapter).Path">See all</a>,
             BodyContentFunc =

@@ -1,0 +1,59 @@
+﻿@using ODK.Core.Utils
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
+@model GroupDashboardViewModel
+@inject IOdkRoutes OdkRoutes
+
+<div class="d-flex flex-column gap-3">
+    <p class="mb-0">
+        @if (Model.CanPublish)
+        {
+            <text>This group is approved and ready to publish.</text>
+        }
+        else
+        {
+            <text>This group is approved and waiting to be published.</text>
+        }
+
+        @if (Model.HeldInvites > 0)
+        {
+            @* Said with the state rather than beside the button, so it is read whether publishing is
+               available yet or not - it is as much the reason to clear a blocker as it is a warning. *@
+            <text>
+                Publishing emails the
+                <strong>@Model.HeldInvites @StringUtils.Pluralise(Model.HeldInvites, "invite")</strong>
+                your import is holding.
+            </text>
+        }
+    </p>
+
+    @if (Model.CanPublish)
+    {
+        <form action="/groups/@Model.Chapter.Id/publish" method="post">
+            @Html.AntiForgeryToken()
+            <button class="btn btn-success">Publish</button>
+        </form>
+    }
+    else
+    {
+        @* Introduced as what is standing in the way, so every row below is a blocker by construction and
+           none of them needs marking as one. *@
+        <p class="mb-0">Publishing is blocked by:</p>
+
+        <div class="list-group">
+            @if (Model.NeedsImageToPublish)
+            {
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>This group has no picture, and a group can't be published without one.</span>
+                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                    {
+                        Class = "btn btn-warning ms-3 text-nowrap",
+                        Route = OdkRoutes.GroupAdmin.Image(Model.Chapter),
+                        Text = "Add a picture"
+                    })
+                </div>
+            }
+        </div>
+    }
+</div>

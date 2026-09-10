@@ -22,6 +22,12 @@ public class MemberQueryBuilder : DatabaseEntityQueryBuilder<Member, IMemberQuer
 
     protected override IMemberQueryBuilder Builder => this;
 
+    public IMemberQueryBuilder Excluding(Guid memberId)
+    {
+        Query = Query.Where(x => x.Id != memberId);
+        return this;
+    }
+
     public IMemberQueryBuilder Flagged()
     {
         Query = Query.Where(x => x.RecaptchaFlagged == true);
