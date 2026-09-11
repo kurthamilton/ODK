@@ -1,4 +1,5 @@
 ﻿@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @inject IRequestStore RequestStore
 @{
@@ -34,8 +35,12 @@
 <div style="@customTheme">
     @await Html.PartialAsync("Components/_Body", new BodyViewModel
     {
-        Title = chapter.GetDisplayName(platform),
+        TitleContent = await Html.PartialAsync("Admin/_AdminGroupTitle", new AdminGroupTitleViewModel
+        {
+            Chapter = chapter
+        }),
         Content = statusAlert,
+        Menu = await Html.PartialAsync("Admin/_AdminTopMenu"),
         ContentFunc = _ => RenderBody()
     })
 </div>

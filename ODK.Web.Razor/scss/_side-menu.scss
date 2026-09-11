@@ -40,6 +40,17 @@
     }
 }
 
+// Where the sections are carried by a top nav instead, the menu beside the page holds only the section the
+// page is in - its own link and the pages under it. The drawer is always the whole menu, the same on both
+// platforms: at that width there is no top nav, so the drawer is the only way to another section.
+.side-menu--section-only > li:not(.side-menu__section--current) {
+    display: none;
+}
+
+.offcanvas .side-menu--section-only > li:not(.side-menu__section--current) {
+    display: list-item;
+}
+
 // The section's own link and its expand toggle share a row. The link takes the free width so its hover and
 // active highlights still span the menu, and the toggle is what the row grows by.
 .side-menu__row {

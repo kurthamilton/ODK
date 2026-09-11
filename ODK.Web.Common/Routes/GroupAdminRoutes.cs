@@ -292,7 +292,17 @@ public class GroupAdminRoutes
             [
                 new(AdminMembers(chapter), "Admins"),
                 new(MemberProperties(chapter), "Profile questions"),
-                new(MembersEmail(chapter), "Bulk email"),
+                // Bulk email is a mode of the members page rather than a page of its own. Group Squirrel
+                // enters that mode from the members page itself, so listing it here as well would be a
+                // second menu entry pointing at the page the entry above it already reaches.
+                .. Platform switch
+                {
+                    PlatformType.DrunkenKnitwits => new GroupAdminNavItem[]
+                    {
+                        new(MembersEmail(chapter), "Bulk email")
+                    },
+                    _ => []
+                },
                 new(MemberApprovals(chapter), "Approvals"),
                 new(MembersImport(chapter), "Import"),
                 new(MembersInvited(chapter), "Invited")
