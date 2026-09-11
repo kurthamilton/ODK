@@ -1,7 +1,8 @@
 ﻿@model string
-@* What this admin page is for, in a sentence or two. The page-level sibling of _FormLabelSubtitle: it
-   renders first inside the content partial, so it sits directly under the page title on both platforms
-   without either page shell needing to know about it.
+@* What this admin page or section is for, in a sentence or two. The sibling of _FormLabelSubtitle one
+   level up: it renders first inside the content partial, so it sits directly under the title of whatever
+   holds that partial - a page on both platforms, or a panel of one - without the shell around it
+   needing to know about it.
 
    Belongs in the shared content partial rather than the two platform pages, so the wording is written once
    and cannot drift between Drunken Knitwits and Group Squirrel. Where the two platforms genuinely differ,

@@ -1,0 +1,41 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Components
+@model ChapterThemeAdminPageViewModel
+@inject IRequestStore RequestStore
+@{
+    // The level every panel here takes. How large its title reads is --odk-panel-title-size, not this.
+    const HeadingType panelHeadingType = HeadingType.H3;
+
+    // The header image is a site admin's to set. The service behind the panel asserts the same, so
+    // leaving it out here is presentation rather than the guard.
+    var viewedBySiteAdmin = RequestStore.CurrentMember.SiteAdmin;
+}
+
+@* The panels themselves, without a stack of their own, so a page holding other panels alongside them
+   gaps them all the same way. *@
+
+@await Html.PartialAsync("Components/_Panel", new PanelViewModel
+{
+    Heading = new HeadingViewModel
+    {
+        Title = "Theme",
+        Type = panelHeadingType
+    },
+    Id = "theme",
+    BodyContent = await Html.PartialAsync("Admin/Chapter/_ThemeContent", Model)
+})
+
+@if (viewedBySiteAdmin)
+{
+    @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+    {
+        Heading = new HeadingViewModel
+        {
+            Title = "Header image",
+            Type = panelHeadingType
+        },
+        Id = "header-image",
+        BodyContent = await Html.PartialAsync("Admin/Chapter/_HeaderImageContent")
+    })
+}

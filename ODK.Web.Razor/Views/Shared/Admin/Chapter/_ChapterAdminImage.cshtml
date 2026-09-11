@@ -31,7 +31,8 @@
 
             @await Html.PartialAsync("Admin/Chapter/_ImageForm", new ChapterImageFormViewModel
             {
-                AspectRatio = Model.AspectRatio
+                AspectRatio = Model.AspectRatio,
+                Id = Model.Id
             })
 
             <div class="d-flex justify-content-end">

@@ -16,7 +16,8 @@ public class ChapterAdminImageViewModel
     public required string FormAction { get; init; }
 
     /// <summary>
-    /// Distinguishes this component's modal from any other on the page.
+    /// Distinguishes this component's modal, and the fields of the form inside it, from any other on
+    /// the page.
     /// </summary>
     public required string Id { get; init; }
 

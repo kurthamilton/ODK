@@ -823,37 +823,6 @@ public static class ChapterAdminServiceTests
     }
 
     [Test]
-    public static async Task GetChapterLinksViewModel_ReturnsViewModel()
-    {
-        // Arrange
-        using var context = CreateMockOdkContext();
-
-        var currentMember = context.CreateMember();
-
-        var chapter = context.CreateChapter(
-            siteSubscription: context.CreateSiteSubscription(features: [SiteFeatureType.AdminMembers]),
-            adminMembers: [currentMember]);
-
-        var links = context.Create(CreateChapterLinks(chapter: chapter));
-
-        var privacySettings = context.Create(CreateChapterPrivacySettings(chapter: chapter));
-
-        var service = CreateChapterAdminService(context);
-
-        var request = CreateMemberChapterAdminServiceRequest(
-            chapter: chapter,
-            currentMember: currentMember,
-            securable: ChapterAdminSecurable.SocialMedia);
-
-        // Act
-        var result = await service.GetChapterLinksViewModel(request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Links.Should().Be(links);
-    }
-
-    [Test]
     public static async Task GetChapterPropertiesViewModel_ReturnsProperties()
     {
         // Arrange
@@ -909,6 +878,152 @@ public static class ChapterAdminServiceTests
         result.Should().NotBeNull();
         result.Questions.Should().HaveCount(1);
         result.Questions.First().Name.Should().Be("q1");
+    }
+
+    [Test]
+    public static async Task GetChapterSettingsViewModel_ReturnsSocialMediaLinks()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            siteSubscription: context.CreateSiteSubscription(features: [SiteFeatureType.AdminMembers]),
+            adminMembers: [currentMember]);
+
+        var links = context.Create(CreateChapterLinks(chapter: chapter));
+
+        context.Create(CreateChapterPrivacySettings(chapter: chapter));
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.GroupSettings);
+
+        // Act
+        var result = await service.GetChapterSettingsViewModel(request);
+
+        // Assert
+        result.Links.Should().NotBeNull();
+        result.Links.Links.Should().Be(links);
+    }
+
+    [Test]
+    public static async Task GetChapterSettingsViewModel_WithThemeFeature_ThemeCanBeEdited()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            adminMembers: [currentMember],
+            siteSubscription: context.CreateSiteSubscription(features: [SiteFeatureType.Theme]));
+
+        var service = CreateChapterAdminService(context);
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.GroupSettings);
+
+        // Act
+        var result = await service.GetChapterSettingsViewModel(request);
+
+        // Assert
+        result.Theme.Should().NotBeNull();
+        result.Theme.CanEdit.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task GetChapterSettingsViewModel_WithoutThemeFeature_ThemeCannotBeEdited()
+    {
+        // Arrange - a different feature, so this proves the check is for Theme specifically rather than
+        // for holding any subscription at all.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            adminMembers: [currentMember],
+            siteSubscription: context.CreateSiteSubscription(features: [SiteFeatureType.AdminMembers]));
+
+        var service = CreateChapterAdminService(context);
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.GroupSettings);
+
+        // Act
+        var result = await service.GetChapterSettingsViewModel(request);
+
+        // Assert
+        result.Theme.Should().NotBeNull();
+        result.Theme.CanEdit.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetChapterSettingsViewModel_ChapterOnAnotherPlatform_OffersThatPlatformsPages()
+    {
+        /* Arrange - a Drunken Knitwits group, administered from Group Squirrel. Its set of pages is its own,
+           so the About page Drunken Knitwits groups have stays editable from either site. Group Squirrel's
+           own groups have no About page, which is what makes the two sets distinguishable here. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            platform: PlatformType.DrunkenKnitwits);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            platform: PlatformType.Default,
+            securable: ChapterAdminSecurable.GroupSettings);
+
+        // Act
+        var result = await service.GetChapterSettingsViewModel(request);
+
+        // Assert
+        result.Pages.Should().NotBeNull();
+        result.Pages.ChapterPages.Select(x => x.PageType).Should()
+            .BeEquivalentTo([PageType.About, PageType.Contact, PageType.Members]);
+    }
+
+    [Test]
+    public static async Task GetChapterSettingsViewModel_DrunkenKnitwits_OmitsSectionsTheGroupDoesNotOwn()
+    {
+        /* Arrange - administered from Drunken Knitwits, where branding, the picture, topics, location and
+           pages are not a group's own to set. The sections that are stay, so this distinguishes a platform
+           gate from the page coming back empty. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            adminMembers: [currentMember],
+            platform: PlatformType.DrunkenKnitwits);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            platform: PlatformType.DrunkenKnitwits,
+            securable: ChapterAdminSecurable.GroupSettings);
+
+        // Act
+        var result = await service.GetChapterSettingsViewModel(request);
+
+        // Assert
+        result.Theme.Should().BeNull();
+        result.Image.Should().BeNull();
+        result.Location.Should().BeNull();
+        result.Pages.Should().BeNull();
+        result.Topics.Should().BeNull();
+        result.Links.Should().NotBeNull();
+        result.Privacy.Should().NotBeNull();
     }
 
     [Test]
@@ -1757,55 +1872,6 @@ public static class ChapterAdminServiceTests
     }
 
     [Test]
-    public static async Task GetChapterThemeViewModel_WithThemeFeature_CanEdit()
-    {
-        // Arrange
-        using var context = CreateMockOdkContext();
-
-        var currentMember = context.CreateMember();
-        var chapter = context.CreateChapter(
-            adminMembers: [currentMember],
-            siteSubscription: context.CreateSiteSubscription(features: [SiteFeatureType.Theme]));
-
-        var service = CreateChapterAdminService(context);
-        var request = CreateMemberChapterAdminServiceRequest(
-            chapter: chapter,
-            currentMember: currentMember,
-            securable: ChapterAdminSecurable.Branding);
-
-        // Act
-        var result = await service.GetChapterThemeViewModel(request);
-
-        // Assert
-        result.CanEdit.Should().BeTrue();
-    }
-
-    [Test]
-    public static async Task GetChapterThemeViewModel_WithoutThemeFeature_CannotEdit()
-    {
-        // Arrange - a different feature, so this proves the check is for Theme specifically rather than
-        // for holding any subscription at all.
-        using var context = CreateMockOdkContext();
-
-        var currentMember = context.CreateMember();
-        var chapter = context.CreateChapter(
-            adminMembers: [currentMember],
-            siteSubscription: context.CreateSiteSubscription(features: [SiteFeatureType.AdminMembers]));
-
-        var service = CreateChapterAdminService(context);
-        var request = CreateMemberChapterAdminServiceRequest(
-            chapter: chapter,
-            currentMember: currentMember,
-            securable: ChapterAdminSecurable.Branding);
-
-        // Act
-        var result = await service.GetChapterThemeViewModel(request);
-
-        // Assert
-        result.CanEdit.Should().BeFalse();
-    }
-
-    [Test]
     public static async Task PublishChapter_WhenCanBePublished_PublishesSuccessfully()
     {
         // Arrange
@@ -1922,35 +1988,6 @@ public static class ChapterAdminServiceTests
         result.Success.Should().BeFalse();
         result.Message.Should().Be("This group cannot be published");
         chapter.IsPublished().Should().BeFalse();
-    }
-
-    [Test]
-    public static async Task GetChapterPagesViewModel_ChapterOnAnotherPlatform_OffersThatPlatformsPages()
-    {
-        /* Arrange - a Drunken Knitwits group, administered from Group Squirrel. Its set of pages is its own,
-           so the About page Drunken Knitwits groups have stays editable from either site. Group Squirrel's
-           own groups have no About page, which is what makes the two sets distinguishable here. */
-        using var context = CreateMockOdkContext();
-
-        var currentMember = context.CreateMember();
-        var chapter = context.CreateChapter(
-            owner: currentMember,
-            platform: PlatformType.DrunkenKnitwits);
-
-        var service = CreateChapterAdminService(context);
-
-        var request = CreateMemberChapterAdminServiceRequest(
-            chapter: chapter,
-            currentMember: currentMember,
-            platform: PlatformType.Default,
-            securable: ChapterAdminSecurable.Pages);
-
-        // Act
-        var result = await service.GetChapterPagesViewModel(request);
-
-        // Assert
-        result.ChapterPages.Select(x => x.PageType).Should()
-            .BeEquivalentTo([PageType.About, PageType.Contact, PageType.Members]);
     }
 
     private static MockOdkContext CreateMockOdkContext()

@@ -44,12 +44,6 @@ public interface IChapterAdminService
         IMemberChapterAdminServiceRequest request, string refreshPath, string returnPath);
 
     /// <summary>
-    /// The theme admin page. CanEdit is false when the owner's subscription lacks the theme feature -
-    /// the page then shows the current theme read-only rather than hiding it.
-    /// </summary>
-    Task<ChapterThemeAdminPageViewModel> GetChapterThemeViewModel(IMemberChapterAdminServiceRequest request);
-
-    /// <summary>
     /// The admin landing page: outstanding actions for this group, each omitted when the admin lacks
     /// the securable for the page that would action it.
     /// </summary>
@@ -63,10 +57,6 @@ public interface IChapterAdminService
 
     Task<ChapterDeleteAdminPageViewModel> GetChapterDeleteViewModel(IMemberChapterAdminServiceRequest request);
 
-    Task<ChapterImageAdminPageViewModel> GetChapterImageViewModel(IMemberChapterAdminServiceRequest request);
-
-    Task<ChapterLinksAdminPageViewModel> GetChapterLinksViewModel(IMemberChapterAdminServiceRequest request);
-
     Task<ChapterLocationAdminPageViewModel> GetChapterLocationViewModel(IMemberChapterAdminServiceRequest request);
 
     Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(
@@ -74,11 +64,7 @@ public interface IChapterAdminService
 
     Task<ChapterMessageAdminPageViewModel> GetChapterMessageViewModel(IMemberChapterAdminServiceRequest request, Guid id);
 
-    Task<ChapterPagesAdminPageViewModel> GetChapterPagesViewModel(IMemberChapterAdminServiceRequest request);
-
     Task<ChapterPaymentAccountAdminPageViewModel> GetChapterPaymentAccountViewModel(IMemberChapterAdminServiceRequest request);
-
-    Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(IMemberChapterAdminServiceRequest request);
 
     Task<ChapterPropertiesAdminPageViewModel> GetChapterPropertiesViewModel(IMemberChapterAdminServiceRequest request);
 
@@ -94,11 +80,15 @@ public interface IChapterAdminService
     Task<PaymentStatusType> GetChapterPaymentCheckoutSessionStatus(
         IMemberChapterAdminServiceRequest request, string externalSessionId);
 
+    /// <summary>
+    /// The group settings page: every group setting the page holds. A block of them is omitted when the
+    /// admin lacks its securable, or when the platform does not offer it.
+    /// </summary>
+    Task<ChapterSettingsAdminPageViewModel> GetChapterSettingsViewModel(IMemberChapterAdminServiceRequest request);
+
     Task<SiteSubscriptionsViewModel> GetChapterSubscriptionViewModel(IMemberChapterAdminServiceRequest request);
 
     Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(IMemberChapterAdminServiceRequest request);
-
-    Task<ChapterTopicsAdminPageViewModel> GetChapterTopicsViewModel(IMemberChapterAdminServiceRequest request);
 
     Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(IMemberChapterAdminServiceRequest request);
 
