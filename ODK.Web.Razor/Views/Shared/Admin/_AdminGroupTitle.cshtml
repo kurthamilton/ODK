@@ -1,0 +1,8 @@
+﻿@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
+@model AdminGroupTitleViewModel
+@inject IOdkRoutes OdkRoutes
+
+<h1>
+    <a href="@OdkRoutes.Groups.Group(Model.Chapter)" class="page-header-color">@Model.Chapter.FullName</a>
+</h1>

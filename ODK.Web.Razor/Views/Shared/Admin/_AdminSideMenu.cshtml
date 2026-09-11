@@ -1,4 +1,5 @@
-﻿@using ODK.Web.Common.Routes
+﻿@using ODK.Core.Platforms
+@using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @inject IOdkRoutes OdkRoutes
@@ -27,12 +28,19 @@
             })
             .ToArray()
     };
+
+    // Group Squirrel carries the sections in the admin top nav, so beside the page this menu shows only the
+    // section the page is in. The drawer it collapses into below the breakpoint is the whole menu on both
+    // platforms - there is no top nav at that width - so the narrowing is left to CSS rather than done here.
+    var sectionOnly = RequestStore.Platform != PlatformType.DrunkenKnitwits;
 }
 
 <div data-odk-component="_AdminSideMenu">
     @await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
     {
+        Class = sectionOnly ? "side-menu--section-only" : null,
         ExpandAll = true,
+        Indented = !sectionOnly,
         MenuItemGroups = menuItemGroups,
         Root = true
     })

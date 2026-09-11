@@ -13,12 +13,16 @@
 
 .page-header {
     --bg-page-header: var(--theme-bg, #FF0000);
-    --color-page-header: var(--theme-color, #FFF);
-    color: var(--color-page-header);
     background-color: var(--bg-page-header);
 
     h1 {
         font-size: 2rem;
         margin-bottom: 0;
     }
+}
+
+.page-header,
+.page-header-color {
+    --color-page-header: var(--theme-color, #FFF);
+    color: var(--color-page-header);
 }

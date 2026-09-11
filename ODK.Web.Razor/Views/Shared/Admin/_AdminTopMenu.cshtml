@@ -1,0 +1,32 @@
+﻿@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Admin
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
+@{
+    var chapter = RequestStore.Chapter;
+    var currentMember = RequestStore.CurrentMember;
+    var chapterAdminMember = await RequestStore.GetCurrentChapterAdminMember();
+
+    var nav = AdminNavViewModel.Create(
+        OdkRoutes.GroupAdmin.PermittedNavigation(chapter, chapterAdminMember, currentMember),
+        Context.Request.Path);
+}
+
+@* Shown only from the breakpoint the side menu stops collapsing into its drawer. Below it the drawer holds
+   the whole admin menu, sections included, so a nav here would be a second way to the same places behind a
+   second hamburger. *@
+<nav class="navbar navbar-expand-md navbar--group d-none d-md-flex" data-odk-component="_AdminTopMenu">
+    <div class="container-md">
+        <ul class="navbar-nav">
+            @foreach (var menuItem in nav.Sections)
+            {
+                <li class="nav-item">
+                    <a class="nav-link @(menuItem == nav.ActiveSection ? "active" : null)" href="@menuItem.Link">
+                        @menuItem.Text
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+</nav>
