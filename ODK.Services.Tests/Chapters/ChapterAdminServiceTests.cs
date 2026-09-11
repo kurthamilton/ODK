@@ -495,6 +495,28 @@ public static class ChapterAdminServiceTests
     }
 
     [Test]
+    public static async Task CreateChapter_WhenSlugReserved_AppendsVersion()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var service = CreateChapterAdminService(
+            context, settings: CreateChapterAdminServiceSettings(reservedSlugs: ["new"]));
+
+        var request = CreateMemberServiceRequest(currentMember);
+        var model = CreateChapterCreateModel(name: "New");
+
+        // Act
+        var result = await service.CreateChapter(request, model);
+
+        // Assert
+        result.Value.Should().NotBeNull();
+        result.Value.Slug.Should().Be("new-2");
+    }
+
+    [Test]
     public static async Task DeleteChapterAdminMember_WhenNotFound_ReturnsFailure()
     {
         // Arrange
@@ -2139,12 +2161,13 @@ public static class ChapterAdminServiceTests
     }
 
     private static ChapterAdminServiceSettings CreateChapterAdminServiceSettings(
-        string? defaultCountryCode = null) =>
+        string? defaultCountryCode = null,
+        IReadOnlyCollection<string>? reservedSlugs = null) =>
         new ChapterAdminServiceSettings
         {
             ContactMessageRecaptchaScoreThreshold = 0.5,
             DefaultCountryCode = defaultCountryCode ?? "",
-            ReservedSlugs = []
+            ReservedSlugs = reservedSlugs ?? []
         };
 
     private static IMemberChapterAdminServiceRequest CreateMemberChapterAdminServiceRequest(

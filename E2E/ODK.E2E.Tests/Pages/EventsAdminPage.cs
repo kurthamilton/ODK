@@ -3,7 +3,7 @@
 namespace ODK.E2E.Tests.Pages;
 
 /// <summary>
-/// The admin events list (Default <c>/my/groups/{chapterId}/events</c>, DrunkenKnitwits
+/// The admin events list (Default <c>/my/groups/{slug}/events</c>, DrunkenKnitwits
 /// <c>/{chapterName}/admin/events</c>) and its venue filter. The filter travels in the query string as
 /// the venue's <em>slug</em> rather than its id, so the URL stays readable.
 /// </summary>

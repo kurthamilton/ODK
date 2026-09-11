@@ -11,6 +11,20 @@ namespace ODK.Web.Razor.Tests.Routes;
 public static class GroupAdminRoutesTests
 {
     [Test]
+    public static void Events_DefaultPlatform_IsKeyedByChapterSlug()
+    {
+        // Arrange
+        var routes = new GroupAdminRoutes(PlatformType.Default);
+        var chapter = CreateChapter();
+
+        // Act
+        var result = routes.Events(chapter);
+
+        // Assert
+        result.Path.Should().Be($"/my/groups/{chapter.Slug}/events");
+    }
+
+    [Test]
     public static void LandingRoute_NotAnAdmin_ReturnsNull()
     {
         // Arrange

@@ -1,7 +1,5 @@
-﻿@page "/my/groups/{chapterId:guid}/members/{memberId:guid}/payments"
+﻿@page "/my/groups/{slug}/members/{memberId:guid}/payments"
 @using ODK.Services.Members
-@using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model PaymentsModel
 @inject IMemberAdminService MemberAdminService

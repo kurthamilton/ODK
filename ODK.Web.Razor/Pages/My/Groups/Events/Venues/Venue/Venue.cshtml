@@ -1,7 +1,5 @@
-﻿@page "/my/groups/{chapterId:guid}/events/venues/{venueId:guid}"
+﻿@page "/my/groups/{slug}/events/venues/{venueId:guid}"
 @using ODK.Services.Venues
-@using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model VenueModel
 @inject IVenueAdminService VenueAdminService

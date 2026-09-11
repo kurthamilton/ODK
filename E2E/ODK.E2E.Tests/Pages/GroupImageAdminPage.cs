@@ -1,11 +1,12 @@
 ﻿using Microsoft.Playwright;
+using ODK.E2E.Data.Models;
 using ODK.E2E.Tests.Helpers;
 
 namespace ODK.E2E.Tests.Pages;
 
 /// <summary>
 /// The picture panel of the Group Squirrel group settings page
-/// (<c>/my/groups/{chapterId}/settings#picture</c>). A group is created without a picture and needs one
+/// (<c>/my/groups/{slug}/settings#picture</c>). A group is created without a picture and needs one
 /// before it can be published.
 /// </summary>
 internal class GroupImageAdminPage
@@ -17,9 +18,9 @@ internal class GroupImageAdminPage
         _page = page;
     }
 
-    public async Task SetPicture(Guid chapterId)
+    public async Task SetPicture(TestGroup group)
     {
-        await _page.Navigate($"/my/groups/{chapterId}/settings");
+        await _page.Navigate($"/my/groups/{group.Slug}/settings");
 
         /* Every selector is scoped to the picture panel: the settings page shows a site admin a second
            image cropper for the header image, and an unscoped selector would be ambiguous. */
@@ -35,6 +36,6 @@ internal class GroupImageAdminPage
             + "return !!el && el.value.length > 0; }");
 
         await _page.ClickAndWaitForDocument(
-            $"#picture form[action='/groups/{chapterId}/image'] button");
+            $"#picture form[action='/groups/{group.ChapterId}/image'] button");
     }
 }

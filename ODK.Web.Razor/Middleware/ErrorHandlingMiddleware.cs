@@ -119,21 +119,27 @@ public class ErrorHandlingMiddleware
 
         // Default routes are like
         // /groups/{chapter.Slug}/...
-        // /my/groups/{chapter.Id}/...
-        if (path.StartsWith("/groups/", StringComparison.OrdinalIgnoreCase) &&
-            pathParts.Length > 1)
+        // /my/groups/{chapter.Slug}/...
+        string? segment = null;
+        if (path.StartsWith("/groups/", StringComparison.OrdinalIgnoreCase) && pathParts.Length > 1)
         {
-            var slug = pathParts[1];
-            return await unitOfWork.ChapterRepository.GetBySlug(platform, slug).Run();
+            segment = pathParts[1];
         }
-        else if (path.StartsWith("/my/groups/", StringComparison.OrdinalIgnoreCase) &&
-            pathParts.Length > 2 &&
-            Guid.TryParse(pathParts[2], out var chapterId))
+        else if (path.StartsWith("/my/groups/", StringComparison.OrdinalIgnoreCase) && pathParts.Length > 2)
         {
-            return await unitOfWork.ChapterRepository.GetByIdOrDefault(platform, chapterId).Run();
+            segment = pathParts[2];
         }
 
-        return null;
+        if (segment == null)
+        {
+            return null;
+        }
+
+        // A group's id stands in the same segment as its slug on the image and subscription-alert
+        // endpoints, and on a group admin URL that names the id, so either shape reaches here.
+        return Guid.TryParse(segment, out var chapterId)
+            ? await unitOfWork.ChapterRepository.GetByIdOrDefault(platform, chapterId).Run()
+            : await unitOfWork.ChapterRepository.GetBySlug(platform, segment).Run();
     }
 
     private async Task Handle(

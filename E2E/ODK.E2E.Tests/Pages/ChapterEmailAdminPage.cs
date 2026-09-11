@@ -3,7 +3,7 @@
 namespace ODK.E2E.Tests.Pages;
 
 /// <summary>
-/// A group's edit page for one email template - Default <c>/my/groups/{chapterId}/emails/{type}</c>,
+/// A group's edit page for one email template - Default <c>/my/groups/{slug}/emails/{type}</c>,
 /// DrunkenKnitwits <c>/{chapterName}/admin/chapter/emails/{type}</c>. The caller passes the
 /// platform-correct URL.
 /// <para>
