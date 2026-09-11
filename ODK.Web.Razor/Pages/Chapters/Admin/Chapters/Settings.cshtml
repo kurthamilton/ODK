@@ -1,0 +1,17 @@
+﻿@page "/{chapterName}/admin/chapter/settings"
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Admin
+@model SettingsModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Settings | Admin";
+
+    var viewModel = await ChapterAdminService.GetChapterSettingsViewModel(
+        Model.MemberChapterAdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterAdminSettingsContent", viewModel)</div>
+})

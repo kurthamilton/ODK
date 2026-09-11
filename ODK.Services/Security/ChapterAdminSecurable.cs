@@ -13,6 +13,7 @@ public enum ChapterAdminSecurable
     Emails,
     Events,
     EventSettings,
+    GroupSettings,
     Location,
     MemberAdmin,
     MemberApprovals,

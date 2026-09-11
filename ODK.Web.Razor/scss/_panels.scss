@@ -12,6 +12,7 @@
         border-bottom: 1px solid var(--bs-body-color);
 
         & > * {
+            font-size: var(--odk-panel-title-size);
             margin-bottom: 0;
             padding-bottom: 0;
         }

@@ -1,0 +1,104 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.Components
+@model ChapterSettingsAdminPageViewModel
+@{
+    // The level every panel here takes. How large its title reads is --odk-panel-title-size, not this.
+    const HeadingType panelHeadingType = HeadingType.H3;
+}
+
+@* Every group setting on one page, a panel each. A panel whose view model is null is one this member may
+   not open or this platform does not offer, so the stack holds only what is there - which is why the page
+   carries no description of its own, and each panel states what it is for instead. *@
+
+<div class="section-stack">
+    @if (Model.Image != null)
+    {
+        @* The id is a link target: the dashboard's prompts to add a picture point at this panel, and
+           the E2E suite scopes its picture selectors to it. *@
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Picture",
+                Type = panelHeadingType
+            },
+            Id = "picture",
+            BodyContent = await Html.PartialAsync("Admin/Chapter/_ImageContent", Model.Image)
+        })
+    }
+
+    @if (Model.Theme != null)
+    {
+        @await Html.PartialAsync("Admin/Chapter/_ChapterAdminBrandingPanels", Model.Theme)
+    }
+
+    @if (Model.Topics != null)
+    {
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Topics",
+                Type = panelHeadingType
+            },
+            Id = "topics",
+            BodyContent = await Html.PartialAsync("Admin/Chapter/_TopicsContent", Model.Topics)
+        })
+    }
+
+    @if (Model.Location != null)
+    {
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Location",
+                Type = panelHeadingType
+            },
+            Id = "location",
+            BodyContent = await Html.PartialAsync("Admin/Chapter/_LocationContent", Model.Location)
+        })
+    }
+
+    @if (Model.Links != null)
+    {
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Social media",
+                Type = panelHeadingType
+            },
+            Id = "social-media",
+            BodyContent = await Html.PartialAsync("Admin/Chapter/_LinksContent", Model.Links)
+        })
+    }
+
+    @if (Model.Pages != null)
+    {
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Pages",
+                Type = panelHeadingType
+            },
+            Id = "pages",
+            BodyContent = await Html.PartialAsync("Admin/Chapter/_PagesContent", Model.Pages)
+        })
+    }
+
+    @if (Model.Privacy != null)
+    {
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Privacy",
+                Type = panelHeadingType
+            },
+            Id = "privacy",
+            BodyContent = await Html.PartialAsync("Admin/Chapter/_PrivacyContent", Model.Privacy)
+        })
+    }
+</div>

@@ -31,12 +31,6 @@ public class GroupAdminRoutes
     public GroupAdminRoute AdminMembers(Chapter chapter)
         => Members(chapter).Child("/admins", ChapterAdminSecurable.AdminMembers);
 
-    public GroupAdminRoute Branding(Chapter chapter) => Platform switch
-    {
-        PlatformType.DrunkenKnitwits => GroupAdminRoute.Default,
-        _ => Group(chapter).Child("/branding", ChapterAdminSecurable.Branding, PlatformType.Default)
-    };
-
     public GroupAdminRoute Conversation(Chapter chapter, Guid conversationId)
         => Conversations(chapter).Child($"/{conversationId}");
 
@@ -101,10 +95,14 @@ public class GroupAdminRoutes
 
     public GroupAdminRoute Home(Chapter chapter) => Events(chapter);
 
+    /// <summary>
+    /// The picture panel of the group settings page. An accessor of its own so a prompt to add a
+    /// picture lands on the panel rather than at the top of the page.
+    /// </summary>
     public GroupAdminRoute Image(Chapter chapter) => Platform switch
     {
         PlatformType.DrunkenKnitwits => GroupAdminRoute.Default,
-        _ => Group(chapter).Child("/image", ChapterAdminSecurable.Branding, PlatformType.Default)
+        _ => Settings(chapter).Child("#picture", ChapterAdminSecurable.Branding, PlatformType.Default)
     };
 
     public GroupAdminRoute Import() => Index().Child("/import");
@@ -157,12 +155,6 @@ public class GroupAdminRoutes
 
         return null;
     }
-
-    public GroupAdminRoute Location(Chapter chapter) => Platform switch
-    {
-        PlatformType.DrunkenKnitwits => GroupAdminRoute.Default,
-        _ => Group(chapter).Child("/location", ChapterAdminSecurable.Location, PlatformType.Default)
-    };
 
     public GroupAdminRoute Member(Chapter chapter, Guid memberId)
         => Members(chapter).Child($"/{memberId}");
@@ -272,19 +264,13 @@ public class GroupAdminRoutes
             Text = "Group",
             Items =
             [
-                new(Branding(chapter), "Branding"),
                 new(Conversations(chapter), "Conversations"),
                 new(Emails(chapter), "Emails"),
                 new(Questions(chapter), "FAQ"),
-                new(Location(chapter), "Location"),
                 new(Messages(chapter), "Messages"),
-                new(Image(chapter), "Picture"),
-                new(Pages(chapter), "Pages"),
-                new(Privacy(chapter), "Privacy"),
-                new(SocialMedia(chapter), "Social media"),
+                new(Settings(chapter), "Settings"),
                 new(Subscription(chapter), "Subscription"),
                 new(Texts(chapter), "Texts"),
-                new(Topics(chapter), "Topics"),
                 new(Delete(chapter), "Delete")
             ]
         },
@@ -348,9 +334,6 @@ public class GroupAdminRoutes
         }
     ];
 
-    public GroupAdminRoute Pages(Chapter chapter)
-        => Group(chapter).Child("/pages", ChapterAdminSecurable.Pages, PlatformType.Default);
-
     public GroupAdminRoute PaymentAccount(Chapter chapter)
         => Payments(chapter).Child("/account", ChapterAdminSecurable.PaymentAccount);
 
@@ -396,9 +379,6 @@ public class GroupAdminRoutes
         return permitted;
     }
 
-    public GroupAdminRoute Privacy(Chapter chapter)
-        => Group(chapter).Child("/privacy", ChapterAdminSecurable.PrivacySettings);
-
     public GroupAdminRoute Question(Chapter chapter, Guid questionId)
         => Questions(chapter).Child($"/{questionId}");
 
@@ -407,6 +387,13 @@ public class GroupAdminRoutes
 
     public GroupAdminRoute Questions(Chapter chapter)
         => Group(chapter).Child("/questions", ChapterAdminSecurable.Questions);
+
+    /// <summary>
+    /// Every group setting on one page, a panel each. Which panels it holds depends on the platform and
+    /// on what the member may see, so the securable is the page's own rather than any panel's.
+    /// </summary>
+    public GroupAdminRoute Settings(Chapter chapter)
+        => Group(chapter).Child("/settings", ChapterAdminSecurable.GroupSettings);
 
     public GroupAdminRoute SiteAdmin(Chapter chapter)
         => Base(chapter).Child("/siteadmin");
@@ -440,9 +427,6 @@ public class GroupAdminRoutes
     public GroupAdminRoute SiteAdminSubscriptions(Chapter chapter)
         => SiteAdmin(chapter).Child("/subscriptions");
 
-    public GroupAdminRoute SocialMedia(Chapter chapter)
-        => Group(chapter).Child("/social-media", ChapterAdminSecurable.SocialMedia);
-
     public GroupAdminRoute Subscription(Chapter chapter)
         => Group(chapter).Child("/subscription", ChapterAdminSecurable.SiteSubscription, PlatformType.DrunkenKnitwits);
 
@@ -457,12 +441,6 @@ public class GroupAdminRoutes
 
     public GroupAdminRoute Texts(Chapter chapter)
         => Group(chapter).Child("/texts", ChapterAdminSecurable.Texts);
-
-    public GroupAdminRoute Topics(Chapter chapter) => Platform switch
-    {
-        PlatformType.DrunkenKnitwits => GroupAdminRoute.Default,
-        _ => Group(chapter).Child("/topics", ChapterAdminSecurable.Topics, PlatformType.Default)
-    };
 
     public GroupAdminRoute Venue(Chapter chapter, Guid venueId) =>
         Venues(chapter).Child($"/{venueId}");

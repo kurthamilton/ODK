@@ -11,6 +11,7 @@ using ODK.Core.Pages;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
+using ODK.Core.Topics;
 using ODK.Core.Utils;
 using ODK.Core.Workflows;
 using ODK.Data.Core;
@@ -776,26 +777,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult<string>.Successful(url);
     }
 
-    public async Task<ChapterThemeAdminPageViewModel> GetChapterThemeViewModel(
-        IMemberChapterAdminServiceRequest request)
-    {
-        var chapter = request.Chapter;
-
-        var ownerSubscriptionFeatures = await GetChapterAdminRestrictedContent(
-            request,
-            x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
-                .SiteSubscription()
-                .Features()
-                .GetAll());
-
-        return new ChapterThemeAdminPageViewModel
-        {
-            Chapter = chapter,
-            CanEdit = _authorizationService.ChapterHasAccess(ownerSubscriptionFeatures, SiteFeatureType.Theme)
-        };
-    }
-
     public async Task<GroupDashboardViewModel> GetGroupDashboardViewModel(
         IMemberChapterAdminServiceRequest request)
     {
@@ -998,50 +979,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<ChapterImageAdminPageViewModel> GetChapterImageViewModel(
-        IMemberChapterAdminServiceRequest request)
-    {
-        var chapter = request.Chapter;
-
-        var version = await GetChapterAdminRestrictedContent(
-            request,
-            x => x.ChapterImageRepository.GetVersionDtoByChapterId(chapter.Id));
-
-        return new ChapterImageAdminPageViewModel
-        {
-            Chapter = chapter,
-            ImageVersion = version?.Version
-        };
-    }
-
-    public async Task<ChapterLinksAdminPageViewModel> GetChapterLinksViewModel(
-        IMemberChapterAdminServiceRequest request)
-    {
-        var chapter = request.Chapter;
-
-        var (ownerSubscriptionFeatures, links, privacySettings) = await GetChapterAdminRestrictedContent(
-            request,
-            x => x.MemberSiteSubscriptionRecordRepository
-                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
-                .SiteSubscription()
-                .Features()
-                .GetAll(),
-            x => x.ChapterLinksRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id));
-
-        return new ChapterLinksAdminPageViewModel
-        {
-            Chapter = chapter,
-            Links = links,
-            OwnerSubscriptionFeatures = ownerSubscriptionFeatures
-                .Select(x => x.Feature)
-                .ToArray(),
-            ShowInstagramFeed = privacySettings?.InstagramFeed != null
-                ? privacySettings.InstagramFeed.Value
-                : !string.IsNullOrEmpty(links?.InstagramName)
-        };
-    }
-
     public async Task<ChapterLocationAdminPageViewModel> GetChapterLocationViewModel(
         IMemberChapterAdminServiceRequest request)
     {
@@ -1125,41 +1062,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<ChapterPagesAdminPageViewModel> GetChapterPagesViewModel(IMemberChapterAdminServiceRequest request)
-    {
-        var chapter = request.Chapter;
-
-        var chapterPages = await GetChapterAdminRestrictedContent(
-            request,
-            x => x.ChapterPageRepository.GetByChapterId(chapter.Id));
-
-        var chapterPageDictionary = chapterPages
-            .ToDictionary(x => x.PageType);
-
-        var allPages = new List<ChapterPage>();
-
-        // The group's platform, not the request's: its set of pages is its own, so a Drunken Knitwits
-        // group keeps its About page when it is administered from Group Squirrel.
-        var allPageTypes = _platformPages[chapter.Platform];
-        foreach (var pageType in allPageTypes)
-        {
-            chapterPageDictionary.TryGetValue(pageType, out var chapterPage);
-
-            allPages.Add(new ChapterPage
-            {
-                Hidden = chapterPage?.Hidden ?? false,
-                PageType = pageType,
-                Title = chapterPage?.Title
-            });
-        }
-
-        return new ChapterPagesAdminPageViewModel
-        {
-            Chapter = chapter,
-            ChapterPages = allPages
-        };
-    }
-
     public async Task<ChapterPaymentAccountAdminPageViewModel> GetChapterPaymentAccountViewModel(
         IMemberChapterAdminServiceRequest request)
     {
@@ -1232,22 +1134,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 : null,
             Platform = platform,
             RemainingSteps = remainingSteps
-        };
-    }
-
-    public async Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(
-        IMemberChapterAdminServiceRequest request)
-    {
-        var chapter = request.Chapter;
-
-        var privacySettings = await GetChapterAdminRestrictedContent(
-            request,
-            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id));
-
-        return new ChapterPrivacyAdminPageViewModel
-        {
-            Chapter = chapter,
-            PrivacySettings = privacySettings
         };
     }
 
@@ -1342,6 +1228,147 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             ownerRequest, externalSessionId);
     }
 
+    public async Task<ChapterSettingsAdminPageViewModel> GetChapterSettingsViewModel(
+        IMemberChapterAdminServiceRequest request)
+    {
+        var (platform, chapter, currentMember) = (request.Platform, request.Chapter, request.CurrentMember);
+
+        var adminMember = await _unitOfWork.ChapterAdminMemberRepository
+            .GetByMemberId(platform, currentMember.Id, chapter.Id)
+            .Run();
+        AssertMemberIsChapterAdmin(request, adminMember);
+
+        /* Each block of settings is gated on its own securable, so the page holds nothing this admin
+           could not act on. Five are gated on the platform as well: branding, the picture, topics,
+           location and pages are a group's own to set on Group Squirrel only - on Drunken Knitwits they
+           are not the group's. A skipped block uses DefaultDeferredQuery so it costs no query at all,
+           and the rest still batch into a single round-trip. */
+        var groupOwned = platform != PlatformType.DrunkenKnitwits;
+        var canSeeBranding = groupOwned
+            && adminMember.HasAccessTo(ChapterAdminSecurable.Branding, currentMember);
+        var canSeeLocation = groupOwned
+            && adminMember.HasAccessTo(ChapterAdminSecurable.Location, currentMember);
+        var canSeePages = groupOwned
+            && adminMember.HasAccessTo(ChapterAdminSecurable.Pages, currentMember);
+        var canSeeTopics = groupOwned
+            && adminMember.HasAccessTo(ChapterAdminSecurable.Topics, currentMember);
+        var canSeePrivacy = adminMember.HasAccessTo(ChapterAdminSecurable.PrivacySettings, currentMember);
+        var canSeeSocialMedia = adminMember.HasAccessTo(ChapterAdminSecurable.SocialMedia, currentMember);
+
+        var (
+            ownerSubscriptionFeatures,
+            imageVersion,
+            country,
+            location,
+            links,
+            privacySettings,
+            chapterPages,
+            chapterTopics,
+            topicGroups,
+            topics
+        ) = await _unitOfWork.Run(
+            x => canSeeBranding || canSeeSocialMedia
+                ? x.MemberSiteSubscriptionRecordRepository
+                    .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
+                    .SiteSubscription()
+                    .Features()
+                    .GetAll()
+                : new DefaultDeferredQueryMultiple<SiteSubscriptionFeature>(),
+            x => canSeeBranding
+                ? x.ChapterImageRepository.GetVersionDtoByChapterId(chapter.Id)
+                : DefaultDeferredQuerySingleOrDefault.For<ChapterImageVersionDto>(),
+            x => canSeeLocation
+                ? (IDeferredQuery<Country?>)x.CountryRepository.GetByChapterId(chapter.Id)
+                : new DefaultDeferredQuery<Country?>(null),
+            x => canSeeLocation
+                ? x.ChapterLocationRepository.GetByChapterId(chapter.Id)
+                : DefaultDeferredQuerySingleOrDefault.For<ChapterLocation>(),
+            x => canSeeSocialMedia
+                ? x.ChapterLinksRepository.GetByChapterId(chapter.Id)
+                : DefaultDeferredQuerySingleOrDefault.For<ChapterLinks>(),
+            // The social media settings read the privacy settings too, for whether the Instagram feed shows.
+            x => canSeePrivacy || canSeeSocialMedia
+                ? x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id)
+                : DefaultDeferredQuerySingleOrDefault.For<ChapterPrivacySettings>(),
+            x => canSeePages
+                ? x.ChapterPageRepository.GetByChapterId(chapter.Id)
+                : new DefaultDeferredQueryMultiple<ChapterPage>(),
+            x => canSeeTopics
+                ? x.ChapterTopicRepository.GetByChapterId(chapter.Id)
+                : new DefaultDeferredQueryMultiple<ChapterTopic>(),
+            x => canSeeTopics
+                ? x.TopicGroupRepository.GetAll()
+                : new DefaultDeferredQueryMultiple<TopicGroup>(),
+            x => canSeeTopics
+                ? x.TopicRepository.GetAll()
+                : new DefaultDeferredQueryMultiple<Topic>());
+
+        return new ChapterSettingsAdminPageViewModel
+        {
+            Chapter = chapter,
+            Image = canSeeBranding
+                ? new ChapterImageAdminPageViewModel
+                {
+                    Chapter = chapter,
+                    ImageVersion = imageVersion?.Version
+                }
+                : null,
+            Links = canSeeSocialMedia
+                ? new ChapterLinksAdminPageViewModel
+                {
+                    Chapter = chapter,
+                    Links = links,
+                    OwnerSubscriptionFeatures = ownerSubscriptionFeatures
+                        .Select(x => x.Feature)
+                        .ToArray(),
+                    ShowInstagramFeed = privacySettings?.InstagramFeed != null
+                        ? privacySettings.InstagramFeed.Value
+                        : !string.IsNullOrEmpty(links?.InstagramName)
+                }
+                : null,
+            Location = canSeeLocation
+                ? new ChapterLocationAdminPageViewModel
+                {
+                    Chapter = chapter,
+                    Country = country,
+                    Platform = platform,
+                    Location = location
+                }
+                : null,
+            Pages = canSeePages
+                ? new ChapterPagesAdminPageViewModel
+                {
+                    Chapter = chapter,
+                    ChapterPages = AllChapterPages(chapter, chapterPages)
+                }
+                : null,
+            Privacy = canSeePrivacy
+                ? new ChapterPrivacyAdminPageViewModel
+                {
+                    Chapter = chapter,
+                    PrivacySettings = privacySettings
+                }
+                : null,
+            Theme = canSeeBranding
+                ? new ChapterThemeAdminPageViewModel
+                {
+                    Chapter = chapter,
+                    CanEdit = _authorizationService.ChapterHasAccess(
+                        ownerSubscriptionFeatures, SiteFeatureType.Theme)
+                }
+                : null,
+            Topics = canSeeTopics
+                ? new ChapterTopicsAdminPageViewModel
+                {
+                    Chapter = chapter,
+                    ChapterTopics = chapterTopics,
+                    TopicGroups = topicGroups,
+                    Topics = topics
+                }
+                : null
+        };
+    }
+
     public async Task<SiteSubscriptionsViewModel> GetChapterSubscriptionViewModel(
         IMemberChapterAdminServiceRequest request)
     {
@@ -1370,26 +1397,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             Chapter = chapter,
             Texts = texts
-        };
-    }
-
-    public async Task<ChapterTopicsAdminPageViewModel> GetChapterTopicsViewModel(
-        IMemberChapterAdminServiceRequest request)
-    {
-        var chapter = request.Chapter;
-
-        var (chapterTopics, topicGroups, topics) = await GetChapterAdminRestrictedContent(
-            request,
-            x => x.ChapterTopicRepository.GetByChapterId(chapter.Id),
-            x => x.TopicGroupRepository.GetAll(),
-            x => x.TopicRepository.GetAll());
-
-        return new ChapterTopicsAdminPageViewModel
-        {
-            Chapter = chapter,
-            ChapterTopics = chapterTopics,
-            TopicGroups = topicGroups,
-            Topics = topics
         };
     }
 
@@ -2474,6 +2481,35 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         // The same validator and options the save applies, so the answer the editor gets while typing is the
         // answer the save will give.
         return _htmlValidator.Validate(html, DefaultHtmlValidatorOptions);
+    }
+
+    /// <summary>
+    /// Every page the group has, whether or not a row exists for it, so the form lists them all.
+    /// </summary>
+    private static IReadOnlyCollection<ChapterPage> AllChapterPages(
+        Chapter chapter, IReadOnlyCollection<ChapterPage> chapterPages)
+    {
+        var chapterPageDictionary = chapterPages
+            .ToDictionary(x => x.PageType);
+
+        var allPages = new List<ChapterPage>();
+
+        // The group's platform, not the request's: its set of pages is its own, so a Drunken Knitwits
+        // group keeps its About page when it is administered from Group Squirrel.
+        var allPageTypes = _platformPages[chapter.Platform];
+        foreach (var pageType in allPageTypes)
+        {
+            chapterPageDictionary.TryGetValue(pageType, out var chapterPage);
+
+            allPages.Add(new ChapterPage
+            {
+                Hidden = chapterPage?.Hidden ?? false,
+                PageType = pageType,
+                Title = chapterPage?.Title
+            });
+        }
+
+        return allPages;
     }
 
     private ServiceResult UpdateChapterImage(ChapterImage image, byte[] imageData)

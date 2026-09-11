@@ -15,5 +15,7 @@ public class PanelViewModel
     /// </summary>
     public required HeadingViewModel Heading { get; init; }
 
+    public string? Id { get; init; }
+
     public Func<object?, IHtmlContent>? TitleEndContentFunc { get; init; }
 }

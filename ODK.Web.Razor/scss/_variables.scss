@@ -38,6 +38,11 @@ $odk-bg-dark-level-2-rgb: to-rgb($odk-bg-dark-level-2);
     // The space between adjacent sections. A custom property rather than a Sass variable so a page or a
     // narrower container can override it in place, and so it is inspectable in dev tools.
     --odk-section-gap: 3rem;
+
+    // How large a panel's own title reads, for every panel on the site. A heading's level is what the
+    // document outline is built from, so the level is set by convention and the size is settled here -
+    // never by picking a lower level to make a title smaller.
+    --odk-panel-title-size: #{$h5-font-size};
 }
 
 [data-bs-theme="dark"] {

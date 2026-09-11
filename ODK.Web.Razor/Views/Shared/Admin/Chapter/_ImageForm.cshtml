@@ -2,12 +2,18 @@
 @using System.Globalization
 @model ChapterImageFormViewModel
 @{
+    /* Two copies of this form can share a page - the group picture and the header image both appear on
+       the group settings page - so the ids the helpers derive from the property names are stated here
+       instead, qualified by the form's own id. The names are left alone, so the post still binds. */
+    var imageId = $"{Model.Id}-image";
+
     var htmlAttributes = new Dictionary<string, object>
     {
         { "type", "file" },
         { "accept", "image/*" },
         { "class", "form-control" },
-        { "data-img-input", "" }
+        { "data-img-input", "" },
+        { "id", imageId }
     };
 
     // Razor drops an attribute whose only value is a null expression, and the cropper reads a missing
@@ -17,9 +23,9 @@
 
 <div class="form-group mb-3">
     <div data-img-container>
-        @Html.HiddenFor(x => x.ImageDataUrl, new { data_img_dataurl = "" })
+        @Html.HiddenFor(x => x.ImageDataUrl, new { id = $"{Model.Id}-image-dataurl", data_img_dataurl = "" })
 
-        @Html.LabelFor(x => x.Image, new { @class = "form-label" })
+        @Html.LabelFor(x => x.Image, new { @class = "form-label", @for = imageId })
         @Html.TextBoxFor(x => x.Image, htmlAttributes)
         @Html.ValidationMessageFor(x => x.Image)
 

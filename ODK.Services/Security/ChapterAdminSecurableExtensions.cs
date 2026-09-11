@@ -16,6 +16,7 @@ public static class ChapterAdminSecurableExtensions
         ChapterAdminSecurable.Emails => ChapterAdminRole.Admin,
         ChapterAdminSecurable.Events => ChapterAdminRole.Organiser,
         ChapterAdminSecurable.EventSettings => ChapterAdminRole.Admin,
+        ChapterAdminSecurable.GroupSettings => ChapterAdminRole.Admin,
         ChapterAdminSecurable.Location => ChapterAdminRole.Admin,
         ChapterAdminSecurable.MemberAdmin => ChapterAdminRole.Admin,
         ChapterAdminSecurable.MemberApprovals => ChapterAdminRole.Admin,

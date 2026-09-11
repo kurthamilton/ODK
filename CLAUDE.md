@@ -290,7 +290,7 @@ Three components divide a page, and they are not interchangeable:
   its outline rather than nine. Size follows level - `h1.band__title` is larger in `_bands.scss` - so a
   band that reads too big is still not a reason to lower its level.
 
-`SectionViewModel` and `PanelViewModel` are deliberately the same surface (`Heading`, `BodyContent` /
+`SectionViewModel` and `PanelViewModel` are deliberately the same surface (`Heading`, `Id`, `BodyContent` /
 `BodyContentFunc`, `TitleEndContentFunc`, `Class`), so promoting a section to a panel is a one-word change at
 the call site rather than a rewrite.
 
@@ -318,7 +318,8 @@ Two things follow. A **panel** sitting where a section would sit takes the same 
 is `H5` any more - a level was being picked for how large it rendered, and `H5` is what "small bold" looked
 like. And a heading that reads too large is a `font-size` in `_sections.scss` / `_panels.scss`, never a lower
 `HeadingType`: the level is what the document outline is built from, and picking it by appearance is the
-habit this convention exists to break.
+habit this convention exists to break. A panel's title size is `--odk-panel-title-size`
+(`_variables.scss`), so how large every panel title on the site reads is one value to change.
 
 `Privacy/_PrivacyBody` is the one place sections are `H2` - its numbered clauses are the document's own
 top-level divisions, under an `h1` that genuinely names the page and nothing in between. Making the whole
