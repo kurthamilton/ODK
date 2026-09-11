@@ -248,7 +248,7 @@ public static class MemberServiceTests
         context.Set<MemberPreferences>().Single(x => x.MemberId == member.Id).Locale.Should().Be("fr-FR");
     }
 
-    [TestCase(PlatformType.Default)]
+    [TestCase(PlatformType.GroupSquirrel)]
     [TestCase(PlatformType.DrunkenKnitwits)]
     public static async Task CreateAccount_NewMember_SavesTheRequestPlatform(PlatformType platform)
     {
@@ -595,7 +595,7 @@ public static class MemberServiceTests
         context.Set<Member>().Any(x => x.EmailAddress == "new@example.com").Should().BeFalse();
     }
 
-    [TestCase(PlatformType.Default)]
+    [TestCase(PlatformType.GroupSquirrel)]
     [TestCase(PlatformType.DrunkenKnitwits)]
     public static async Task CreateChapterAccount_NewMember_SavesTheRequestPlatform(PlatformType platform)
     {
@@ -803,7 +803,7 @@ public static class MemberServiceTests
 
         // Act
         var result = await service.AcceptInvite(
-            CreateChapterRequest(chapter, PlatformType.Default),
+            CreateChapterRequest(chapter, PlatformType.GroupSquirrel),
             CreateInviteAcceptModel("invite-token", firstName: "Confirmed"));
 
         // Assert
@@ -861,7 +861,7 @@ public static class MemberServiceTests
 
         // Act
         var result = await service.AcceptInvite(
-            CreateChapterRequest(chapter, PlatformType.Default),
+            CreateChapterRequest(chapter, PlatformType.GroupSquirrel),
             CreateInviteAcceptModel("invite-token"));
 
         // Assert
@@ -893,7 +893,7 @@ public static class MemberServiceTests
 
         // Act
         var result = await service.AcceptInvite(
-            CreateChapterRequest(chapter, PlatformType.Default),
+            CreateChapterRequest(chapter, PlatformType.GroupSquirrel),
             CreateInviteAcceptModel("invite-token"));
 
         // Assert
@@ -923,7 +923,7 @@ public static class MemberServiceTests
 
         // Act
         var result = await service.AcceptInvite(
-            CreateChapterRequest(chapter, PlatformType.Default),
+            CreateChapterRequest(chapter, PlatformType.GroupSquirrel),
             CreateInviteAcceptModel("invite-token"));
 
         // Assert
@@ -964,7 +964,7 @@ public static class MemberServiceTests
 
         // Act
         var result = await service.AcceptInvite(
-            CreateChapterRequest(chapter, PlatformType.Default),
+            CreateChapterRequest(chapter, PlatformType.GroupSquirrel),
             CreateInviteAcceptModel("invite-token"));
 
         // Assert
@@ -1036,7 +1036,7 @@ public static class MemberServiceTests
         });
     }
 
-    private static IServiceRequest CreateSiteRequest(PlatformType platform = PlatformType.Default) =>
+    private static IServiceRequest CreateSiteRequest(PlatformType platform = PlatformType.GroupSquirrel) =>
         Mock.Of<IServiceRequest>(x =>
             x.Platform == platform &&
             x.Environment == EnvironmentType.Dev &&
@@ -1201,7 +1201,7 @@ public static class MemberServiceTests
     private static IServiceRequest CreateServiceRequest(
         IHttpRequestContext? httpRequestContext = null) =>
         Mock.Of<IServiceRequest>(x =>
-            x.Platform == PlatformType.Default &&
+            x.Platform == PlatformType.GroupSquirrel &&
             x.HttpRequestContext == (httpRequestContext ?? Mock.Of<IHttpRequestContext>()) &&
             x.Environment == EnvironmentType.Dev);
 
@@ -1247,7 +1247,7 @@ public static class MemberServiceTests
 
     private static void SeedDefaultSiteSubscription(
         MockOdkContext context,
-        PlatformType platform = PlatformType.Default,
+        PlatformType platform = PlatformType.GroupSquirrel,
         EnvironmentType environment = EnvironmentType.Dev)
     {
         context.Create(new SiteSubscription

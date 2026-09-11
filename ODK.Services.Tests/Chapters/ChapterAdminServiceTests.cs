@@ -1002,7 +1002,7 @@ public static class ChapterAdminServiceTests
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
             currentMember: currentMember,
-            platform: PlatformType.Default,
+            platform: PlatformType.GroupSquirrel,
             securable: ChapterAdminSecurable.GroupSettings);
 
         // Act
@@ -2191,7 +2191,7 @@ public static class ChapterAdminServiceTests
             .Returns(CreateHttpRequestContext());
 
         mock.Setup(x => x.Platform)
-            .Returns(platform ?? PlatformType.Default);
+            .Returns(platform ?? PlatformType.GroupSquirrel);
 
         mock.Setup(x => x.Securable)
             .Returns(securable ?? ChapterAdminSecurable.Any);
@@ -2215,7 +2215,7 @@ public static class ChapterAdminServiceTests
             .Returns(CreateHttpRequestContext());
 
         mock.Setup(x => x.Platform)
-            .Returns(platform ?? PlatformType.Default);
+            .Returns(platform ?? PlatformType.GroupSquirrel);
 
         return mock.Object;
     }

@@ -225,7 +225,7 @@ public static class VenueAdminServiceTests
         var request = new Mock<IMemberChapterAdminServiceRequest>();
         request.Setup(x => x.Chapter).Returns(chapter);
         request.Setup(x => x.CurrentMember).Returns(currentMember);
-        request.Setup(x => x.Platform).Returns(PlatformType.Default);
+        request.Setup(x => x.Platform).Returns(PlatformType.GroupSquirrel);
         request.Setup(x => x.Securable).Returns(ChapterAdminSecurable.Venues);
 
         return (new VenueAdminService(unitOfWork), request.Object);

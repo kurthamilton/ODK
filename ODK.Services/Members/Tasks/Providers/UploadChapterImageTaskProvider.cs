@@ -13,7 +13,7 @@ public class UploadChapterImageTaskProvider : IMemberTaskProvider
 {
     public IReadOnlyCollection<MemberTask> GetTasks(MemberTaskContext context)
     {
-        if (context.Platform != PlatformType.Default)
+        if (context.Platform != PlatformType.GroupSquirrel)
         {
             return [];
         }

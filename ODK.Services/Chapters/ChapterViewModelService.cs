@@ -251,7 +251,7 @@ public class ChapterViewModelService : IChapterViewModelService
         IMemberServiceRequest request)
     {
         var (platform, currentMember) = (request.Platform, request.CurrentMember);
-        if (platform != PlatformType.Default)
+        if (platform != PlatformType.GroupSquirrel)
         {
             await _loggingService.Error($"Platform '{platform}' does not support chapter creation");
             throw new OdkNotFoundException();

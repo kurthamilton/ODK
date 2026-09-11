@@ -29,11 +29,11 @@ public static class SiteQuestionAdminServiceTests
 
         // Act
         var result = await service.CreateQuestion(
-            CreateRequest(member, PlatformType.Default), CreateModel("Question", "Answer"));
+            CreateRequest(member, PlatformType.GroupSquirrel), CreateModel("Question", "Answer"));
 
         // Assert
         result.Success.Should().BeTrue();
-        var questions = await service.GetQuestionsViewModel(CreateRequest(member, PlatformType.Default));
+        var questions = await service.GetQuestionsViewModel(CreateRequest(member, PlatformType.GroupSquirrel));
         questions.Questions.Single().DisplayOrder.Should().Be(1);
     }
 
@@ -44,16 +44,16 @@ public static class SiteQuestionAdminServiceTests
         using var context = new MockOdkContext();
         var member = context.CreateMember(siteAdmin: true);
         context.AddRange(
-            CreateQuestion(PlatformType.Default, "First", displayOrder: 1),
-            CreateQuestion(PlatformType.Default, "Second", displayOrder: 2));
+            CreateQuestion(PlatformType.GroupSquirrel, "First", displayOrder: 1),
+            CreateQuestion(PlatformType.GroupSquirrel, "Second", displayOrder: 2));
         var service = CreateService(context);
 
         // Act
         await service.CreateQuestion(
-            CreateRequest(member, PlatformType.Default), CreateModel("Third", "Answer"));
+            CreateRequest(member, PlatformType.GroupSquirrel), CreateModel("Third", "Answer"));
 
         // Assert
-        var questions = await service.GetQuestionsViewModel(CreateRequest(member, PlatformType.Default));
+        var questions = await service.GetQuestionsViewModel(CreateRequest(member, PlatformType.GroupSquirrel));
         questions.Questions.Single(x => x.Name == "Third").DisplayOrder.Should().Be(3);
     }
 
@@ -65,9 +65,9 @@ public static class SiteQuestionAdminServiceTests
         using var context = new MockOdkContext();
         var member = context.CreateMember(siteAdmin: true);
         context.AddRange(
-            CreateQuestion(PlatformType.Default, "First", displayOrder: 1),
-            CreateQuestion(PlatformType.Default, "Second", displayOrder: 2),
-            CreateQuestion(PlatformType.Default, "Third", displayOrder: 3));
+            CreateQuestion(PlatformType.GroupSquirrel, "First", displayOrder: 1),
+            CreateQuestion(PlatformType.GroupSquirrel, "Second", displayOrder: 2),
+            CreateQuestion(PlatformType.GroupSquirrel, "Third", displayOrder: 3));
         var service = CreateService(context);
 
         // Act
@@ -86,18 +86,18 @@ public static class SiteQuestionAdminServiceTests
         // Arrange - leaving a hole would let the next created question reuse a number still in use.
         using var context = new MockOdkContext();
         var member = context.CreateMember(siteAdmin: true);
-        var second = CreateQuestion(PlatformType.Default, "Second", displayOrder: 2);
+        var second = CreateQuestion(PlatformType.GroupSquirrel, "Second", displayOrder: 2);
         context.AddRange(
-            CreateQuestion(PlatformType.Default, "First", displayOrder: 1),
+            CreateQuestion(PlatformType.GroupSquirrel, "First", displayOrder: 1),
             second,
-            CreateQuestion(PlatformType.Default, "Third", displayOrder: 3));
+            CreateQuestion(PlatformType.GroupSquirrel, "Third", displayOrder: 3));
         var service = CreateService(context);
 
         // Act
-        await service.DeleteQuestion(CreateRequest(member, PlatformType.Default), second.Id);
+        await service.DeleteQuestion(CreateRequest(member, PlatformType.GroupSquirrel), second.Id);
 
         // Assert
-        var questions = await service.GetQuestionsViewModel(CreateRequest(member, PlatformType.Default));
+        var questions = await service.GetQuestionsViewModel(CreateRequest(member, PlatformType.GroupSquirrel));
         questions.Questions
             .OrderBy(x => x.DisplayOrder)
             .Select(x => (x.Name, x.DisplayOrder))
@@ -118,7 +118,7 @@ public static class SiteQuestionAdminServiceTests
 
         // Act
         var act = async () => await service.GetQuestionViewModel(
-            CreateRequest(member, PlatformType.Default), question.Id);
+            CreateRequest(member, PlatformType.GroupSquirrel), question.Id);
 
         // Assert
         await act.Should().ThrowAsync<OdkNotFoundException>();
@@ -136,7 +136,7 @@ public static class SiteQuestionAdminServiceTests
 
         // Act
         var act = async () => await service.UpdateQuestion(
-            CreateRequest(member, PlatformType.Default), question.Id, CreateModel("Mine", "Answer"));
+            CreateRequest(member, PlatformType.GroupSquirrel), question.Id, CreateModel("Mine", "Answer"));
 
         // Assert
         await act.Should().ThrowAsync<OdkNotFoundException>();
@@ -148,16 +148,16 @@ public static class SiteQuestionAdminServiceTests
         // Arrange
         using var context = new MockOdkContext();
         var member = context.CreateMember(siteAdmin: true);
-        var second = CreateQuestion(PlatformType.Default, "Second", displayOrder: 2);
-        context.AddRange(CreateQuestion(PlatformType.Default, "First", displayOrder: 1), second);
+        var second = CreateQuestion(PlatformType.GroupSquirrel, "Second", displayOrder: 2);
+        context.AddRange(CreateQuestion(PlatformType.GroupSquirrel, "First", displayOrder: 1), second);
         var service = CreateService(context);
 
         // Act
         await service.UpdateQuestionDisplayOrder(
-            CreateRequest(member, PlatformType.Default), second.Id, moveBy: -1);
+            CreateRequest(member, PlatformType.GroupSquirrel), second.Id, moveBy: -1);
 
         // Assert
-        var questions = await service.GetQuestionsViewModel(CreateRequest(member, PlatformType.Default));
+        var questions = await service.GetQuestionsViewModel(CreateRequest(member, PlatformType.GroupSquirrel));
         questions.Questions
             .OrderBy(x => x.DisplayOrder)
             .Select(x => x.Name)
@@ -171,16 +171,16 @@ public static class SiteQuestionAdminServiceTests
         // Arrange - there is nothing to swap with, so moving up must be a no-op rather than an error.
         using var context = new MockOdkContext();
         var member = context.CreateMember(siteAdmin: true);
-        var first = CreateQuestion(PlatformType.Default, "First", displayOrder: 1);
-        context.AddRange(first, CreateQuestion(PlatformType.Default, "Second", displayOrder: 2));
+        var first = CreateQuestion(PlatformType.GroupSquirrel, "First", displayOrder: 1);
+        context.AddRange(first, CreateQuestion(PlatformType.GroupSquirrel, "Second", displayOrder: 2));
         var service = CreateService(context);
 
         // Act
         await service.UpdateQuestionDisplayOrder(
-            CreateRequest(member, PlatformType.Default), first.Id, moveBy: -1);
+            CreateRequest(member, PlatformType.GroupSquirrel), first.Id, moveBy: -1);
 
         // Assert
-        var questions = await service.GetQuestionsViewModel(CreateRequest(member, PlatformType.Default));
+        var questions = await service.GetQuestionsViewModel(CreateRequest(member, PlatformType.GroupSquirrel));
         questions.Questions
             .OrderBy(x => x.DisplayOrder)
             .Select(x => x.Name)
@@ -195,12 +195,12 @@ public static class SiteQuestionAdminServiceTests
         using var context = new MockOdkContext();
         var member = context.CreateMember(siteAdmin: true);
         context.AddRange(
-            CreateQuestion(PlatformType.Default, "Ours", displayOrder: 1),
+            CreateQuestion(PlatformType.GroupSquirrel, "Ours", displayOrder: 1),
             CreateQuestion(PlatformType.DrunkenKnitwits, "Theirs", displayOrder: 1));
         var service = CreateService(context);
 
         // Act
-        var viewModel = await service.GetQuestionsViewModel(CreateRequest(member, PlatformType.Default));
+        var viewModel = await service.GetQuestionsViewModel(CreateRequest(member, PlatformType.GroupSquirrel));
 
         // Assert
         viewModel.Questions.Select(x => x.Name).Should().Equal("Ours");
@@ -218,7 +218,7 @@ public static class SiteQuestionAdminServiceTests
 
         // Act
         var result = await service.CreateQuestion(
-            CreateRequest(member, PlatformType.Default), CreateModel(name, answer));
+            CreateRequest(member, PlatformType.GroupSquirrel), CreateModel(name, answer));
 
         // Assert
         result.Success.Should().BeFalse();
@@ -234,7 +234,7 @@ public static class SiteQuestionAdminServiceTests
 
         // Act
         var act = async () => await service.CreateQuestion(
-            CreateRequest(member, PlatformType.Default), CreateModel("Question", "Answer"));
+            CreateRequest(member, PlatformType.GroupSquirrel), CreateModel("Question", "Answer"));
 
         // Assert
         await act.Should().ThrowAsync<OdkNotAuthorizedException>();

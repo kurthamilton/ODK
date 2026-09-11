@@ -10,7 +10,7 @@
     /* Drunken Knitwits has no site About page to send anybody to - the site questions that page is built
        from are per-platform, and its are Group Squirrel's. So the link is offered only there, however the
        question data happens to look. */
-    var linkToAbout = Model.HasQuestions && RequestStore.Platform == PlatformType.Default;
+    var linkToAbout = Model.HasQuestions && RequestStore.Platform == PlatformType.GroupSquirrel;
 }
 
 @if (linkToAbout)

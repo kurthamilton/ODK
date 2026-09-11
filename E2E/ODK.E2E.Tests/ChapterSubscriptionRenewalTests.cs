@@ -91,7 +91,7 @@ public class ChapterSubscriptionRenewalTests : DefaultPageTest
             ["MemberId"] = memberId.ToString(),
             ["ChapterId"] = group.ChapterId.ToString(),
             ["ChapterSubscriptionId"] = subscriptionId.ToString(),
-            ["Platform"] = "Default"
+            ["Platform"] = "GroupSquirrel"
         };
 
         await using var clock = await StripeTestClock.CreateSubscription(

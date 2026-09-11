@@ -84,7 +84,7 @@ public static class PublishChapterTaskProviderTests
             Member = CreateMember(),
             MemberProperties = [],
             OwnedChapters = [],
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         };
 
         // Act
@@ -134,7 +134,7 @@ public static class PublishChapterTaskProviderTests
         Member = CreateMember(),
         MemberProperties = [],
         OwnedChapters = ownedChapters,
-        Platform = PlatformType.Default
+        Platform = PlatformType.GroupSquirrel
     };
 
     private static Member CreateMember() => new() { Id = Guid.NewGuid(), TimeZone = TimeZoneInfo.Utc };

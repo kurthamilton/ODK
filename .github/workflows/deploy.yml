@@ -148,7 +148,7 @@ jobs:
           # Each is injected only when set, so it stays optional; a key here must NOT also live in Doppler.
           # A new per-site key is a line here plus a matching entry in the step's env block above.
           #
-          # Only the platform belongs here, and its value is the platform as the app spells it - Default or
+          # Only the platform belongs here, and its value is the platform as the app spells it - GroupSquirrel or
           # DrunkenKnitwits, never the GS / DK label a per-platform section is keyed by, which does not bind
           # here. Anything else that differs between the sites differs *because* of the platform, so it is a
           # per-platform section keyed by that label and carried identically by every site (Logging:Platforms,

@@ -46,6 +46,6 @@ public static class UploadImageTaskProviderTests
         Member = new Member { Id = Guid.NewGuid(), TimeZone = TimeZoneInfo.Utc },
         MemberProperties = [],
         OwnedChapters = [],
-        Platform = PlatformType.Default
+        Platform = PlatformType.GroupSquirrel
     };
 }

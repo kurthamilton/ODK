@@ -101,7 +101,7 @@ public static class PaymentServiceTests
             type: webhookType,
             paymentId: paymentCheckoutSession.PaymentId.ToString(),
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.None,
                 member,
                 chapterSubscription,
@@ -141,7 +141,7 @@ public static class PaymentServiceTests
             type: webhookType,
             paymentId: payment.Id.ToString(),
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.EventTicket,
                 member,
                 eventTicketPayment,
@@ -193,7 +193,7 @@ public static class PaymentServiceTests
             type: webhookType,
             paymentId: payment.Id.ToString(),
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.ChapterSubscription,
                 member,
                 chapterSubscription,
@@ -234,7 +234,7 @@ public static class PaymentServiceTests
         var webhook = CreatePaymentProviderWebhook(
             type: PaymentProviderWebhookType.CheckoutSessionExpired,
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.SiteSubscription,
                 member,
                 siteSubscriptionPrice,
@@ -275,7 +275,7 @@ public static class PaymentServiceTests
             id: "wh_expired_again",
             type: PaymentProviderWebhookType.CheckoutSessionExpired,
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.SiteSubscription,
                 member,
                 siteSubscriptionPrice,
@@ -311,7 +311,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.CheckoutSessionCompleted,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.ChapterSubscription,
                 member,
                 chapterSubscription,
@@ -348,7 +348,7 @@ public static class PaymentServiceTests
             id: "wh_expired_broadcast",
             type: PaymentProviderWebhookType.CheckoutSessionExpired,
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.SiteSubscription,
                 member,
                 siteSubscriptionPrice,
@@ -387,7 +387,7 @@ public static class PaymentServiceTests
             type: webhookType,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.ChapterSubscription,
                 member,
                 chapterSubscription,
@@ -431,7 +431,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.ChapterSubscription,
                 member,
                 chapterSubscription,
@@ -468,7 +468,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.CheckoutSessionCompleted,
             paymentId: "",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.ChapterSubscription,
                 member,
                 chapterSubscription,
@@ -502,7 +502,7 @@ public static class PaymentServiceTests
         var paymentCheckoutSession = context.CreatePaymentCheckoutSession(payment: payment);
 
         var metadata = new PaymentMetadataModel(
-            PlatformType.Default,
+            PlatformType.GroupSquirrel,
             PaymentReasonType.ChapterSubscription,
             member,
             chapterSubscription,
@@ -590,7 +590,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.ChapterSubscription,
                 member,
                 chapterSubscription,
@@ -690,7 +690,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.ChapterSubscription,
                 member,
                 chapterSubscription,
@@ -740,7 +740,7 @@ public static class PaymentServiceTests
         });
 
         var metadata = new PaymentMetadataModel(
-            PlatformType.Default,
+            PlatformType.GroupSquirrel,
             PaymentReasonType.ChapterSubscription,
             member,
             chapterSubscription,
@@ -797,7 +797,7 @@ public static class PaymentServiceTests
         var checkoutSession = context.CreatePaymentCheckoutSession(payment: checkoutPayment);
 
         var metadata = new PaymentMetadataModel(
-            PlatformType.Default,
+            PlatformType.GroupSquirrel,
             PaymentReasonType.ChapterSubscription,
             member,
             chapterSubscription,
@@ -863,7 +863,7 @@ public static class PaymentServiceTests
         var checkoutSession = context.CreatePaymentCheckoutSession(payment: checkoutPayment);
 
         var metadata = new PaymentMetadataModel(
-            PlatformType.Default,
+            PlatformType.GroupSquirrel,
             PaymentReasonType.ChapterSubscription,
             member,
             chapterSubscription,
@@ -1017,7 +1017,7 @@ public static class PaymentServiceTests
         chapterSubscription.Recurring = recurring;
 
         var metadata = new PaymentMetadataModel(
-            PlatformType.Default,
+            PlatformType.GroupSquirrel,
             PaymentReasonType.ChapterSubscription,
             member,
             chapterSubscription,
@@ -1067,7 +1067,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.ChapterSubscription,
                 member,
                 chapterSubscription,
@@ -1130,7 +1130,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.ChapterSubscription,
                 member,
                 chapterSubscription,
@@ -1174,7 +1174,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.ChapterSubscription,
                 member,
                 chapterSubscription,
@@ -1224,7 +1224,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.SiteSubscription,
                 member,
                 siteSubscriptionPrice,
@@ -1283,7 +1283,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.SubscriptionCancelled,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.SiteSubscription,
                 member,
                 siteSubscriptionPrice,
@@ -1337,7 +1337,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.SiteSubscription,
                 member,
                 siteSubscriptionPrice,
@@ -1394,7 +1394,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.SiteSubscription,
                 member,
                 siteSubscriptionPrice,
@@ -1432,7 +1432,7 @@ public static class PaymentServiceTests
         var checkoutSession = context.CreatePaymentCheckoutSession(payment: checkoutPayment);
 
         var metadata = new PaymentMetadataModel(
-            PlatformType.Default,
+            PlatformType.GroupSquirrel,
             PaymentReasonType.SiteSubscription,
             member,
             siteSubscriptionPrice,
@@ -1515,7 +1515,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.SiteSubscription,
                 member,
                 siteSubscriptionPrice,
@@ -1562,7 +1562,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.ChapterSubscription,
                 member,
                 chapterSubscription,
@@ -1606,7 +1606,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.InvoicePaymentSucceeded,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.SiteSubscription,
                 member,
                 siteSubscriptionPrice,
@@ -1645,7 +1645,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.CheckoutSessionCompleted,
             subscriptionId: "sub_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.ChapterSubscription,
                 member,
                 chapterSubscription,
@@ -1663,7 +1663,7 @@ public static class PaymentServiceTests
            as a job and builds its own request from the ids the job carries. */
         Mock.Get(memberEmailService).Verify(
             x => x.SendPaymentNotification(
-                It.Is<IServiceRequest>(x => x.Platform == PlatformType.Default),
+                It.Is<IServiceRequest>(x => x.Platform == PlatformType.GroupSquirrel),
                 It.Is<Member>(x => x.Id == member.Id),
                 It.Is<Chapter>(x => x.Id == chapter.Id),
                 It.IsAny<Payment>(),
@@ -1701,7 +1701,7 @@ public static class PaymentServiceTests
 
         var memberEmailService = CreateMockMemberEmailService();
         var service = CreatePaymentService(context, memberEmailService: memberEmailService);
-        var request = CreateServiceRequest(PlatformType.Default);
+        var request = CreateServiceRequest(PlatformType.GroupSquirrel);
 
         // Act
         await service.ProcessWebhook(request, webhook);
@@ -1783,7 +1783,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.CheckoutSessionCompleted,
             paymentId: paymentCheckoutSession.PaymentId.ToString(),
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.SiteSubscription,
                 member,
                 siteSubscriptionPrice,
@@ -1826,7 +1826,7 @@ public static class PaymentServiceTests
             type: PaymentProviderWebhookType.CheckoutSessionCompleted,
             paymentId: payment.Id.ToString(),
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.SiteSubscription,
                 member,
                 siteSubscriptionPrice,
@@ -1911,7 +1911,7 @@ public static class PaymentServiceTests
         var webhook = CreatePaymentProviderWebhook(
             type: PaymentProviderWebhookType.CheckoutSessionExpired,
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.SiteSubscription,
                 member,
                 siteSubscriptionPrice,
@@ -1947,7 +1947,7 @@ public static class PaymentServiceTests
         var webhook = CreatePaymentProviderWebhook(
             paymentId: "pi_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.None,
                 member,
                 chapterSubscription,
@@ -1985,7 +1985,7 @@ public static class PaymentServiceTests
         var webhook = CreatePaymentProviderWebhook(
             paymentId: "pi_123",
             metadata: new PaymentMetadataModel(
-                PlatformType.Default,
+                PlatformType.GroupSquirrel,
                 PaymentReasonType.None,
                 member,
                 chapterSubscription,
@@ -2024,7 +2024,7 @@ public static class PaymentServiceTests
         payment.ExternalId = "sub_123";
         payment.PaidUtc = DateTime.UtcNow;
         payment.PaymentProvider = PaymentProviderType.Stripe;
-        payment.Platform = PlatformType.Default;
+        payment.Platform = PlatformType.GroupSquirrel;
 
         var paymentProvider = CreateMockPaymentProvider();
         paymentProvider
@@ -2040,7 +2040,7 @@ public static class PaymentServiceTests
 
         // Assert
         var stored = context.Set<Payment>().Single(x => x.Id == payment.Id);
-        stored.Platform.Should().Be(PlatformType.Default);
+        stored.Platform.Should().Be(PlatformType.GroupSquirrel);
         stored.PaymentProvider.Should().Be(PaymentProviderType.Stripe);
         stored.ActualAmount.Should().Be(100m);
 
@@ -3305,7 +3305,7 @@ public static class PaymentServiceTests
         Member member,
         ChapterSubscription chapterSubscription)
         => new PaymentMetadataModel(
-            PlatformType.Default,
+            PlatformType.GroupSquirrel,
             PaymentReasonType.ChapterSubscription,
             member,
             chapterSubscription,
@@ -3664,7 +3664,7 @@ public static class PaymentServiceTests
             .Returns(EnvironmentType.Dev);
 
         mock.Setup(x => x.Platform)
-            .Returns(platform ?? PlatformType.Default);
+            .Returns(platform ?? PlatformType.GroupSquirrel);
 
         return mock.Object;
     }
@@ -3686,7 +3686,7 @@ public static class PaymentServiceTests
         return Mock.Of<IMemberServiceRequest>(x =>
             x.CurrentMember == member &&
             x.Environment == EnvironmentType.Dev &&
-            x.Platform == PlatformType.Default);
+            x.Platform == PlatformType.GroupSquirrel);
     }
 
     private static PaymentProviderWebhook CreatePaymentProviderWebhook(

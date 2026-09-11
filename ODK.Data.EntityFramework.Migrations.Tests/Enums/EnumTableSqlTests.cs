@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Data.EntityFramework.Migrations.Enums;
 
 namespace ODK.Data.EntityFramework.Migrations.Tests.Enums;
@@ -210,6 +211,30 @@ public class EnumTableSqlTests
 
         // Assert
         result.Should().Contain(", N'Id', N'COLUMN';");
+    }
+
+    [Test]
+    public void RenameValue_ReturnsUpdateKeyedOnTheIdAndTheOldName()
+    {
+        // Act
+        var result = EnumTableSql.RenameValue(PlatformType.GroupSquirrel, "Default");
+
+        // Assert - keyed on the old name as well as the id, so a database already renamed is untouched.
+        result.Should().Be(Lines(
+            "UPDATE [PlatformTypes]",
+            "SET [Name] = N'GroupSquirrel'",
+            "WHERE [Id] = 1 AND [Name] = N'Default';"));
+    }
+
+    [Test]
+    public void RenameValue_ValueWithDisplayName_RenamesToTheDisplayName()
+    {
+        // Arrange - the new name comes from the enum, by the same rule the insert names a row.
+        // Act
+        var result = EnumTableSql.RenameValue(SiteFeatureType.AdminMembers, "Admin members");
+
+        // Assert
+        result.Should().Contain("SET [Name] = N'Make other members admins'");
     }
 
     /* The lines that decide which foreign key is matched, stripped of indentation and of the trailing

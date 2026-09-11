@@ -249,7 +249,7 @@ public static class SiteSubscriptionServiceTests
 
         var service = CreateService(context);
         var request = Mock.Of<IMemberServiceRequest>(x =>
-            x.Platform == PlatformType.Default &&
+            x.Platform == PlatformType.GroupSquirrel &&
             x.CurrentMember == member);
 
         // Act
@@ -263,7 +263,7 @@ public static class SiteSubscriptionServiceTests
 
     private static IServiceRequest CreateRequest() => Mock.Of<IServiceRequest>(x =>
         x.Environment == EnvironmentType.Dev &&
-        x.Platform == PlatformType.Default);
+        x.Platform == PlatformType.GroupSquirrel);
 
     private static SiteSubscriptionService CreateService(
         MockOdkContext context,

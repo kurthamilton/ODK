@@ -15,5 +15,5 @@ public class SiteEmailSettingsProvider : ISiteEmailSettingsProvider
     public SiteEmailSettings Get(PlatformType platform) =>
         _settings.Platforms.TryGetValue(platform, out var settings)
             ? settings
-            : _settings.Platforms[PlatformType.Default];
+            : _settings.Platforms[PlatformType.GroupSquirrel];
 }

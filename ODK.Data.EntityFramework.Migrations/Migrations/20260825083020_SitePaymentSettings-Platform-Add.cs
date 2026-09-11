@@ -40,7 +40,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     (Id, Provider, ApiPublicKey, ApiSecretKey, Active, Name, Commission, Enabled, PlatformTypeId)
                 SELECT
                     NEWID(), Provider, ApiPublicKey, ApiSecretKey, Active, Name, Commission, Enabled,
-                    {(int)PlatformType.Default}
+                    {(int)PlatformType.GroupSquirrel}
                 FROM SitePaymentSettings
                 WHERE PlatformTypeId = {(int)PlatformType.DrunkenKnitwits};
                 """);
@@ -68,7 +68,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
             migrationBuilder.DropEnumForeignKey<PlatformType>("SitePaymentSettings", "PlatformTypeId");
 
             migrationBuilder.Sql(
-                $"DELETE FROM SitePaymentSettings WHERE PlatformTypeId = {(int)PlatformType.Default};");
+                $"DELETE FROM SitePaymentSettings WHERE PlatformTypeId = {(int)PlatformType.GroupSquirrel};");
 
             migrationBuilder.DropColumn(
                 name: "PlatformTypeId",

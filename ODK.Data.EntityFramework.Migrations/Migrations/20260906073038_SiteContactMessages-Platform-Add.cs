@@ -25,7 +25,7 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
             migrationBuilder.Sql(
                 $"""
                 UPDATE [SiteContactMessages]
-                SET [PlatformTypeId] = {(int)PlatformType.Default}
+                SET [PlatformTypeId] = {(int)PlatformType.GroupSquirrel}
                 WHERE [PlatformTypeId] IS NULL;
                 """);
 

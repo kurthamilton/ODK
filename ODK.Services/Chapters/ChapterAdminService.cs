@@ -54,7 +54,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private static readonly Dictionary<PlatformType, IReadOnlyCollection<PageType>> _platformPages =
         new()
         {
-            { PlatformType.Default, new[] { PageType.Contact, PageType.Members } },
+            { PlatformType.GroupSquirrel, new[] { PageType.Contact, PageType.Members } },
             { PlatformType.DrunkenKnitwits, new[] { PageType.About, PageType.Contact, PageType.Members } }
         };
 

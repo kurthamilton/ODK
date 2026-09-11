@@ -3,6 +3,6 @@
 public enum PlatformType
 {
     None = 0,
-    Default = 1,
+    GroupSquirrel = 1,
     DrunkenKnitwits = 2
 }

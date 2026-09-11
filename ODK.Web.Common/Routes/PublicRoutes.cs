@@ -64,7 +64,7 @@ public class PublicRoutes
         new()
         {
             Path = GroupRoutes.Questions(chapter),
-            Platform = PlatformType.Default,
+            Platform = PlatformType.GroupSquirrel,
             RequiresQuestions = true
         },
         new()
@@ -76,7 +76,7 @@ public class PublicRoutes
         {
             Feature = ChapterFeatureType.Events,
             Path = GroupRoutes.PastEvents(chapter),
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         }
     ];
 
@@ -97,12 +97,12 @@ public class PublicRoutes
         new()
         {
             Path = GroupRoutes.Index(),
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         },
         new()
         {
             Path = SiteRoutes.About,
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         },
         new()
         {
@@ -111,12 +111,12 @@ public class PublicRoutes
         new()
         {
             Path = SiteRoutes.Migrate,
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         },
         new()
         {
             Path = SiteRoutes.Pricing,
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         },
         new()
         {

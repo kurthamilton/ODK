@@ -65,13 +65,13 @@ public static class PlatformConfigTests
     public static void ConfigureDependencies_PlatformStated_ServesThatPlatform()
     {
         // Arrange - a top-level key, which is how the deploy pipeline injects the site's PLATFORM Variable.
-        var appSettings = BindAppSettings("""{ "Platform": "Default" }""");
+        var appSettings = BindAppSettings("""{ "Platform": "GroupSquirrel" }""");
 
         // Act
         var settings = MapPlatformProviderSettings(appSettings);
 
         // Assert
-        settings.Platform.Should().Be(PlatformType.Default);
+        settings.Platform.Should().Be(PlatformType.GroupSquirrel);
     }
 
     [Test]
@@ -82,7 +82,7 @@ public static class PlatformConfigTests
         var appSettings = BindAppSettings(
             """
             {
-              "Platform": "Default",
+              "Platform": "GroupSquirrel",
               "Platforms": { "None": { "Name": "", "Url": "" } }
             }
             """);
@@ -98,7 +98,7 @@ public static class PlatformConfigTests
        platform's directory, shipping to the other's BetterStack source and queueing to a third's Hangfire
        schema would be far harder to spot than any one of those alone, so they are asserted together rather
        than one test each. */
-    [TestCase("Default", "Hangfire2", "gs")]
+    [TestCase("GroupSquirrel", "Hangfire2", "gs")]
     [TestCase("DrunkenKnitwits", "Hangfire", "dk")]
     [TestCase("None", "Hangfire", "dk")]
     public static void ServedPlatform_SelectsOnePlatformsEntryFromEverySection(
@@ -212,7 +212,7 @@ public static class PlatformConfigTests
 
         // Assert
         provider.Platform.Should().Be(PlatformType.DrunkenKnitwits);
-        provider.GetBaseUrl(PlatformType.Default).Should().Be("https://groupsquirrel.example.com");
+        provider.GetBaseUrl(PlatformType.GroupSquirrel).Should().Be("https://groupsquirrel.example.com");
         provider.GetBaseUrl(PlatformType.DrunkenKnitwits).Should().Be("https://drunkenknitwits.example.com");
     }
 
@@ -220,16 +220,16 @@ public static class PlatformConfigTests
     public static void PlatformProvider_UrlNotStated_Throws()
     {
         // Arrange - the committed file states an empty URL, so an environment that adds none binds "".
-        var appSettings = BindAppSettings("""{ "Platform": "Default" }""");
+        var appSettings = BindAppSettings("""{ "Platform": "GroupSquirrel" }""");
         var provider = new PlatformProvider(MapPlatformProviderSettings(appSettings));
 
         // Act
-        var act = () => provider.GetBaseUrl(PlatformType.Default);
+        var act = () => provider.GetBaseUrl(PlatformType.GroupSquirrel);
 
         // Assert - naming the platform, since the caller cannot see which one it asked about otherwise.
         act.Should().Throw<OdkServiceException>()
             .Which.Messages.Should().ContainSingle()
-            .Which.Should().Contain(nameof(PlatformType.Default));
+            .Which.Should().Contain(nameof(PlatformType.GroupSquirrel));
     }
 
     private static AppSettings BindSettingsWithoutBaseFile(string json)

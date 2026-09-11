@@ -29,5 +29,5 @@ public class PlatformProvider : IPlatformProvider
 
     public string GetName(PlatformType platform) => _settings.Names.TryGetValue(platform, out var name)
         ? name
-        : _settings.Names[PlatformType.Default];
+        : _settings.Names[PlatformType.GroupSquirrel];
 }

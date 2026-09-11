@@ -47,7 +47,7 @@ public class SiteQuestionTests : DefaultPageTest
         // Act
         await new SiteAdminQuestionsPage(Page).Create(question, "Answer");
 
-        // Assert - PlatformType.Default is 1.
+        // Assert - PlatformType.GroupSquirrel is 1.
         (await SiteQuestionDataHelper.GetPlatform(question)).Should().Be(1);
     }
 

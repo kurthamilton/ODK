@@ -183,6 +183,26 @@ public static class EnumTableSql
             "END");
     }
 
+    /// <summary>
+    /// Renames a value's row to the name the enum now gives it. The old name is passed in because the
+    /// enum no longer states it, and the update is keyed on it as well as on the id so that a database
+    /// already holding the new name is untouched.
+    /// </summary>
+    /// <remarks>
+    /// Separate from <see cref="Insert"/>, which leaves an existing row alone: a rename rewrites a row
+    /// the migration inserting the value never mentioned, so it is stated rather than applied implicitly.
+    /// </remarks>
+    public static string RenameValue<T>(T value, string fromName)
+        where T : struct, Enum
+    {
+        var table = EnumTables.Get<T>();
+
+        return Join(
+            $"UPDATE {Identifier(table.Name)}",
+            $"SET [Name] = {Literal(EnumUtils.GetDisplayValue(value))}",
+            $"WHERE {Identifier(table.IdColumnName)} = {GetId(value)} AND [Name] = {Literal(fromName)};");
+    }
+
     /* Shared by the add guard and the drop, so the two cannot come to disagree about what counts as
        "this column's foreign key to the enum table". Indented by the caller because the two nest it at
        different depths. */

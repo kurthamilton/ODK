@@ -65,8 +65,8 @@ same intermediate file.
 Two things follow, both easy to undo by accident:
 
 - **`Platform` must never be an environment variable in a shell that builds.** It is one of MSBuild's own
-  properties, and MSBuild reads its properties from the environment, so `set Platform=Default` silently moves
-  the build to `bin\Default\…`. A launch profile is the one safe place for it — a profile's environment is
+  properties, and MSBuild reads its properties from the environment, so `set Platform=GroupSquirrel` silently moves
+  the build to `bin\GroupSquirrel\…`. A launch profile is the one safe place for it — a profile's environment is
   applied to the launched app, not to the build.
 - **The csproj excludes `artifacts\**` and `bin\**` from the default globs.** The SDK excludes only the one
   output path the build was given, so without those the *other* instance's tree arrives as this build's
@@ -81,8 +81,8 @@ The scripts pass it as configuration on the command line — `dotnet run … -- 
 the environment stays plain `Development` and both instances read the same `appsettings.Development.json`.
 
 **It cannot be an environment variable in a shell that also builds.** `Platform` is one of MSBuild's own
-properties, and MSBuild reads its properties from the environment, so `set Platform=Default` silently moves
-the build to `bin\Default\…` and `obj\Default\…`. The one safe place for it as a variable is a
+properties, and MSBuild reads its properties from the environment, so `set Platform=GroupSquirrel` silently moves
+the build to `bin\GroupSquirrel\…` and `obj\GroupSquirrel\…`. The one safe place for it as a variable is a
 `launchSettings.json` profile, whose environment is applied to the launched app rather than to the build —
 which is what the two IDE profiles (**Group Squirrel**, **Drunken Knitwits**) use.
 

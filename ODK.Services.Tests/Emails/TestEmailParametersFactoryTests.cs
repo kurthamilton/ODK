@@ -98,7 +98,7 @@ public static class TestEmailParametersFactoryTests
     {
         var mock = new Mock<IServiceRequest>();
         mock.Setup(x => x.HttpRequestContext).Returns(Mock.Of<IHttpRequestContext>());
-        mock.Setup(x => x.Platform).Returns(PlatformType.Default);
+        mock.Setup(x => x.Platform).Returns(PlatformType.GroupSquirrel);
         return mock.Object;
     }
 

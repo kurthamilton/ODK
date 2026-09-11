@@ -36,7 +36,7 @@ public static class SiteQuestionViewModelServiceTests
     {
         // Arrange - questions existing somewhere is not enough; they have to be this platform's.
         using var context = new MockOdkContext();
-        context.AddRange(CreateQuestion(PlatformType.Default, "Ours"));
+        context.AddRange(CreateQuestion(PlatformType.GroupSquirrel, "Ours"));
         var service = CreateService(context);
 
         // Act
@@ -53,13 +53,13 @@ public static class SiteQuestionViewModelServiceTests
         // encoded. The question name is rendered as text and Razor encodes that itself.
         using var context = new MockOdkContext();
         context.AddRange(CreateQuestion(
-            PlatformType.Default,
+            PlatformType.GroupSquirrel,
             "{platform.name}",
             answer: "Welcome to {platform.name}"));
         var service = CreateService(context, TestPlatformProvider.Create("Bells & Whistles"));
 
         // Act
-        var viewModel = await service.GetAboutPage(CreateRequest(PlatformType.Default));
+        var viewModel = await service.GetAboutPage(CreateRequest(PlatformType.GroupSquirrel));
 
         // Assert
         var question = viewModel.Questions.Single();
@@ -73,13 +73,13 @@ public static class SiteQuestionViewModelServiceTests
         // Arrange
         using var context = new MockOdkContext();
         context.AddRange(CreateQuestion(
-            PlatformType.Default,
+            PlatformType.GroupSquirrel,
             "Where am I?",
             answer: "You are on {platform.name}"));
         var service = CreateService(context);
 
         // Act
-        var viewModel = await service.GetAboutPage(CreateRequest(PlatformType.Default));
+        var viewModel = await service.GetAboutPage(CreateRequest(PlatformType.GroupSquirrel));
 
         // Assert
         viewModel.Questions.Single().AnswerHtml
@@ -91,11 +91,11 @@ public static class SiteQuestionViewModelServiceTests
     {
         // Arrange
         using var context = new MockOdkContext();
-        context.AddRange(CreateQuestion(PlatformType.Default, "What is {platform.name}?"));
+        context.AddRange(CreateQuestion(PlatformType.GroupSquirrel, "What is {platform.name}?"));
         var service = CreateService(context);
 
         // Act
-        var viewModel = await service.GetAboutPage(CreateRequest(PlatformType.Default));
+        var viewModel = await service.GetAboutPage(CreateRequest(PlatformType.GroupSquirrel));
 
         // Assert
         viewModel.Questions.Single().Name
@@ -108,12 +108,12 @@ public static class SiteQuestionViewModelServiceTests
         // Arrange
         using var context = new MockOdkContext();
         context.AddRange(
-            CreateQuestion(PlatformType.Default, "Ours"),
+            CreateQuestion(PlatformType.GroupSquirrel, "Ours"),
             CreateQuestion(PlatformType.DrunkenKnitwits, "Theirs"));
         var service = CreateService(context);
 
         // Act
-        var viewModel = await service.GetAboutPage(CreateRequest(PlatformType.Default));
+        var viewModel = await service.GetAboutPage(CreateRequest(PlatformType.GroupSquirrel));
 
         // Assert
         viewModel.Questions.Select(x => x.Name).Should().Equal("Ours");
@@ -125,12 +125,12 @@ public static class SiteQuestionViewModelServiceTests
         // Arrange
         using var context = new MockOdkContext();
         context.AddRange(
-            CreateQuestion(PlatformType.Default, "Second", displayOrder: 2),
-            CreateQuestion(PlatformType.Default, "First", displayOrder: 1));
+            CreateQuestion(PlatformType.GroupSquirrel, "Second", displayOrder: 2),
+            CreateQuestion(PlatformType.GroupSquirrel, "First", displayOrder: 1));
         var service = CreateService(context);
 
         // Act
-        var viewModel = await service.GetAboutPage(CreateRequest(PlatformType.Default));
+        var viewModel = await service.GetAboutPage(CreateRequest(PlatformType.GroupSquirrel));
 
         // Assert
         viewModel.Questions.Select(x => x.Name).Should().Equal("First", "Second");
@@ -141,7 +141,7 @@ public static class SiteQuestionViewModelServiceTests
     {
         // Arrange - callers link to /about only when this says yes, so it has to agree with the 404 above.
         using var context = new MockOdkContext();
-        context.AddRange(CreateQuestion(PlatformType.Default, "Ours"));
+        context.AddRange(CreateQuestion(PlatformType.GroupSquirrel, "Ours"));
         var service = CreateService(context);
 
         // Act
@@ -156,11 +156,11 @@ public static class SiteQuestionViewModelServiceTests
     {
         // Arrange
         using var context = new MockOdkContext();
-        context.AddRange(CreateQuestion(PlatformType.Default, "Ours"));
+        context.AddRange(CreateQuestion(PlatformType.GroupSquirrel, "Ours"));
         var service = CreateService(context);
 
         // Act
-        var result = await service.HasAboutPage(CreateRequest(PlatformType.Default));
+        var result = await service.HasAboutPage(CreateRequest(PlatformType.GroupSquirrel));
 
         // Assert
         result.Should().BeTrue();

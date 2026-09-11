@@ -14,7 +14,7 @@ namespace ODK.E2E.Tests;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Group Squirrel only. The approvals route is declared <c>PlatformType.Default</c> in the app, so Drunken
+/// Group Squirrel only. The approvals route is declared <c>PlatformType.GroupSquirrel</c> in the app, so Drunken
 /// Knitwits has no page to drive.
 /// </para>
 /// <para>

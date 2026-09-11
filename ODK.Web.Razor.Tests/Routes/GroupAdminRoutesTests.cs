@@ -14,7 +14,7 @@ public static class GroupAdminRoutesTests
     public static void Events_DefaultPlatform_IsKeyedByChapterSlug()
     {
         // Arrange
-        var routes = new GroupAdminRoutes(PlatformType.Default);
+        var routes = new GroupAdminRoutes(PlatformType.GroupSquirrel);
         var chapter = CreateChapter();
 
         // Act
@@ -28,7 +28,7 @@ public static class GroupAdminRoutesTests
     public static void LandingRoute_NotAnAdmin_ReturnsNull()
     {
         // Arrange
-        var routes = new GroupAdminRoutes(PlatformType.Default);
+        var routes = new GroupAdminRoutes(PlatformType.GroupSquirrel);
         var chapter = CreateChapter();
 
         // Act
@@ -42,7 +42,7 @@ public static class GroupAdminRoutesTests
     public static void LandingRoute_Organiser_PrefersEvents()
     {
         // Arrange
-        var routes = new GroupAdminRoutes(PlatformType.Default);
+        var routes = new GroupAdminRoutes(PlatformType.GroupSquirrel);
         var chapter = CreateChapter();
 
         // Act
@@ -56,7 +56,7 @@ public static class GroupAdminRoutesTests
     public static void LandingRoute_Organiser_ReturnsRouteTheyCanOpen()
     {
         // Arrange
-        var routes = new GroupAdminRoutes(PlatformType.Default);
+        var routes = new GroupAdminRoutes(PlatformType.GroupSquirrel);
         var chapter = CreateChapter();
         var adminMember = CreateAdminMember(ChapterAdminRole.Organiser);
         var currentMember = CreateMember();
@@ -66,14 +66,14 @@ public static class GroupAdminRoutesTests
 
         // Assert
         result.Should().NotBeNull();
-        result.IsPermitted(adminMember, currentMember, PlatformType.Default).Should().BeTrue();
+        result.IsPermitted(adminMember, currentMember, PlatformType.GroupSquirrel).Should().BeTrue();
     }
 
     [Test]
     public static void LandingRoute_SiteAdminWithNoChapterRole_ReturnsRoute()
     {
         // Arrange
-        var routes = new GroupAdminRoutes(PlatformType.Default);
+        var routes = new GroupAdminRoutes(PlatformType.GroupSquirrel);
         var chapter = CreateChapter();
 
         // Act
@@ -87,7 +87,7 @@ public static class GroupAdminRoutesTests
     public static void PermittedNavigation_NotAnAdmin_ReturnsEmpty()
     {
         // Arrange
-        var routes = new GroupAdminRoutes(PlatformType.Default);
+        var routes = new GroupAdminRoutes(PlatformType.GroupSquirrel);
 
         // Act
         var result = routes.PermittedNavigation(CreateChapter(), adminMember: null, CreateMember());
@@ -114,7 +114,7 @@ public static class GroupAdminRoutesTests
     public static void PermittedNavigation_Organiser_ExcludesOwnerOnlyRoutes()
     {
         // Arrange
-        var routes = new GroupAdminRoutes(PlatformType.Default);
+        var routes = new GroupAdminRoutes(PlatformType.GroupSquirrel);
         var chapter = CreateChapter();
 
         // Act
@@ -132,7 +132,7 @@ public static class GroupAdminRoutesTests
     {
         /* Arrange - Group Squirrel gives a group's own admins a branding page, so the site-admin one is
            Drunken Knitwits only and has no Group Squirrel page behind it. */
-        var routes = new GroupAdminRoutes(PlatformType.Default);
+        var routes = new GroupAdminRoutes(PlatformType.GroupSquirrel);
         var chapter = CreateChapter();
 
         // Act
@@ -143,7 +143,7 @@ public static class GroupAdminRoutesTests
             .Should().NotContain(routes.SiteAdminBranding(chapter).Path);
     }
 
-    [TestCase(PlatformType.Default)]
+    [TestCase(PlatformType.GroupSquirrel)]
     [TestCase(PlatformType.DrunkenKnitwits)]
     public static void PermittedNavigation_SiteAdmin_IncludesSiteAdminSubscriptions(PlatformType platform)
     {
@@ -160,7 +160,7 @@ public static class GroupAdminRoutesTests
             .Should().Contain(routes.SiteAdminSubscriptions(chapter).Path);
     }
 
-    [TestCase(PlatformType.Default)]
+    [TestCase(PlatformType.GroupSquirrel)]
     [TestCase(PlatformType.DrunkenKnitwits)]
     public static void PermittedNavigation_SiteAdmin_IncludesSiteAdminSection(PlatformType platform)
     {

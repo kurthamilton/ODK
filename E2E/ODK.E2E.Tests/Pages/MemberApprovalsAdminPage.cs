@@ -5,7 +5,7 @@ namespace ODK.E2E.Tests.Pages;
 /// <summary>
 /// The Group Squirrel member-approvals page (<c>/my/groups/{chapterId}/members/approvals</c>), which lists
 /// the members waiting to be let in and carries an Approve button per row. Group Squirrel only - the route
-/// is declared <c>PlatformType.Default</c> in the app - which is why this composes the path itself rather
+/// is declared <c>PlatformType.GroupSquirrel</c> in the app - which is why this composes the path itself rather
 /// than taking one from <see cref="PlatformRoutes"/>.
 /// </summary>
 internal class MemberApprovalsAdminPage

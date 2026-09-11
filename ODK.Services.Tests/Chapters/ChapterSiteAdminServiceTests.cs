@@ -392,7 +392,7 @@ public static class ChapterSiteAdminServiceTests
         context.CreateChapterAdminMember(chapter, member);
 
         return Mock.Of<IMemberChapterServiceRequest>(x =>
-            x.Platform == PlatformType.Default &&
+            x.Platform == PlatformType.GroupSquirrel &&
             x.Chapter == chapter &&
             x.CurrentMember == member);
     }
@@ -402,7 +402,7 @@ public static class ChapterSiteAdminServiceTests
         var siteAdmin = context.CreateMember(afterCreate: x => x.SiteAdmin = true);
 
         return Mock.Of<IMemberChapterServiceRequest>(x =>
-            x.Platform == PlatformType.Default &&
+            x.Platform == PlatformType.GroupSquirrel &&
             x.Chapter == chapter &&
             x.CurrentMember == siteAdmin);
     }
@@ -412,7 +412,7 @@ public static class ChapterSiteAdminServiceTests
         var siteAdmin = context.CreateMember(afterCreate: x => x.SiteAdmin = true);
 
         return Mock.Of<IMemberServiceRequest>(x =>
-            x.Platform == PlatformType.Default &&
+            x.Platform == PlatformType.GroupSquirrel &&
             x.CurrentMember == siteAdmin);
     }
 }

@@ -44,7 +44,7 @@ public static class MemberEmailServiceTests
             CurrentMemberOrDefault = member,
             Environment = EnvironmentType.Dev,
             HttpRequestContext = CreateHttpRequestContext(),
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         };
 
         // Act
@@ -81,7 +81,7 @@ public static class MemberEmailServiceTests
             CurrentMemberOrDefault = member,
             Environment = EnvironmentType.Dev,
             HttpRequestContext = CreateHttpRequestContext(),
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         };
 
         var layout = "<html><body>{body}</body></html>";
@@ -320,7 +320,7 @@ public static class MemberEmailServiceTests
             CurrentMemberOrDefault = null,
             Environment = EnvironmentType.Dev,
             HttpRequestContext = CreateHttpRequestContext(),
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         };
 
         // Act
@@ -672,7 +672,7 @@ public static class MemberEmailServiceTests
             CurrentMemberOrDefault = member,
             Environment = EnvironmentType.Dev,
             HttpRequestContext = CreateHttpRequestContext(),
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         };
 
         // Act
@@ -714,7 +714,7 @@ public static class MemberEmailServiceTests
             CurrentMemberOrDefault = member,
             Environment = EnvironmentType.Dev,
             HttpRequestContext = CreateHttpRequestContext(),
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         };
 
         // Act
@@ -752,7 +752,7 @@ public static class MemberEmailServiceTests
             CurrentMemberOrDefault = member,
             Environment = EnvironmentType.Dev,
             HttpRequestContext = CreateHttpRequestContext(),
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         };
 
         // Act
@@ -787,7 +787,7 @@ public static class MemberEmailServiceTests
             CurrentMemberOrDefault = member,
             Environment = EnvironmentType.Dev,
             HttpRequestContext = CreateHttpRequestContext(),
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         };
 
         // Act
@@ -914,7 +914,7 @@ public static class MemberEmailServiceTests
         CurrentMemberOrDefault = null,
         Environment = EnvironmentType.Dev,
         HttpRequestContext = CreateHttpRequestContext(),
-        Platform = PlatformType.Default
+        Platform = PlatformType.GroupSquirrel
     };
 
     private static Mock<IEmailService> CreateEmailService()
@@ -1002,7 +1002,7 @@ public static class MemberEmailServiceTests
         CurrentMemberOrDefault = null,
         Environment = EnvironmentType.Dev,
         HttpRequestContext = CreateHttpRequestContext(),
-        Platform = PlatformType.Default
+        Platform = PlatformType.GroupSquirrel
     };
 
     private static IReadOnlyCollection<INewTopic> CreateTopics(Guid memberId) =>

@@ -155,7 +155,7 @@ Three axes, composed by the filter:
     the Join transition while the fixture's other six tests are about the member page.
     `MemberApprovalTests` covers the machine's `PendingApproval` edges — joining a group that vets new
     members, and an admin letting one in — and is Group Squirrel only, because the approvals route is
-    declared `PlatformType.Default` in the app.
+    declared `PlatformType.GroupSquirrel` in the app.
   - **`ChapterPublicationWorkflows`** — a group becoming findable: the site admin approving it
     (`SiteAdminTests`) and its owner publishing it (`GroupOwnerTests`). Applied at *method* level, because
     both fixtures are named for an **actor** rather than for a workflow and so will attract unrelated tests —

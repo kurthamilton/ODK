@@ -11,7 +11,7 @@ namespace ODK.Services.Tests.Data;
 
 /// <summary>
 /// The three questions a chapter query can ask about a platform, which used to be two meanings of
-/// <see cref="PlatformType.Default"/>: what a platform shows, what it owns, and every chapter regardless.
+/// <see cref="PlatformType.GroupSquirrel"/>: what a platform shows, what it owns, and every chapter regardless.
 /// </summary>
 [Parallelizable]
 public static class ChapterRepositoryPlatformTests
@@ -25,7 +25,7 @@ public static class ChapterRepositoryPlatformTests
         using var context = CreateMockOdkContext();
 
         var groupSquirrel = context.CreateChapter(
-            name: "Squirrels", platform: PlatformType.Default, afterCreate: Publish);
+            name: "Squirrels", platform: PlatformType.GroupSquirrel, afterCreate: Publish);
         var drunkenKnitwits = context.CreateChapter(
             name: "Bristol", platform: PlatformType.DrunkenKnitwits, afterCreate: Publish);
 
@@ -33,7 +33,7 @@ public static class ChapterRepositoryPlatformTests
 
         // Act
         var result = await unitOfWork.ChapterRepository
-            .GetAll(PlatformType.Default, includeUnpublished: false)
+            .GetAll(PlatformType.GroupSquirrel, includeUnpublished: false)
             .Run();
 
         // Assert
@@ -53,7 +53,7 @@ public static class ChapterRepositoryPlatformTests
 
         // Act
         var result = await unitOfWork.ChapterRepository
-            .GetAll(PlatformType.Default, includeUnpublished: false)
+            .GetAll(PlatformType.GroupSquirrel, includeUnpublished: false)
             .Run();
 
         // Assert
@@ -71,7 +71,7 @@ public static class ChapterRepositoryPlatformTests
             name: "Bristol", platform: PlatformType.DrunkenKnitwits, afterCreate: Publish);
         var draft = context.CreateChapter(
             name: "Leeds", platform: PlatformType.DrunkenKnitwits);
-        context.CreateChapter(name: "Squirrels", platform: PlatformType.Default, afterCreate: Publish);
+        context.CreateChapter(name: "Squirrels", platform: PlatformType.GroupSquirrel, afterCreate: Publish);
 
         var unitOfWork = MockUnitOfWorkFactory.Create(context);
 
@@ -91,16 +91,16 @@ public static class ChapterRepositoryPlatformTests
         using var context = CreateMockOdkContext();
 
         var groupSquirrel = context.CreateChapter(
-            name: "Squirrels", platform: PlatformType.Default, afterCreate: Publish);
+            name: "Squirrels", platform: PlatformType.GroupSquirrel, afterCreate: Publish);
         context.CreateChapter(
             name: "Bristol", platform: PlatformType.DrunkenKnitwits, afterCreate: Publish);
-        context.CreateChapter(name: "Draft", platform: PlatformType.Default);
+        context.CreateChapter(name: "Draft", platform: PlatformType.GroupSquirrel);
 
         var unitOfWork = MockUnitOfWorkFactory.Create(context);
 
         // Act
         var result = await unitOfWork.ChapterRepository
-            .GetOwnedByPlatform(PlatformType.Default)
+            .GetOwnedByPlatform(PlatformType.GroupSquirrel)
             .Run();
 
         // Assert
@@ -116,7 +116,7 @@ public static class ChapterRepositoryPlatformTests
         using var context = CreateMockOdkContext();
 
         var groupSquirrel = context.CreateChapter(
-            name: "Squirrels", platform: PlatformType.Default, afterCreate: Publish);
+            name: "Squirrels", platform: PlatformType.GroupSquirrel, afterCreate: Publish);
         var drunkenKnitwits = context.CreateChapter(
             name: "Bristol", platform: PlatformType.DrunkenKnitwits, afterCreate: Publish);
         context.CreateChapter(name: "Draft", platform: PlatformType.DrunkenKnitwits);

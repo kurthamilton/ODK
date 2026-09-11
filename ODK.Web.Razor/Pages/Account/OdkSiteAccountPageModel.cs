@@ -14,7 +14,7 @@ public abstract class OdkSiteAccountPageModel : OdkPageModel
         PageHandlerExecutingContext context,
         PageHandlerExecutionDelegate next)
     {
-        if (Platform == PlatformType.Default ||
+        if (Platform == PlatformType.GroupSquirrel ||
             CurrentMemberOrDefault == null)
         {
             await next();

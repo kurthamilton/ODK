@@ -53,11 +53,11 @@ public static class SiteSubscriptionAdminServiceTests
 
         // Assert
         result.Success.Should().BeTrue();
-        paymentProvider.Verify(x => x.GetOrCreatePlatformProduct(PlatformType.Default), Times.Once);
+        paymentProvider.Verify(x => x.GetOrCreatePlatformProduct(PlatformType.GroupSquirrel), Times.Once);
 
         var product = context.Set<SitePaymentProduct>().Single();
         product.ExternalId.Should().Be("new-product");
-        product.Platform.Should().Be(PlatformType.Default);
+        product.Platform.Should().Be(PlatformType.GroupSquirrel);
         product.PaymentProvider.Should().Be(PaymentProviderType.Stripe);
 
         context.Set<SiteSubscription>()
@@ -534,7 +534,7 @@ public static class SiteSubscriptionAdminServiceTests
 
         return Mock.Of<IMemberServiceRequest>(x =>
             x.Environment == EnvironmentType.Dev &&
-            x.Platform == PlatformType.Default &&
+            x.Platform == PlatformType.GroupSquirrel &&
             x.CurrentMember == siteAdmin);
     }
 }
