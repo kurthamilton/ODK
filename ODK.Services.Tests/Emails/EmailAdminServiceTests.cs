@@ -795,7 +795,7 @@ public static class EmailAdminServiceTests
         mock.Setup(x => x.CurrentMember).Returns(currentMember);
         mock.Setup(x => x.CurrentMemberOrDefault).Returns(currentMember);
         mock.Setup(x => x.HttpRequestContext).Returns(CreateHttpRequestContext());
-        mock.Setup(x => x.Platform).Returns(PlatformType.Default);
+        mock.Setup(x => x.Platform).Returns(PlatformType.GroupSquirrel);
         return mock.Object;
     }
 
@@ -806,7 +806,7 @@ public static class EmailAdminServiceTests
         mock.Setup(x => x.CurrentMember).Returns(currentMember);
         mock.Setup(x => x.CurrentMemberOrDefault).Returns(currentMember);
         mock.Setup(x => x.HttpRequestContext).Returns(CreateHttpRequestContext());
-        mock.Setup(x => x.Platform).Returns(PlatformType.Default);
+        mock.Setup(x => x.Platform).Returns(PlatformType.GroupSquirrel);
         mock.Setup(x => x.Securable).Returns(ChapterAdminSecurable.Emails);
         return mock.Object;
     }

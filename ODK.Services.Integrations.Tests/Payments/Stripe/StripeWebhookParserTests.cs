@@ -29,7 +29,7 @@ public static class StripeWebhookParserTests
 
         var parser = CreateParser(secretsV1: new Dictionary<PlatformType, string>
         {
-            [PlatformType.Default] = string.Empty
+            [PlatformType.GroupSquirrel] = string.Empty
         });
 
         // Act
@@ -236,8 +236,8 @@ public static class StripeWebhookParserTests
         var json = CreateEventJson(EventTypes.CheckoutSessionCompleted, CheckoutSessionJson());
 
         var parser = CreateParser(
-            secretsV1: new Dictionary<PlatformType, string> { [PlatformType.Default] = "whsec_v1" },
-            secretsV2: new Dictionary<PlatformType, string> { [PlatformType.Default] = "whsec_v2" });
+            secretsV1: new Dictionary<PlatformType, string> { [PlatformType.GroupSquirrel] = "whsec_v1" },
+            secretsV2: new Dictionary<PlatformType, string> { [PlatformType.GroupSquirrel] = "whsec_v2" });
 
         // Act
         var signedWithV2 = await ParseSigned(parser, json, secret: "whsec_v2", version: 2);
@@ -283,11 +283,11 @@ public static class StripeWebhookParserTests
             {
                 WebhookSecretsV1 = secretsV1 ?? new Dictionary<PlatformType, string>
                 {
-                    [PlatformType.Default] = Secret
+                    [PlatformType.GroupSquirrel] = Secret
                 },
                 WebhookSecretsV2 = secretsV2 ?? new Dictionary<PlatformType, string>
                 {
-                    [PlatformType.Default] = Secret
+                    [PlatformType.GroupSquirrel] = Secret
                 }
             });
 
@@ -325,7 +325,7 @@ public static class StripeWebhookParserTests
         string secret = Secret,
         int version = 1)
         => parser.ParseWebhook(
-            PlatformType.Default,
+            PlatformType.GroupSquirrel,
             json,
             EventUtility.GenerateSignatureHeader(json, secret),
             version);

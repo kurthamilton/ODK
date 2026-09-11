@@ -35,7 +35,7 @@ public static class SitemapServiceTests
         var service = CreateService(context);
 
         // Act
-        var result = await service.GetSitemapViewModel(CreateServiceRequest(PlatformType.Default));
+        var result = await service.GetSitemapViewModel(CreateServiceRequest(PlatformType.GroupSquirrel));
 
         // Assert
         result.Chapters.Single().Events
@@ -57,7 +57,7 @@ public static class SitemapServiceTests
         var service = CreateService(context);
 
         // Act
-        var result = await service.GetSitemapViewModel(CreateServiceRequest(PlatformType.Default));
+        var result = await service.GetSitemapViewModel(CreateServiceRequest(PlatformType.GroupSquirrel));
 
         // Assert
         result.Chapters.Single().Events.Should().BeEmpty();
@@ -75,7 +75,7 @@ public static class SitemapServiceTests
         var service = CreateService(context);
 
         // Act
-        var result = await service.GetSitemapViewModel(CreateServiceRequest(PlatformType.Default));
+        var result = await service.GetSitemapViewModel(CreateServiceRequest(PlatformType.GroupSquirrel));
 
         // Assert
         result.Chapters
@@ -111,7 +111,7 @@ public static class SitemapServiceTests
         var service = CreateService(context);
 
         // Act
-        var result = await service.GetSitemapViewModel(CreateServiceRequest(PlatformType.Default));
+        var result = await service.GetSitemapViewModel(CreateServiceRequest(PlatformType.GroupSquirrel));
 
         // Assert
         var first = result.Chapters.First();
@@ -134,7 +134,7 @@ public static class SitemapServiceTests
         var service = CreateService(context);
 
         // Act
-        var result = await service.GetSitemapViewModel(CreateServiceRequest(PlatformType.Default));
+        var result = await service.GetSitemapViewModel(CreateServiceRequest(PlatformType.GroupSquirrel));
 
         // Assert
         result.Chapters.Should().BeEmpty();
@@ -161,7 +161,7 @@ public static class SitemapServiceTests
     private static Chapter CreateChapter(
         MockOdkContext context,
         string name = "Test group",
-        PlatformType platform = PlatformType.Default,
+        PlatformType platform = PlatformType.GroupSquirrel,
         bool approved = true,
         bool published = true)
         => context.CreateChapter(

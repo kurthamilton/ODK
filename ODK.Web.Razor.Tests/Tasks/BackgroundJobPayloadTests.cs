@@ -89,7 +89,7 @@ public static class BackgroundJobPayloadTests
         {
             ChapterId = null,
             CurrentMemberId = null,
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         };
 
         // Act

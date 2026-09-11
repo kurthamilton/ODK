@@ -18,7 +18,7 @@ public static class StripePaymentProviderTests
     public static void GetConnectedAccountBusinessName_DefaultPlatformChapter_InterpolatesPlatformAndGroupName()
     {
         // Arrange
-        var chapter = CreateChapter(PlatformType.Default, "Bristol Board Games");
+        var chapter = CreateChapter(PlatformType.GroupSquirrel, "Bristol Board Games");
 
         var provider = CreateProvider(
             platformProvider: CreateMockPlatformProvider("Group Squirrel").Object);
@@ -50,7 +50,7 @@ public static class StripePaymentProviderTests
     public static void GetConnectedAccountBusinessName_NamesTheChaptersPlatform()
     {
         // Arrange
-        var chapter = CreateChapter(PlatformType.Default, "Bristol Board Games");
+        var chapter = CreateChapter(PlatformType.GroupSquirrel, "Bristol Board Games");
 
         var platformProvider = CreateMockPlatformProvider("Group Squirrel");
 
@@ -59,14 +59,14 @@ public static class StripePaymentProviderTests
             .GetConnectedAccountBusinessName(chapter);
 
         // Assert - the group's platform, never the platform serving the request
-        platformProvider.Verify(x => x.GetName(PlatformType.Default), Times.Once);
+        platformProvider.Verify(x => x.GetName(PlatformType.GroupSquirrel), Times.Once);
     }
 
     [Test]
     public static void GetConnectedAccountBusinessName_UsesConfiguredTemplate()
     {
         // Arrange
-        var chapter = CreateChapter(PlatformType.Default, "Bristol Board Games");
+        var chapter = CreateChapter(PlatformType.GroupSquirrel, "Bristol Board Games");
 
         var provider = CreateProvider(
             platformProvider: CreateMockPlatformProvider("Group Squirrel").Object,
@@ -280,7 +280,7 @@ public static class StripePaymentProviderTests
         ILoggingService? loggingService = null,
         IPlatformProvider? platformProvider = null,
         string? connectedAccountBusinessName = null,
-        PlatformType platform = PlatformType.Default)
+        PlatformType platform = PlatformType.GroupSquirrel)
         => new StripePaymentProvider(
             loggingService ?? new Mock<ILoggingService>().Object,
             new StripePaymentProviderSettings

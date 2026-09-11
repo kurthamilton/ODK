@@ -337,7 +337,7 @@ public static class EmailServiceTests
             CurrentMemberOrDefault = null,
             Environment = EnvironmentType.Dev,
             HttpRequestContext = Mock.Of<IHttpRequestContext>(),
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         };
 
         // Act

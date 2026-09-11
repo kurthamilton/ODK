@@ -977,7 +977,7 @@ public static class PaymentAdminServiceTests
             x.Chapter == chapter &&
             x.CurrentMember == admin &&
             x.Environment == EnvironmentType.Dev &&
-            x.Platform == PlatformType.Default &&
+            x.Platform == PlatformType.GroupSquirrel &&
             x.Securable == ChapterAdminSecurable.Any);
     }
 
@@ -1094,7 +1094,7 @@ public static class PaymentAdminServiceTests
 
         return Mock.Of<IMemberServiceRequest>(x =>
             x.Environment == EnvironmentType.Dev &&
-            x.Platform == PlatformType.Default &&
+            x.Platform == PlatformType.GroupSquirrel &&
             x.CurrentMember == siteAdmin);
     }
 }

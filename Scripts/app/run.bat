@@ -17,8 +17,8 @@ rem
 rem Each platform's config comes from its launch profile (Properties\launchSettings.json): the environment,
 rem the port, and Platform - which is safe as an environment variable there and nowhere else, because a
 rem profile's environment is applied to the launched app rather than to the build. MSBuild reads its own
-rem Platform property from the environment, so `set Platform=Default` in a shell would silently move the
-rem build to bin\Default\...
+rem Platform property from the environment, so `set Platform=GroupSquirrel` in a shell would silently move
+rem the build to bin\GroupSquirrel\...
 setlocal
 
 cd /d "%~dp0..\..\ODK.Web.Razor" || (

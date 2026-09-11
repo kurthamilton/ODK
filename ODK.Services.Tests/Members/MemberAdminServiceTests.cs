@@ -768,7 +768,7 @@ public static class MemberAdminServiceTests
             GroupLimit = 10,
             Enabled = true,
             Default = true,
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         });
 
         var service = CreateMemberAdminService(context);
@@ -836,7 +836,7 @@ public static class MemberAdminServiceTests
             GroupLimit = 10,
             Enabled = true,
             Default = true,
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         });
 
         var service = CreateMemberAdminService(context);
@@ -860,7 +860,7 @@ public static class MemberAdminServiceTests
             .Be(1);
     }
 
-    [TestCase(PlatformType.Default)]
+    [TestCase(PlatformType.GroupSquirrel)]
     [TestCase(PlatformType.DrunkenKnitwits)]
     public static async Task InviteStagedMembers_NewMember_SendsTheInvite(PlatformType platform)
     {
@@ -905,7 +905,7 @@ public static class MemberAdminServiceTests
             Times.Once);
     }
 
-    [TestCase(PlatformType.Default)]
+    [TestCase(PlatformType.GroupSquirrel)]
     [TestCase(PlatformType.DrunkenKnitwits)]
     public static async Task InviteStagedMembers_NewMember_SavesTheImportingAdminsPlatform(PlatformType platform)
     {
@@ -954,7 +954,7 @@ public static class MemberAdminServiceTests
             afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
         var existing = context.CreateMember(afterCreate: x => x.EmailAddress = "existing@example.com");
 
-        SeedDefaultSiteSubscription(context, PlatformType.Default);
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
 
         var emailService = new Mock<IMemberEmailService>();
         var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
@@ -992,7 +992,7 @@ public static class MemberAdminServiceTests
             owner: currentMember,
             siteSubscription: context.CreateSiteSubscription());
 
-        SeedDefaultSiteSubscription(context, PlatformType.Default);
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
 
         var emailService = new Mock<IMemberEmailService>();
         var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
@@ -1037,7 +1037,7 @@ public static class MemberAdminServiceTests
             siteSubscription: context.CreateSiteSubscription(),
             afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
 
-        SeedDefaultSiteSubscription(context, PlatformType.Default);
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
 
         var service = CreateMemberAdminService(context);
 
@@ -1083,7 +1083,7 @@ public static class MemberAdminServiceTests
             GroupLimit = 10,
             Enabled = true,
             Default = true,
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         });
 
         var service = CreateMemberAdminService(context);
@@ -1127,7 +1127,7 @@ public static class MemberAdminServiceTests
             MemberId = existing.Id
         });
 
-        SeedDefaultSiteSubscription(context, PlatformType.Default);
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
 
         var service = CreateMemberAdminService(context);
 
@@ -1159,7 +1159,7 @@ public static class MemberAdminServiceTests
             owner: currentMember,
             siteSubscription: context.CreateSiteSubscription(memberLimit: 2));
 
-        SeedDefaultSiteSubscription(context, PlatformType.Default);
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
 
         var service = CreateMemberAdminService(context);
 
@@ -1210,7 +1210,7 @@ public static class MemberAdminServiceTests
             MemberId = invited.Id
         });
 
-        SeedDefaultSiteSubscription(context, PlatformType.Default);
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
 
         var service = CreateMemberAdminService(context);
 
@@ -1250,7 +1250,7 @@ public static class MemberAdminServiceTests
             MemberId = invited.Id
         });
 
-        SeedDefaultSiteSubscription(context, PlatformType.Default);
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
 
         var service = CreateMemberAdminService(context);
 
@@ -1290,7 +1290,7 @@ public static class MemberAdminServiceTests
             MemberId = existing.Id
         });
 
-        SeedDefaultSiteSubscription(context, PlatformType.Default);
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
 
         var service = CreateMemberAdminService(context);
 
@@ -1320,7 +1320,7 @@ public static class MemberAdminServiceTests
             owner: currentMember,
             siteSubscription: context.CreateSiteSubscription(memberLimit: null));
 
-        SeedDefaultSiteSubscription(context, PlatformType.Default);
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
 
         var service = CreateMemberAdminService(context);
 
@@ -1351,7 +1351,7 @@ public static class MemberAdminServiceTests
         var currentMember = context.CreateMember();
         var chapter = context.CreateChapter(owner: currentMember);
 
-        SeedDefaultSiteSubscription(context, PlatformType.Default);
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
 
         var service = CreateMemberAdminService(context);
 
@@ -1522,7 +1522,7 @@ public static class MemberAdminServiceTests
         }
 
         var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
-        var request = Mock.Of<IServiceRequest>(x => x.Platform == PlatformType.Default);
+        var request = Mock.Of<IServiceRequest>(x => x.Platform == PlatformType.GroupSquirrel);
 
         // Act
         await service.SendMemberSubscriptionReminderEmails(request);
@@ -1574,7 +1574,7 @@ public static class MemberAdminServiceTests
         });
 
         var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
-        var request = Mock.Of<IServiceRequest>(x => x.Platform == PlatformType.Default);
+        var request = Mock.Of<IServiceRequest>(x => x.Platform == PlatformType.GroupSquirrel);
 
         // Act
         await service.SendMemberSubscriptionReminderEmails(request);
@@ -1603,7 +1603,7 @@ public static class MemberAdminServiceTests
             owner: currentMember,
             siteSubscription: context.CreateSiteSubscription());
 
-        SeedDefaultSiteSubscription(context, PlatformType.Default);
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
 
         var service = CreateMemberAdminService(context);
 
@@ -1649,7 +1649,7 @@ public static class MemberAdminServiceTests
             owner: currentMember,
             siteSubscription: context.CreateSiteSubscription());
 
-        SeedDefaultSiteSubscription(context, PlatformType.Default);
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
 
         var service = CreateMemberAdminService(context);
 
@@ -1680,7 +1680,7 @@ public static class MemberAdminServiceTests
             owner: currentMember,
             siteSubscription: context.CreateSiteSubscription());
 
-        SeedDefaultSiteSubscription(context, PlatformType.Default);
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
 
         var service = CreateMemberAdminService(context);
 
@@ -1878,7 +1878,7 @@ public static class MemberAdminServiceTests
             .Returns(CreateHttpRequestContext());
 
         mock.Setup(x => x.Platform)
-            .Returns(platform ?? PlatformType.Default);
+            .Returns(platform ?? PlatformType.GroupSquirrel);
 
         mock.Setup(x => x.Securable)
             .Returns(securable ?? ChapterAdminSecurable.Any);

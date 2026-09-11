@@ -196,7 +196,7 @@ public static class PublicRoutesTests
     {
         var routes = new HashSet<string>(StringComparer.Ordinal);
 
-        foreach (var platform in new[] { PlatformType.Default, PlatformType.DrunkenKnitwits })
+        foreach (var platform in new[] { PlatformType.GroupSquirrel, PlatformType.DrunkenKnitwits })
         {
             var publicRoutes = new OdkRoutes(platform).Public;
             var chapter = CreateChapter(platform);

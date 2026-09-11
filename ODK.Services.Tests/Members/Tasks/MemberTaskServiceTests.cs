@@ -93,7 +93,7 @@ public static class MemberTaskServiceTests
 
     private static IMemberServiceRequest CreateRequest(Member member) =>
         Mock.Of<IMemberServiceRequest>(x =>
-            x.CurrentMember == member && x.Platform == PlatformType.Default);
+            x.CurrentMember == member && x.Platform == PlatformType.GroupSquirrel);
 
     private static MemberTaskService CreateService(MockOdkContext context) =>
         new MemberTaskService(

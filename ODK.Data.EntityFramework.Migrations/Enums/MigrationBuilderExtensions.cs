@@ -53,6 +53,15 @@ public static class MigrationBuilderExtensions
         where T : struct, Enum
         => Sql(migrationBuilder, EnumTableSql.RenameIdColumn<T>(fromColumn));
 
+    /// <summary>
+    /// Renames a value's row to the name the enum now gives it, from the name it was inserted under.
+    /// See <see cref="EnumTableSql.RenameValue{T}"/>.
+    /// </summary>
+    public static MigrationBuilder RenameEnumValue<T>(
+        this MigrationBuilder migrationBuilder, T value, string fromName)
+        where T : struct, Enum
+        => Sql(migrationBuilder, EnumTableSql.RenameValue(value, fromName));
+
     private static MigrationBuilder Sql(MigrationBuilder migrationBuilder, string sql)
     {
         if (string.IsNullOrEmpty(sql))

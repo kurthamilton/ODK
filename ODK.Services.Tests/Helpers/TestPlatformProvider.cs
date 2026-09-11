@@ -25,17 +25,17 @@ internal static class TestPlatformProvider
     /// <param name="platform">The platform the deployment under test serves.</param>
     internal static IPlatformProvider Create(
         string? defaultName = null,
-        PlatformType platform = PlatformType.Default) => new PlatformProvider(
+        PlatformType platform = PlatformType.GroupSquirrel) => new PlatformProvider(
         new PlatformProviderSettings
         {
             BaseUrls = new Dictionary<PlatformType, string>
             {
-                { PlatformType.Default, DefaultBaseUrl },
+                { PlatformType.GroupSquirrel, DefaultBaseUrl },
                 { PlatformType.DrunkenKnitwits, DrunkenKnitwitsBaseUrl }
             },
             Names = new Dictionary<PlatformType, string>
             {
-                { PlatformType.Default, defaultName ?? DefaultName },
+                { PlatformType.GroupSquirrel, defaultName ?? DefaultName },
                 { PlatformType.DrunkenKnitwits, DrunkenKnitwitsName }
             },
             Platform = platform

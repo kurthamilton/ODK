@@ -1,4 +1,4 @@
-{
+﻿{
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
@@ -15,7 +15,7 @@
     // `Platform` is safe as an environment variable *here* and nowhere else. A launch profile's environment
     // is applied to the app being launched, not to the build, so MSBuild - which reads its own `Platform`
     // property from the environment - never sees it. Set it in a shell instead and the build silently moves
-    // to bin\Default\... and obj\Default\...
+    // to bin\GroupSquirrel\... and obj\GroupSquirrel\...
     //
     // The dev pair is opened by Scripts\app\run.bat, the e2e pair by E2E\script.run.tests.bat, each tab
     // under an --artifacts-path of its own so the instances share no build output.
@@ -26,7 +26,7 @@
       "applicationUrl": "http://localhost:8123",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "Platform": "Default"
+        "Platform": "GroupSquirrel"
       }
     },
     "dk": {
@@ -48,7 +48,7 @@
       "applicationUrl": "http://localhost:8125",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "e2e",
-        "Platform": "Default"
+        "Platform": "GroupSquirrel"
       }
     },
     "e2e-dk": {

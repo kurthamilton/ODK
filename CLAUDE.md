@@ -26,7 +26,7 @@ actioned as the platform its payment was made on, whichever endpoint received it
 because a config key is read where its whole path is spelled out (`STRIPE_PLATFORMS_DK_WEBHOOKSECRETV1` in
 Doppler). `DependencyRegistrar` maps the label to a `PlatformType` before any service sees one, so a label
 reaches nothing outside `ODK.Infrastructure`, and `ServedPlatform.Of` selects an entry by crossing from the
-served `PlatformType` to its label (`ToPlatformKey`), falling back to the `GS` entry — `PlatformType.Default`,
+served `PlatformType` to its label (`ToPlatformKey`), falling back to the `GS` entry — `PlatformType.GroupSquirrel`,
 the platform GS names. **Keys only:** `Platform`, whose value is the platform a deployment serves, stays a
 `PlatformType` name, since it is read whole rather than as a segment of a long key. A new platform therefore
 needs a `PlatformKey` member as well as a `PlatformType` one, and the two mappings have to agree —
@@ -74,8 +74,8 @@ Tests: `ODK.Core.Tests`, `ODK.Core.Workflows.Tests`, `ODK.Data.EntityFramework.M
   simultaneous builds fail on the same intermediate file. With a tree each, every tab builds when it likes,
   so nothing has to be built up front or run `--no-build`.
   **`Platform` must never be set as an environment variable in a shell that builds**: it is one of MSBuild's
-  own properties and MSBuild reads properties from the environment, so `set Platform=Default` silently
-  relocates the build to `bin\Default\…` and `obj\Default\…`. A `launchSettings.json` profile is the one
+  own properties and MSBuild reads properties from the environment, so `set Platform=GroupSquirrel` silently
+  relocates the build to `bin\GroupSquirrel\…` and `obj\GroupSquirrel\…`. A `launchSettings.json` profile is the one
   safe place — its environment reaches the launched app, not the build.
   **The csproj excludes `artifacts\**` and `bin\**` from the default globs**, because the SDK excludes only
   the one output path the build was given: without them the other instance's tree arrives as this build's
@@ -621,7 +621,7 @@ the request locale and enqueues a background `IMemberLocaleService.UpdateLocale`
   in config, where a reader can compare them. `Logging:Platforms:*:Path`,
   `Hangfire:Platforms:*:SchemaName` and `BetterStack:Platforms:*` are the pattern; `Emails:Platforms` and
   `Stripe:Platforms` predate it and are the same shape. A missing entry falls back to the `GS`
-  entry, or to `PlatformType.Default`'s once mapped, as `SiteEmailSettingsProvider` and
+  entry, or to `PlatformType.GroupSquirrel`'s once mapped, as `SiteEmailSettingsProvider` and
   `IPlatformProvider.GetName` do.
   The point is what it removes: a per-site GitHub Variable is invisible from the repo, has to be set again
   for every new site, and is the one thing a deploy cannot check. `Platform` itself is the only value that

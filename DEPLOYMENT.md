@@ -13,10 +13,11 @@ platform-specific is baked into the binary, and nothing about a request decides 
 
 **A per-platform config section keys its entries by a two-letter label:** `GS` for Group Squirrel, `DK` for
 Drunken Knitwits — `Platforms:GS:Url`, `STRIPE_PLATFORMS_DK_WEBHOOKSECRETV1`. It keeps a Doppler key legible
-where its whole path is spelled out. The app calls the same platforms `Default` and `DrunkenKnitwits` (its
-`PlatformType`) and maps the label to one as it binds, so a section keyed by those names contributes nothing.
+where its whole path is spelled out. The app calls the same platforms `GroupSquirrel` and
+`DrunkenKnitwits` (its `PlatformType`) and maps the label to one as it binds, so a section keyed by those
+names contributes nothing.
 
-**The `Platform` key is the exception: its value is the platform as the app spells it** — `Default` or
+**The `Platform` key is the exception: its value is the platform as the app spells it** — `GroupSquirrel` or
 `DrunkenKnitwits` — because it is a value read whole rather than a segment of a long key. Putting a label
 there fails at startup rather than binding, so the two cannot be crossed silently in either direction.
 
@@ -205,7 +206,7 @@ deploy matrix so the pipeline ships to it: in `deploy.yml`, add `prod-<platform>
 
 **Step 5 — State the platform the site serves.** Set `PLATFORM` as an **environment Variable** in
 `prod-<platform>` (Settings → Environments → the environment → *Variables*) to the `PlatformType` member's
-name — `Default` or `DrunkenKnitwits`, **not** the `GS` / `DK` label a per-platform section is keyed by.
+name — `GroupSquirrel` or `DrunkenKnitwits`, **not** the `GS` / `DK` label a per-platform section is keyed by.
 **Set it explicitly on every site, including existing ones.** The committed `appsettings.json` states
 `"Platform": "None"`, and a site whose Variable is missing reads that as `DrunkenKnitwits` and serves Drunken
 Knitwits' chrome and groups — it starts and looks broken rather than failing, so nothing but this Variable

@@ -237,7 +237,7 @@ public static class ReferralAdminServiceTests
         var request = new Mock<IMemberServiceRequest>();
         request.Setup(x => x.CurrentMember).Returns(currentMember);
         request.Setup(x => x.CurrentMemberOrDefault).Returns(currentMember);
-        request.Setup(x => x.Platform).Returns(PlatformType.Default);
+        request.Setup(x => x.Platform).Returns(PlatformType.GroupSquirrel);
 
         return (new ReferralAdminService(MockUnitOfWorkFactory.Create(context)), request.Object);
     }

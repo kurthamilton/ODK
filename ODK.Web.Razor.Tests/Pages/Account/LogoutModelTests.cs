@@ -52,7 +52,7 @@ public static class LogoutModelTests
         // Arrange - Group Squirrel is a site-level platform, so its members always land on the site
         // home and the chapter lookup is never made
         var chapterService = new Mock<IChapterService>();
-        var model = CreateLogoutModel(PlatformType.Default, chapterService: chapterService);
+        var model = CreateLogoutModel(PlatformType.GroupSquirrel, chapterService: chapterService);
 
         // Act
         var result = await model.OnGet();

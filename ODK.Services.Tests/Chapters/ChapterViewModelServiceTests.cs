@@ -159,7 +159,7 @@ public static class ChapterViewModelServiceTests
             .Returns(EnvironmentType.Dev);
 
         mock.Setup(x => x.Platform)
-            .Returns(PlatformType.Default);
+            .Returns(PlatformType.GroupSquirrel);
 
         return mock.Object;
     }

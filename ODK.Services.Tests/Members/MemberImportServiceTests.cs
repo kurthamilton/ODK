@@ -444,7 +444,7 @@ public static class MemberImportServiceTests
         mock.Setup(x => x.Chapter).Returns(chapter);
         mock.Setup(x => x.CurrentMember).Returns(currentMember);
         mock.Setup(x => x.CurrentMemberOrDefault).Returns(currentMember);
-        mock.Setup(x => x.Platform).Returns(PlatformType.Default);
+        mock.Setup(x => x.Platform).Returns(PlatformType.GroupSquirrel);
         mock.Setup(x => x.Securable).Returns(ChapterAdminSecurable.MemberImport);
 
         return mock.Object;

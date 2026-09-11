@@ -82,7 +82,7 @@ public class PaymentMetadataModel
     /// The platform the payment belongs to, for a reader that needs one either way. Metadata held by the
     /// payment provider from before the platform was recorded carries none, and those payments are all
     /// Drunken Knitwits' - so an absent platform means Drunken Knitwits, never
-    /// <see cref="PlatformType.Default"/>.
+    /// <see cref="PlatformType.GroupSquirrel"/>.
     /// </summary>
     public PlatformType PlatformOrDrunkenKnitwits => Platform ?? PlatformType.DrunkenKnitwits;
 

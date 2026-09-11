@@ -92,7 +92,7 @@ public static class MemberSiteSubscriptionRecordQueryBuilderTests
 
         var groupSquirrel = context.CreateMemberSiteSubscription(
             context.CreateMember(),
-            context.CreateSiteSubscription(platform: PlatformType.Default));
+            context.CreateSiteSubscription(platform: PlatformType.GroupSquirrel));
         context.CreateMemberSiteSubscription(
             context.CreateMember(),
             context.CreateSiteSubscription(platform: PlatformType.DrunkenKnitwits));
@@ -102,7 +102,7 @@ public static class MemberSiteSubscriptionRecordQueryBuilderTests
         // Act
         var result = await unitOfWork.MemberSiteSubscriptionRecordRepository
             .Query()
-            .ForPlatform(PlatformType.Default)
+            .ForPlatform(PlatformType.GroupSquirrel)
             .GetAll()
             .Run();
 

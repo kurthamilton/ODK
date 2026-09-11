@@ -234,7 +234,7 @@ public static class StripeRenewalBackfillTests
             { PaymentMetadataModel.Keys.ChapterId, ChapterId.ToString() },
             { PaymentMetadataModel.Keys.ChapterSubscriptionId, ChapterSubscriptionId.ToString() },
             { PaymentMetadataModel.Keys.MemberId, MemberId.ToString() },
-            { PaymentMetadataModel.Keys.Platform, PlatformType.Default.ToString() }
+            { PaymentMetadataModel.Keys.Platform, PlatformType.GroupSquirrel.ToString() }
         };
 
     private static StripeTransactionAudit CreateAudit(
@@ -315,7 +315,7 @@ public static class StripeRenewalBackfillTests
         => new()
         {
             { PaymentMetadataModel.Keys.MemberId, MemberId.ToString() },
-            { PaymentMetadataModel.Keys.Platform, PlatformType.Default.ToString() },
+            { PaymentMetadataModel.Keys.Platform, PlatformType.GroupSquirrel.ToString() },
             { PaymentMetadataModel.Keys.SiteSubscriptionPriceId, SiteSubscriptionPriceId.ToString() }
         };
 }

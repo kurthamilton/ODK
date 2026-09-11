@@ -22,7 +22,7 @@ public static class UrlProviderTests
         /* Arrange - a Drunken Knitwits group, from a request served as Group Squirrel, which sees every
            platform's groups. A link to the group has to reach the site that hosts it, so both the host and
            the path shape come from the group's platform. */
-        var provider = CreateProvider(PlatformType.Default);
+        var provider = CreateProvider(PlatformType.GroupSquirrel);
         var chapter = CreateChapter(PlatformType.DrunkenKnitwits);
 
         // Act
@@ -36,8 +36,8 @@ public static class UrlProviderTests
     public static void GroupUrl_GroupOnTheServedPlatform_UsesTheServedPlatform()
     {
         // Arrange
-        var provider = CreateProvider(PlatformType.Default);
-        var chapter = CreateChapter(PlatformType.Default);
+        var provider = CreateProvider(PlatformType.GroupSquirrel);
+        var chapter = CreateChapter(PlatformType.GroupSquirrel);
 
         // Act
         var result = provider.GroupUrl(chapter);
@@ -51,7 +51,7 @@ public static class UrlProviderTests
     {
         // Arrange - a URL naming no group is about the site the reader is already on, so it stays there
         // even on a deployment that can see the other platform's groups.
-        var provider = CreateProvider(PlatformType.Default);
+        var provider = CreateProvider(PlatformType.GroupSquirrel);
 
         // Act
         var result = provider.SiteAdminGroups();
@@ -80,7 +80,7 @@ public static class UrlProviderTests
     public static void BaseUrl_NoGroup_UsesTheServedPlatform()
     {
         // Arrange
-        var provider = CreateProvider(PlatformType.Default);
+        var provider = CreateProvider(PlatformType.GroupSquirrel);
 
         // Act
         var result = provider.BaseUrl(chapter: null);
@@ -94,7 +94,7 @@ public static class UrlProviderTests
     {
         // Arrange - the platform URL an email carries names the site the email is about, not the one that
         // happened to send it.
-        var provider = CreateProvider(PlatformType.Default);
+        var provider = CreateProvider(PlatformType.GroupSquirrel);
         var chapter = CreateChapter(PlatformType.DrunkenKnitwits);
 
         // Act
@@ -123,12 +123,12 @@ public static class UrlProviderTests
         {
             BaseUrls = new Dictionary<PlatformType, string>
             {
-                { PlatformType.Default, DefaultBaseUrl },
+                { PlatformType.GroupSquirrel, DefaultBaseUrl },
                 { PlatformType.DrunkenKnitwits, DrunkenKnitwitsBaseUrl }
             },
             Names = new Dictionary<PlatformType, string>
             {
-                { PlatformType.Default, "Group Squirrel" },
+                { PlatformType.GroupSquirrel, "Group Squirrel" },
                 { PlatformType.DrunkenKnitwits, "Drunken Knitwits" }
             },
             Platform = servedPlatform

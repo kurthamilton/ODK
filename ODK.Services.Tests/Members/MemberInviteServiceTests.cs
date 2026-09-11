@@ -25,7 +25,7 @@ public static class MemberInviteServiceTests
            replying is no reason to take it away. */
         using var context = CreateMockOdkContext();
 
-        var chapter = context.CreateChapter(platform: PlatformType.Default);
+        var chapter = context.CreateChapter(platform: PlatformType.GroupSquirrel);
         var invited = CreateInvitedMember(context, activated: true);
         CreateInvite(context, chapter.Id, invited.Id, DateTime.UtcNow.AddDays(-100));
 
@@ -46,7 +46,7 @@ public static class MemberInviteServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var chapter = context.CreateChapter(platform: PlatformType.Default);
+        var chapter = context.CreateChapter(platform: PlatformType.GroupSquirrel);
         var invited = CreateInvitedMember(context, activated: false);
         CreateInvite(context, chapter.Id, invited.Id, DateTime.UtcNow.AddDays(-100));
 
@@ -68,8 +68,8 @@ public static class MemberInviteServiceTests
            invited to two groups loses the account the second invite is waiting on. */
         using var context = CreateMockOdkContext();
 
-        var expiredChapter = context.CreateChapter(platform: PlatformType.Default);
-        var liveChapter = context.CreateChapter(platform: PlatformType.Default);
+        var expiredChapter = context.CreateChapter(platform: PlatformType.GroupSquirrel);
+        var liveChapter = context.CreateChapter(platform: PlatformType.GroupSquirrel);
         var invited = CreateInvitedMember(context, activated: false);
 
         CreateInvite(context, expiredChapter.Id, invited.Id, DateTime.UtcNow.AddDays(-100));
@@ -96,7 +96,7 @@ public static class MemberInviteServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var chapter = context.CreateChapter(platform: PlatformType.Default);
+        var chapter = context.CreateChapter(platform: PlatformType.GroupSquirrel);
         var invited = CreateInvitedMember(context, activated: false);
         CreateInvite(context, chapter.Id, invited.Id, DateTime.UtcNow.AddDays(-89));
 
@@ -118,8 +118,8 @@ public static class MemberInviteServiceTests
            this group, so one for somewhere else is refused rather than honoured. */
         using var context = CreateMockOdkContext();
 
-        var chapter = context.CreateChapter(platform: PlatformType.Default);
-        var otherChapter = context.CreateChapter(platform: PlatformType.Default);
+        var chapter = context.CreateChapter(platform: PlatformType.GroupSquirrel);
+        var otherChapter = context.CreateChapter(platform: PlatformType.GroupSquirrel);
         var invited = CreateInvitedMember(context, activated: false);
         var invite = CreateInvite(context, otherChapter.Id, invited.Id, DateTime.UtcNow);
 
@@ -140,7 +140,7 @@ public static class MemberInviteServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var chapter = context.CreateChapter(platform: PlatformType.Default);
+        var chapter = context.CreateChapter(platform: PlatformType.GroupSquirrel);
 
         var service = CreateService(context);
 
@@ -158,7 +158,7 @@ public static class MemberInviteServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var chapter = context.CreateChapter(platform: PlatformType.Default);
+        var chapter = context.CreateChapter(platform: PlatformType.GroupSquirrel);
         var invited = CreateInvitedMember(context, activated: false);
         var invite = CreateInvite(context, chapter.Id, invited.Id, DateTime.UtcNow);
 
@@ -179,7 +179,7 @@ public static class MemberInviteServiceTests
         // Arrange
         using var context = CreateMockOdkContext();
 
-        var chapter = context.CreateChapter(platform: PlatformType.Default);
+        var chapter = context.CreateChapter(platform: PlatformType.GroupSquirrel);
         var invited = CreateInvitedMember(context, activated: true);
         var invite = CreateInvite(context, chapter.Id, invited.Id, DateTime.UtcNow);
 
@@ -195,7 +195,7 @@ public static class MemberInviteServiceTests
     }
 
     private static IChapterServiceRequest CreateChapterRequest(
-        Chapter chapter, PlatformType platform = PlatformType.Default) =>
+        Chapter chapter, PlatformType platform = PlatformType.GroupSquirrel) =>
         Mock.Of<IChapterServiceRequest>(x =>
             x.Platform == platform &&
             x.Chapter == chapter &&

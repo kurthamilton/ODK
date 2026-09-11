@@ -669,11 +669,11 @@ public static class StripeAccountAuditTests
             { PaymentMetadataModel.Keys.ChapterId, ChapterId.ToString() },
             { PaymentMetadataModel.Keys.ChapterSubscriptionId, ChapterSubscriptionId.ToString() },
             { PaymentMetadataModel.Keys.MemberId, MemberId.ToString() },
-            { PaymentMetadataModel.Keys.Platform, PlatformType.Default.ToString() },
+            { PaymentMetadataModel.Keys.Platform, PlatformType.GroupSquirrel.ToString() },
             { PaymentMetadataModel.Keys.Reason, PaymentReasonType.ChapterSubscription.ToString() }
         };
 
-    private static StripePaymentAccount CreateAccount(PlatformType platform = PlatformType.Default)
+    private static StripePaymentAccount CreateAccount(PlatformType platform = PlatformType.GroupSquirrel)
         => new()
         {
             AccountId = "acct_1",
@@ -803,7 +803,7 @@ public static class StripeAccountAuditTests
         => new()
         {
             { PaymentMetadataModel.Keys.MemberId, MemberId.ToString() },
-            { PaymentMetadataModel.Keys.Platform, PlatformType.Default.ToString() },
+            { PaymentMetadataModel.Keys.Platform, PlatformType.GroupSquirrel.ToString() },
             { PaymentMetadataModel.Keys.Reason, PaymentReasonType.SiteSubscription.ToString() },
             { PaymentMetadataModel.Keys.SiteSubscriptionPriceId, SiteSubscriptionPriceId.ToString() }
         };

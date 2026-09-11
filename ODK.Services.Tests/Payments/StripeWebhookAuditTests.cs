@@ -166,7 +166,7 @@ public static class StripeWebhookAuditTests
     public static void Audit_WhenEndpointAddressesAnotherPath_ReportsAnUnmetPath()
     {
         // Arrange
-        var endpoints = new[] { CreateEndpoint($"{DefaultHost}/webhooks/legacy?v=1&p=Default") };
+        var endpoints = new[] { CreateEndpoint($"{DefaultHost}/webhooks/legacy?v=1&p=GroupSquirrel") };
 
         // Act
         var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
@@ -206,10 +206,10 @@ public static class StripeWebhookAuditTests
     }
 
     [TestCase("")]
-    [TestCase("?p=Default")]
-    [TestCase("?v=&p=Default")]
-    [TestCase("?v=nine&p=Default")]
-    [TestCase("?v=3&p=Default")]
+    [TestCase("?p=GroupSquirrel")]
+    [TestCase("?v=&p=GroupSquirrel")]
+    [TestCase("?v=nine&p=GroupSquirrel")]
+    [TestCase("?v=3&p=GroupSquirrel")]
     public static void Audit_WhenUrlNamesNoKnownVersion_ReportsNoKindAndAnUnmetVersion(string query)
     {
         // Arrange
@@ -228,7 +228,7 @@ public static class StripeWebhookAuditTests
     public static void Audit_WhenUrlNamesAVersion_ReadsItAsThatKind(int version, StripeWebhookKind expected)
     {
         // Arrange
-        var endpoints = new[] { CreateEndpoint($"{DefaultHost}/webhooks/stripe?v={version}&p=Default") };
+        var endpoints = new[] { CreateEndpoint($"{DefaultHost}/webhooks/stripe?v={version}&p=GroupSquirrel") };
 
         // Act
         var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
@@ -290,7 +290,7 @@ public static class StripeWebhookAuditTests
     public static void Audit_WhenUrlCarriesAnUnknownParameter_ReportsIt()
     {
         // Arrange
-        var endpoints = new[] { CreateEndpoint($"{DefaultHost}/webhooks/stripe?v=1&p=Default&stale=1") };
+        var endpoints = new[] { CreateEndpoint($"{DefaultHost}/webhooks/stripe?v=1&p=GroupSquirrel&stale=1") };
 
         // Act
         var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
@@ -305,7 +305,7 @@ public static class StripeWebhookAuditTests
     public static void Audit_WhenUrlIsOnAnotherHost_ReportsAnUnmetHost()
     {
         // Arrange
-        var endpoints = new[] { CreateEndpoint("https://elsewhere.com/webhooks/stripe?v=1&p=Default") };
+        var endpoints = new[] { CreateEndpoint("https://elsewhere.com/webhooks/stripe?v=1&p=GroupSquirrel") };
 
         // Act
         var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), endpoints, CreateExpectations());
@@ -322,7 +322,7 @@ public static class StripeWebhookAuditTests
     public static void Audit_WhenTheHostIsWithheld_ComparesNoHost(string host)
     {
         // Arrange
-        var expectations = CreateExpectations(hosts: Hosts(EnvironmentType.Prod, PlatformType.Default, host));
+        var expectations = CreateExpectations(hosts: Hosts(EnvironmentType.Prod, PlatformType.GroupSquirrel, host));
 
         // Act
         var result = StripeWebhookAudit.Audit(CreatePaymentAccount(), [CreateEndpoint()], expectations);
@@ -480,7 +480,7 @@ public static class StripeWebhookAuditTests
         // Arrange
         var endpoints = new[]
         {
-            CreateEndpoint($"{DefaultHost}/webhooks/stripe?p=Default", id: "we_orphan"),
+            CreateEndpoint($"{DefaultHost}/webhooks/stripe?p=GroupSquirrel", id: "we_orphan"),
             CreateEndpoint(Url(StripeWebhookKind.ConnectedAccount), id: "we_connected"),
             CreateEndpoint(Url(StripeWebhookKind.Site), id: "we_site")
         };
@@ -524,11 +524,11 @@ public static class StripeWebhookAuditTests
         {
             AccountIds = new Dictionary<PlatformType, string>
             {
-                { PlatformType.Default, "GS_AccountId" },
+                { PlatformType.GroupSquirrel, "GS_AccountId" },
                 { PlatformType.DrunkenKnitwits, "DK_AccountId" }
             },
             Events = events ?? ExpectedEvents,
-            Hosts = hosts ?? Hosts(EnvironmentType.Prod, PlatformType.Default),
+            Hosts = hosts ?? Hosts(EnvironmentType.Prod, PlatformType.GroupSquirrel),
             LiveDashboardUrlFormat = "https://dashboard.stripe.com/{account}/webhooks/{id}",
             Path = path,
             TestDashboardUrlFormat = "https://dashboard.stripe.com/{account}/test/webhooks/{id}"
@@ -536,7 +536,7 @@ public static class StripeWebhookAuditTests
 
     private static StripePaymentAccount CreatePaymentAccount(
         EnvironmentType environment = EnvironmentType.Prod,
-        PlatformType platform = PlatformType.Default)
+        PlatformType platform = PlatformType.GroupSquirrel)
         => new()
         {
             AccountId = "acct_1",
@@ -557,5 +557,5 @@ public static class StripeWebhookAuditTests
         };
 
     private static string Url(StripeWebhookKind kind)
-        => $"{DefaultHost}/webhooks/stripe?v={(int)kind}&p=Default";
+        => $"{DefaultHost}/webhooks/stripe?v={(int)kind}&p=GroupSquirrel";
 }

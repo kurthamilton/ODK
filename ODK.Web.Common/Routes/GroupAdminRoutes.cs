@@ -45,7 +45,7 @@ public class GroupAdminRoutes
     public GroupAdminRoute Delete(Chapter chapter) => Platform switch
     {
         PlatformType.DrunkenKnitwits => GroupAdminRoute.Default,
-        _ => Group(chapter).Child("/delete", ChapterAdminSecurable.Delete, PlatformType.Default)
+        _ => Group(chapter).Child("/delete", ChapterAdminSecurable.Delete, PlatformType.GroupSquirrel)
     };
 
     public GroupAdminRoute Email(Chapter chapter, EmailType type) => Emails(chapter).Child($"/{type}");
@@ -102,7 +102,7 @@ public class GroupAdminRoutes
     public GroupAdminRoute Image(Chapter chapter) => Platform switch
     {
         PlatformType.DrunkenKnitwits => GroupAdminRoute.Default,
-        _ => Settings(chapter).Child("#picture", ChapterAdminSecurable.Branding, PlatformType.Default)
+        _ => Settings(chapter).Child("#picture", ChapterAdminSecurable.Branding, PlatformType.GroupSquirrel)
     };
 
     public GroupAdminRoute Import() => Index().Child("/import");
@@ -114,7 +114,7 @@ public class GroupAdminRoutes
         _ => new()
         {
             Path = "/my/groups",
-            Platform = PlatformType.Default,
+            Platform = PlatformType.GroupSquirrel,
             Securable = ChapterAdminSecurable.Any
         }
     };

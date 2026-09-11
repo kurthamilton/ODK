@@ -22,8 +22,8 @@ public static class PublicRoutesSitemapTests
     public static void Sitemap_DefaultPlatform_OmitsTheDrunkenKnitwitsAboutPage()
     {
         // Arrange
-        var routes = new OdkRoutes(PlatformType.Default).Public;
-        var chapter = CreateChapter(PlatformType.Default);
+        var routes = new OdkRoutes(PlatformType.GroupSquirrel).Public;
+        var chapter = CreateChapter(PlatformType.GroupSquirrel);
 
         // Act - Group Squirrel's About is the group home page, so there is no /about page to offer.
         var result = Paths(routes, chapter);
@@ -37,8 +37,8 @@ public static class PublicRoutesSitemapTests
     public static void Sitemap_DefaultPlatform_OmitsTheFaqPageWhenTheGroupHasNoQuestions()
     {
         // Arrange
-        var routes = new OdkRoutes(PlatformType.Default).Public;
-        var chapter = CreateChapter(PlatformType.Default);
+        var routes = new OdkRoutes(PlatformType.GroupSquirrel).Public;
+        var chapter = CreateChapter(PlatformType.GroupSquirrel);
 
         // Act
         var withQuestions = Paths(routes, chapter, hasQuestions: true);
@@ -89,8 +89,8 @@ public static class PublicRoutesSitemapTests
     public static void Sitemap_EventsArePublic_IncludesEachEventWithItsPublicationDate()
     {
         // Arrange
-        var routes = new OdkRoutes(PlatformType.Default).Public;
-        var chapter = CreateChapter(PlatformType.Default);
+        var routes = new OdkRoutes(PlatformType.GroupSquirrel).Public;
+        var chapter = CreateChapter(PlatformType.GroupSquirrel);
 
         // Act
         var result = routes.Sitemap(CreateViewModel(chapter, eventsArePublic: true, shortcodes: ["abc123"]));
@@ -104,8 +104,8 @@ public static class PublicRoutesSitemapTests
     public static void Sitemap_EventsAreNotPublic_OmitsTheEventPages()
     {
         // Arrange
-        var routes = new OdkRoutes(PlatformType.Default).Public;
-        var chapter = CreateChapter(PlatformType.Default);
+        var routes = new OdkRoutes(PlatformType.GroupSquirrel).Public;
+        var chapter = CreateChapter(PlatformType.GroupSquirrel);
 
         // Act - an anonymous visitor resolves to Public visibility, so a group showing its events to
         // members only shows a crawler an empty events page and a not-found for each event.
@@ -136,8 +136,8 @@ public static class PublicRoutesSitemapTests
     public static void Sitemap_HiddenContactPage_OmitsThePage()
     {
         // Arrange
-        var routes = new OdkRoutes(PlatformType.Default).Public;
-        var chapter = CreateChapter(PlatformType.Default);
+        var routes = new OdkRoutes(PlatformType.GroupSquirrel).Public;
+        var chapter = CreateChapter(PlatformType.GroupSquirrel);
 
         // Act
         var result = Paths(routes, chapter, hiddenPages: [PageType.Contact]);
@@ -150,7 +150,7 @@ public static class PublicRoutesSitemapTests
     public static void Sitemap_NoChapters_StillListsTheSitePages()
     {
         // Arrange
-        var routes = new OdkRoutes(PlatformType.Default).Public;
+        var routes = new OdkRoutes(PlatformType.GroupSquirrel).Public;
 
         // Act
         var result = routes

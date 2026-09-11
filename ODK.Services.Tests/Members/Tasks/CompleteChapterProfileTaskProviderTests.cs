@@ -82,7 +82,7 @@ public static class CompleteChapterProfileTaskProviderTests
         Member = new Member { Id = Guid.NewGuid(), TimeZone = chapter.TimeZone },
         MemberProperties = memberProperties,
         OwnedChapters = [],
-        Platform = PlatformType.Default
+        Platform = PlatformType.GroupSquirrel
     };
 
     private static ChapterProperty CreateProperty(Guid chapterId, bool required, bool applicationOnly) => new ChapterProperty

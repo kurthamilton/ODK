@@ -20,7 +20,7 @@ public static class ServedPlatform
 
     /// <summary>
     /// What a per-platform section states for this deployment, falling back to the entry labelled GS the way
-    /// every other per-platform lookup falls back to <see cref="PlatformType.Default"/>, the platform GS names.
+    /// every other per-platform lookup falls back to <see cref="PlatformType.GroupSquirrel"/>, the platform GS names.
     /// </summary>
     public static T Of<T>(AppSettings appSettings, IReadOnlyDictionary<PlatformKey, T> platforms)
     {

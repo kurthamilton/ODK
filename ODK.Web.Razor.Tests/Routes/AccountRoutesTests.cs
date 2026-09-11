@@ -44,10 +44,10 @@ public static class AccountRoutesTests
         // chapter level, so the guard is defensive rather than a fix. It pins the contract for anything
         // that does pass a chapter later - Group Squirrel addresses a chapter as "/groups/{slug}", and
         // there is no /groups/{slug}/account/pending page to land on.
-        var routes = new AccountRoutes(PlatformType.Default);
+        var routes = new AccountRoutes(PlatformType.GroupSquirrel);
 
         // Act
-        var result = routes.Pending(CreateChapter(PlatformType.Default, "Test Chapter"));
+        var result = routes.Pending(CreateChapter(PlatformType.GroupSquirrel, "Test Chapter"));
 
         // Assert
         result.Should().Be("/account/pending");

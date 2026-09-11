@@ -76,7 +76,7 @@ internal class MockOdkContext : OdkContext
         SiteSubscription? siteSubscription = null,
         DateTime? approvedUtc = null,
         string name = "",
-        PlatformType platform = PlatformType.Default,
+        PlatformType platform = PlatformType.GroupSquirrel,
         TimeZoneInfo? timeZone = null,
         IEnumerable<Member>? adminMembers = null,
         IEnumerable<Member>? members = null,
@@ -315,7 +315,7 @@ internal class MockOdkContext : OdkContext
         Member? member = null,
         Chapter? chapter = null,
         DateTime? paidUtc = null,
-        PlatformType platform = PlatformType.Default)
+        PlatformType platform = PlatformType.GroupSquirrel)
     {
         currency ??= CreateCurrency();
         member ??= CreateMember();
@@ -356,7 +356,7 @@ internal class MockOdkContext : OdkContext
     }
 
     internal SitePaymentProduct CreateSitePaymentProduct(
-        PlatformType platform = PlatformType.Default,
+        PlatformType platform = PlatformType.GroupSquirrel,
         string externalId = "product-external-id")
     {
         return Create(new SitePaymentProduct
@@ -374,7 +374,7 @@ internal class MockOdkContext : OdkContext
         IEnumerable<SiteFeatureType>? features = null,
         bool free = false,
         int? memberLimit = null,
-        PlatformType platform = PlatformType.Default,
+        PlatformType platform = PlatformType.GroupSquirrel,
         SitePaymentProduct? sitePaymentProduct = null,
         bool isDefault = false,
         bool enabled = true,

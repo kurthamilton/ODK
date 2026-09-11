@@ -50,13 +50,13 @@ public class RecurringSiteSubscriptionRenewalTests : DefaultPageTest
         var memberId = await Members.GetMemberId(member.Email);
 
         // Metadata the app's site-subscription webhook processing requires (PascalCase keys). Platform must
-        // be "Default" - it scopes the member's subscription lookup/insert. SiteSubscriptionPriceId is the
+        // be "GroupSquirrel" - it scopes the member's subscription lookup/insert. SiteSubscriptionPriceId is the
         // app's internal price GUID (not the Stripe price id).
         var metadata = new Dictionary<string, string>
         {
             ["MemberId"] = memberId.ToString(),
             ["SiteSubscriptionPriceId"] = subscription.PriceId.ToString(),
-            ["Platform"] = "Default"
+            ["Platform"] = "GroupSquirrel"
         };
 
         await using var clock = await StripeTestClock.CreateSubscription(
@@ -130,7 +130,7 @@ public class RecurringSiteSubscriptionRenewalTests : DefaultPageTest
         {
             ["MemberId"] = memberId.ToString(),
             ["SiteSubscriptionPriceId"] = subscription.PriceId.ToString(),
-            ["Platform"] = "Default",
+            ["Platform"] = "GroupSquirrel",
             ["PaymentId"] = paymentId.ToString(),
             ["PaymentCheckoutSessionId"] = checkoutSessionId.ToString()
         };

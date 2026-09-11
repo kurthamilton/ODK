@@ -12,7 +12,7 @@ public static class PlatformKeyExtensions
     /// </remarks>
     public static PlatformKey ToPlatformKey(this PlatformType platform) => platform switch
     {
-        PlatformType.Default => PlatformKey.GS,
+        PlatformType.GroupSquirrel => PlatformKey.GS,
         PlatformType.DrunkenKnitwits => PlatformKey.DK,
         _ => throw new ArgumentOutOfRangeException(nameof(platform), $"Unsupported platform: {platform}")
     };
@@ -21,7 +21,7 @@ public static class PlatformKeyExtensions
     public static PlatformType ToPlatformType(this PlatformKey key) => key switch
     {
         PlatformKey.DK => PlatformType.DrunkenKnitwits,
-        PlatformKey.GS => PlatformType.Default,
+        PlatformKey.GS => PlatformType.GroupSquirrel,
         _ => throw new ArgumentOutOfRangeException(nameof(key), $"Unsupported platform key: {key}")
     };
 }

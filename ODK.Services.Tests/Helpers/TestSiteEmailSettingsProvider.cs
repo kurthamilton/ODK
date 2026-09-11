@@ -42,7 +42,7 @@ internal static class TestSiteEmailSettingsProvider
         {
             Platforms = new Dictionary<PlatformType, SiteEmailSettings>
             {
-                { PlatformType.Default, Settings(FromEmailAddress) },
+                { PlatformType.GroupSquirrel, Settings(FromEmailAddress) },
                 { PlatformType.DrunkenKnitwits, Settings(DrunkenKnitwitsFromEmailAddress) }
             }
         });

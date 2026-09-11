@@ -19,7 +19,7 @@ public static class UploadChapterImageTaskProviderTests
     {
         // Arrange
         var chapter = CreateChapter();
-        var context = CreateContext(PlatformType.Default, [chapter], chaptersWithImage: []);
+        var context = CreateContext(PlatformType.GroupSquirrel, [chapter], chaptersWithImage: []);
 
         // Act
         var tasks = new UploadChapterImageTaskProvider().GetTasks(context);
@@ -35,7 +35,7 @@ public static class UploadChapterImageTaskProviderTests
     {
         // Arrange
         var chapter = CreateChapter();
-        var context = CreateContext(PlatformType.Default, [chapter], chaptersWithImage: [chapter.Id]);
+        var context = CreateContext(PlatformType.GroupSquirrel, [chapter], chaptersWithImage: [chapter.Id]);
 
         // Act
         var tasks = new UploadChapterImageTaskProvider().GetTasks(context);
@@ -71,7 +71,7 @@ public static class UploadChapterImageTaskProviderTests
             Member = CreateMember(),
             MemberProperties = [],
             OwnedChapters = [],
-            Platform = PlatformType.Default
+            Platform = PlatformType.GroupSquirrel
         };
 
         // Act
@@ -88,7 +88,7 @@ public static class UploadChapterImageTaskProviderTests
         var withImage = CreateChapter();
         var withoutImage = CreateChapter();
         var context = CreateContext(
-            PlatformType.Default, [withImage, withoutImage], chaptersWithImage: [withImage.Id]);
+            PlatformType.GroupSquirrel, [withImage, withoutImage], chaptersWithImage: [withImage.Id]);
 
         // Act
         var tasks = new UploadChapterImageTaskProvider().GetTasks(context);

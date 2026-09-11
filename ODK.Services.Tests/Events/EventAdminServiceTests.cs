@@ -302,7 +302,7 @@ public static class EventAdminServiceTests
             .Returns(currentMember);
 
         mock.Setup(x => x.Platform)
-            .Returns(PlatformType.Default);
+            .Returns(PlatformType.GroupSquirrel);
 
         mock.Setup(x => x.Securable)
             .Returns(securable ?? ChapterAdminSecurable.Any);
@@ -325,7 +325,7 @@ public static class EventAdminServiceTests
             .Returns(new JobHttpRequestContext());
 
         mock.Setup(x => x.Platform)
-            .Returns(PlatformType.Default);
+            .Returns(PlatformType.GroupSquirrel);
 
         return mock.Object;
     }
