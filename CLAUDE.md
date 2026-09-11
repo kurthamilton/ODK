@@ -256,7 +256,7 @@ supplies only its own infrastructure.
 | | Drunken Knitwits | Group Squirrel |
 |---|---|---|
 | Page tree | `Pages/Chapters/Admin/**` | `Pages/My/Groups/**` |
-| Route | `/{chapterName}/admin/...` | `/my/groups/{chapterId:guid}/...` |
+| Route | `/{chapterName}/admin/...` | `/my/groups/{slug}/...` |
 | Layout | `_OdkChapterAdminLayout` | `_GroupAdminLayout` |
 | Page shell partial | `Admin/_AdminBody` (`AdminBodyViewModel`) | `Components/_TwoColLeftMenu` (`TwoColLeftMenuViewModel`) |
 | Page model base | `AdminPageModel` | `OdkGroupAdminPageModel` |

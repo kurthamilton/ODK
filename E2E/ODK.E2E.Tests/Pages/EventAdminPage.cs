@@ -3,7 +3,7 @@
 namespace ODK.E2E.Tests.Pages;
 
 /// <summary>
-/// The admin create-event page (Default <c>/my/groups/{chapterId}/events/new</c>, DrunkenKnitwits
+/// The admin create-event page (Default <c>/my/groups/{slug}/events/new</c>, DrunkenKnitwits
 /// <c>/{chapterName}/admin/events/create</c>). The shared form is identical on both platforms; the
 /// caller passes the platform-correct create path. The required fields are Name, Venue (a
 /// SlimSelect-enhanced dropdown) and Date (a flatpickr date+time input). On success the app redirects

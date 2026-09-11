@@ -22,10 +22,10 @@ public class GroupOwnerTests : DefaultPageTest
         publishedUtc.Should().BeNull("group should start unpublished");
 
         await new LoginPage(Page).LogIn(owner.Email, owner.Password);
-        await new GroupImageAdminPage(Page).SetPicture(group.ChapterId);
+        await new GroupImageAdminPage(Page).SetPicture(group);
 
         // Act - the owner publishes it through the UI.
-        await new GroupAdminPage(Page).Publish(group.ChapterId);
+        await new GroupAdminPage(Page).Publish(group);
 
         // Assert - publishing stamps Chapters.PublishedUtc.
         publishedUtc = await ChapterDataHelper.GetPublishedUtc(group.ChapterId);

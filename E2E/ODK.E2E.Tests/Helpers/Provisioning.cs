@@ -146,7 +146,7 @@ internal static class Provisioning
     {
         var group = await CreateGroup(owner, name);
         await ApproveGroup(group.ChapterId);
-        await PublishGroup(owner, group.ChapterId);
+        await PublishGroup(owner, group);
         return group;
     }
 
@@ -362,12 +362,12 @@ internal static class Provisioning
     /// Publishes a group, adding the picture publication requires first - group creation does not ask for
     /// one, so a freshly created group has none.
     /// </summary>
-    public static async Task PublishGroup(TestAccount owner, Guid chapterId)
+    public static async Task PublishGroup(TestAccount owner, TestGroup group)
     {
         await RunAs(owner, async page =>
         {
-            await new GroupImageAdminPage(page).SetPicture(chapterId);
-            await new GroupAdminPage(page).Publish(chapterId);
+            await new GroupImageAdminPage(page).SetPicture(group);
+            await new GroupAdminPage(page).Publish(group);
         });
     }
 

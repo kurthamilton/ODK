@@ -4,7 +4,7 @@ namespace ODK.E2E.Tests.Pages;
 
 /// <summary>
 /// The admin area for a chapter's member-profile properties (the per-chapter questions members answer).
-/// Create is at Default <c>/my/groups/{chapterId}/members/properties/new</c> / DrunkenKnitwits
+/// Create is at Default <c>/my/groups/{slug}/members/properties/new</c> / DrunkenKnitwits
 /// <c>/{chapterName}/admin/members/properties/create</c>; the list page carries per-row move-up/move-down
 /// reorder controls. The forms are identical on both platforms; the caller passes the platform-correct
 /// URL.

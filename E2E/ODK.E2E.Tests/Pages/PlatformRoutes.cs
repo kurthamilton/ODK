@@ -5,7 +5,7 @@ namespace ODK.E2E.Tests.Pages;
 /// <summary>
 /// Builds the platform-correct <em>relative</em> URLs a test drives (resolved against the fixture's
 /// context BaseURL). The same admin function lives under different route trees per platform - Default
-/// under <c>/my/groups/{chapterId}/...</c>, DrunkenKnitwits under <c>/{chapterName}/admin/...</c>, and
+/// under <c>/my/groups/{slug}/...</c>, DrunkenKnitwits under <c>/{chapterName}/admin/...</c>, and
 /// the leaf segments even differ (<c>/new</c> vs <c>/create</c>) - so page objects take the finished
 /// path from here and stay platform-agnostic. Mirrors the app's <c>GroupAdminRoutes</c>/<c>GroupRoutes</c>.
 /// </summary>
@@ -91,26 +91,24 @@ internal abstract class PlatformRoutes
 
     private sealed class DefaultPlatformRoutes : PlatformRoutes
     {
-        private readonly Guid _chapterId;
         private readonly string _slug;
 
         public DefaultPlatformRoutes(TestGroup group)
         {
-            _chapterId = group.ChapterId;
             _slug = group.Slug;
         }
 
-        public override string EmailsAdmin => $"/my/groups/{_chapterId}/emails";
+        public override string EmailsAdmin => $"/my/groups/{_slug}/emails";
 
-        public override string EventCreate => $"/my/groups/{_chapterId}/events/new";
+        public override string EventCreate => $"/my/groups/{_slug}/events/new";
 
-        public override string EventsAdmin => $"/my/groups/{_chapterId}/events";
+        public override string EventsAdmin => $"/my/groups/{_slug}/events";
 
-        public override string EventSettings => $"/my/groups/{_chapterId}/events/settings";
+        public override string EventSettings => $"/my/groups/{_slug}/events/settings";
 
-        public override string VenueCreate => $"/my/groups/{_chapterId}/events/venues/new";
+        public override string VenueCreate => $"/my/groups/{_slug}/events/venues/new";
 
-        public override string VenuesList => $"/my/groups/{_chapterId}/events/venues";
+        public override string VenuesList => $"/my/groups/{_slug}/events/venues";
 
         public override string Contact => $"/groups/{_slug}/contact";
 
@@ -118,25 +116,25 @@ internal abstract class PlatformRoutes
 
         public override string Home => $"/groups/{_slug}";
 
-        public override string MembersAdmin => $"/my/groups/{_chapterId}/members";
+        public override string MembersAdmin => $"/my/groups/{_slug}/members";
 
-        public override string MembersImport => $"/my/groups/{_chapterId}/members/import";
+        public override string MembersImport => $"/my/groups/{_slug}/members/import";
 
-        public override string MembersInvited => $"/my/groups/{_chapterId}/members/invited";
+        public override string MembersInvited => $"/my/groups/{_slug}/members/invited";
 
         public override string MembersList => $"/groups/{_slug}/members";
 
-        public override string PropertyCreate => $"/my/groups/{_chapterId}/members/properties/new";
+        public override string PropertyCreate => $"/my/groups/{_slug}/members/properties/new";
 
-        public override string PropertiesList => $"/my/groups/{_chapterId}/members/properties";
+        public override string PropertiesList => $"/my/groups/{_slug}/members/properties";
 
         public override string ProfileUpdate => $"/groups/{_slug}/profile";
 
-        public override string SubscriptionCreate => $"/my/groups/{_chapterId}/membership/subscriptions/new";
+        public override string SubscriptionCreate => $"/my/groups/{_slug}/membership/subscriptions/new";
 
-        public override string SubscriptionsList => $"/my/groups/{_chapterId}/membership/subscriptions";
+        public override string SubscriptionsList => $"/my/groups/{_slug}/membership/subscriptions";
 
-        public override string EventEdit(Guid eventId) => $"/my/groups/{_chapterId}/events/{eventId}";
+        public override string EventEdit(Guid eventId) => $"/my/groups/{_slug}/events/{eventId}";
 
         public override string EventPage(string shortcode) => $"/groups/{_slug}/events/{shortcode}";
 

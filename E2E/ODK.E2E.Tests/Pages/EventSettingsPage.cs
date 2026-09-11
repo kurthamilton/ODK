@@ -3,7 +3,7 @@
 namespace ODK.E2E.Tests.Pages;
 
 /// <summary>
-/// The admin event-settings page (Default <c>/my/groups/{chapterId}/events/settings</c>,
+/// The admin event-settings page (Default <c>/my/groups/{slug}/events/settings</c>,
 /// DrunkenKnitwits <c>/{chapterName}/admin/events/settings</c>). Sets the chapter's default event day of
 /// week (a SlimSelect-enhanced dropdown of .NET <c>DayOfWeek</c>) and default start time (a plain
 /// <c>HH:mm</c> text field), which together seed the pre-populated create-event date. The shared form

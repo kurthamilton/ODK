@@ -250,7 +250,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var baseSlug = UrlUtils.Slugify(name);
         var slug = baseSlug;
 
-        for (var i = 2; await _unitOfWork.ChapterRepository.SlugExists(slug).Run(); i++)
+        /* A reserved slug counts as taken. A group's slug sits in the same URL segment as the literal
+           segments of the group tree, and a literal wins the route, so a group holding one of those words
+           has pages that can never be reached. */
+        for (var i = 2;
+            _settings.ReservedSlugs.Contains(slug, StringComparer.OrdinalIgnoreCase) ||
+                await _unitOfWork.ChapterRepository.SlugExists(slug).Run();
+            i++)
         {
             slug = $"{baseSlug}-{i}";
         }

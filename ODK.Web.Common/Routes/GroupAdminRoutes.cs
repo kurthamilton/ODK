@@ -483,7 +483,7 @@ public class GroupAdminRoutes
         Path = Platform switch
         {
             PlatformType.DrunkenKnitwits => $"/{chapter.ShortName.ToLowerInvariant()}/admin",
-            _ => Index().Child($"/{chapter.Id}").Path
+            _ => Index().Child($"/{chapter.Slug}").Path
         },
         Securable = ChapterAdminSecurable.Any
     };

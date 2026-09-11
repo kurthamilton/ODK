@@ -240,7 +240,7 @@ means a new category and the E2E suite tracks the app's workflows rather than a 
   way to honour "test cases do the duplication, not multiple methods" when a single fixture can't (the
   fixture's `BaseURL` is fixed per platform, so one method can't target both).
 - **`PlatformRoutes`** (`Pages/PlatformRoutes.cs`): builds the platform-correct **relative** admin and
-  member-facing URLs (Default `/my/groups/{chapterId}/...` vs DrunkenKnitwits `/{chapterName}/admin/...`,
+  member-facing URLs (Default `/my/groups/{slug}/...` vs DrunkenKnitwits `/{chapterName}/admin/...`,
   whose leaf segments even differ — `/new` vs `/create`). Add a route here rather than composing paths in
   a page object or test. Mirrors the app's `GroupAdminRoutes`/`GroupRoutes`.
 - **Anything that submits goes through `page.RunAndWaitForDocument` / `page.ClickAndWaitForDocument`**
