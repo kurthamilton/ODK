@@ -404,7 +404,8 @@ public static class ChapterSiteAdminServiceTests
         return Mock.Of<IMemberChapterServiceRequest>(x =>
             x.Platform == PlatformType.GroupSquirrel &&
             x.Chapter == chapter &&
-            x.CurrentMember == siteAdmin);
+            x.CurrentMember == siteAdmin &&
+            x.Environment == EnvironmentType.Dev);
     }
 
     private static IMemberServiceRequest SiteAdminRequest(MockOdkContext context)
