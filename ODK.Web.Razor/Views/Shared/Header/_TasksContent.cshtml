@@ -25,7 +25,7 @@
                     Path = platform == PlatformType.DrunkenKnitwits
                         ? OdkRoutes.Account.Profile(task.Chapter)
                         : OdkRoutes.Groups.Profile(task.Chapter),
-                    Text = $"Complete your profile for {task.Chapter.GetDisplayName(platform)}"
+                    Text = $"Complete your profile for {task.Chapter.FullName}"
                 });
                 break;
 
@@ -43,7 +43,7 @@
                 {
                     Icon = IconType.TodoList,
                     Path = OdkRoutes.GroupAdmin.Group(task.Chapter).Path,
-                    Text = $"{task.Chapter.GetDisplayName(platform)} is waiting to be published"
+                    Text = $"{task.Chapter.FullName} is waiting to be published"
                 });
                 break;
 
@@ -52,7 +52,7 @@
                 {
                     Icon = IconType.Image,
                     Path = OdkRoutes.GroupAdmin.Image(task.Chapter).Path,
-                    Text = $"Upload a picture for {task.Chapter.GetDisplayName(platform)}"
+                    Text = $"Upload a picture for {task.Chapter.FullName}"
                 });
                 break;
         }

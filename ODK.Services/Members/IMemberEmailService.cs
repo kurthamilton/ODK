@@ -87,6 +87,16 @@ public interface IMemberEmailService
         IChapterServiceRequest request,
         Member owner);
 
+    /// <summary>
+    /// Tells the group's owner that invites it raised are waiting to be emailed, and where to send them
+    /// from. An email rather than a notification because the point is to reach them off the platform: a
+    /// notification is only read once they next sign in, which is the trip this is meant to prompt.
+    /// </summary>
+    Task SendInvitesWaitingEmail(
+        IChapterServiceRequest request,
+        Member owner,
+        int count);
+
     Task SendMemberApprovedEmail(
         IChapterServiceRequest request,
         Member member);

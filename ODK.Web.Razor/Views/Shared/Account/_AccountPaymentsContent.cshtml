@@ -1,5 +1,4 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Utils
+﻿@using ODK.Core.Utils
 @using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Routes
 @model MemberPaymentsPageViewModel
@@ -30,7 +29,7 @@
                         @if (payment.Chapter != null)
                         {
                             <a href="@OdkRoutes.Groups.Group(payment.Chapter)">
-                                @payment.Chapter.GetDisplayName(Model.Platform)
+                                @payment.Chapter.FullName
                             </a>
                         }       
                         else

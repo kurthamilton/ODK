@@ -229,6 +229,16 @@ public class GroupAdminRoutes
     public GroupAdminRoute MembersInvited(Chapter chapter)
         => Members(chapter).Child("/invited", ChapterAdminSecurable.MemberImport);
 
+    /// <summary>
+    /// Emails the invites the group is holding. A controller endpoint rather than a page handler, for the
+    /// reason MembersImportEndpoint gives.
+    /// </summary>
+    public GroupAdminRoute MembersInvitedSend(Chapter chapter) => new()
+    {
+        Path = $"/groups/{chapter.Id}/members/invited/send",
+        Securable = ChapterAdminSecurable.MemberImport
+    };
+
     public GroupAdminRoute MembershipSettings(Chapter chapter)
         => Base(chapter).Child("/membership", ChapterAdminSecurable.MembershipSettings);
 

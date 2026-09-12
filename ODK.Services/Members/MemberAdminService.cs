@@ -808,7 +808,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         /* An unpublished group prepares its invites and sends nothing: the link an invite carries lands on a
            group nobody outside it can see. The invites are still raised, so the batch is invited once -
-           publishing the group sends what it is holding. */
+           SendHeldInvites emails them once the group is published. */
         var send = chapter.IsPublished();
 
         if (send)
@@ -828,31 +828,39 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return ServiceResult.Successful();
     }
 
+    public async Task<ServiceResult> SendHeldInvites(IMemberChapterAdminServiceRequest request)
+    {
+        var chapter = request.Chapter;
+
+        var held = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.MemberChapterInviteRepository.GetUnsentByChapterId(chapter.Id));
+
+        if (!chapter.IsPublished())
+        {
+            return ServiceResult.Failure("Invites cannot be sent until the group is published");
+        }
+
+        if (held.Count == 0)
+        {
+            return ServiceResult.Failure("There are no invites waiting to be sent");
+        }
+
+        MarkInvitesSent(held);
+
+        await _unitOfWork.SaveChanges();
+
+        EnqueueInviteEmails(request, chapter.Id, held);
+
+        return ServiceResult.Successful(
+            $"{held.Count} {StringUtils.Pluralise(held.Count, "invite")} sent");
+    }
+
     /* Public for Hangfire, which needs a method to bind to, and called by nothing else: it turns the job's
        ids back into a request and hands off to the work. This signature is a wire format - see JobRequest -
        so a change to it is a change every queued job of that kind has to survive. */
     public async Task SendImportInviteEmailJob(JobRequest request, Guid chapterId, Guid memberId)
         => await SendImportInviteEmail(await _serviceRequestFactory.Create(request), chapterId, memberId);
-
-    public async Task SendQueuedInviteEmails(IChapterServiceRequest request)
-    {
-        var chapter = request.Chapter;
-
-        var queued = await _unitOfWork.MemberChapterInviteRepository
-            .GetUnsentByChapterId(chapter.Id)
-            .Run();
-
-        if (queued.Count == 0)
-        {
-            return;
-        }
-
-        MarkInvitesSent(queued);
-
-        await _unitOfWork.SaveChanges();
-
-        EnqueueInviteEmails(request, chapter.Id, queued);
-    }
 
     public async Task<ServiceResult> RemoveMemberFromChapter(
         IMemberChapterAdminServiceRequest request,

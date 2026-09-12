@@ -1168,6 +1168,109 @@ public static class ChapterAdminServiceTests
     }
 
     [Test]
+    public static async Task GetGroupDashboardViewModel_WhenPublishedGroupHoldsInvites_OffersToSendThem()
+    {
+        // Arrange - an import raised the invites while nobody outside the group could see it.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember,
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        context.CreateChapterImage(chapter);
+
+        CreateInvite(context, chapter.Id, context.CreateMember().Id);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.HeldInvites.Should().Be(1);
+        result.CanSendHeldInvites.Should().BeTrue();
+        result.HasRequiredActions.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenUnpublishedGroupHoldsInvites_DoesNotOfferToSendThem()
+    {
+        /* Arrange - the invites are counted, because publishing says what it makes sendable, but sending
+           them is not yet an action: an invite's link lands on a group nobody outside it can see. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember);
+
+        context.CreateChapterImage(chapter);
+
+        CreateInvite(context, chapter.Id, context.CreateMember().Id);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.HeldInvites.Should().Be(1);
+        result.CanSendHeldInvites.Should().BeFalse();
+        result.HasRequiredActions.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenHeldInvitesHaveBeenSent_DoesNotOfferToSendThem()
+    {
+        // Arrange - a sent invite is not being held, so there is nothing left to act on.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember,
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        context.CreateChapterImage(chapter);
+
+        context.Create(new MemberChapterInvite
+        {
+            ChapterId = chapter.Id,
+            CreatedUtc = DateTime.UtcNow.AddDays(-1),
+            Id = Guid.NewGuid(),
+            MemberId = context.CreateMember().Id,
+            SentUtc = DateTime.UtcNow.AddDays(-1),
+            Token = Guid.NewGuid().ToString()
+        });
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.HeldInvites.Should().Be(0);
+        result.CanSendHeldInvites.Should().BeFalse();
+    }
+
+    [Test]
     public static async Task GetGroupDashboardViewModel_WhenNothingIsOutstanding_HasNoRequiredActions()
     {
         // Arrange
@@ -1277,9 +1380,73 @@ public static class ChapterAdminServiceTests
         // Act
         var result = await service.GetGroupDashboardViewModel(request);
 
-        // Assert - the import has already happened, and the held rows are reported as an outstanding action.
+        /* Assert - the import has already happened, so the prompt to start one has nothing to say. The
+           rows are counted; whether inviting them is outstanding is a separate question of publication. */
         result.PromptMemberImport.Should().BeFalse();
         result.WaitingToBeInvited.Should().Be(1);
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenPublishedGroupHasUploadedAddresses_OffersToInviteThem()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember,
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        context.CreateChapterImage(chapter);
+
+        CreateUpload(context, chapter.Id);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.CanInviteUploaded.Should().BeTrue();
+        result.HasRequiredActions.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenUnpublishedGroupHasUploadedAddresses_DoesNotOfferToInviteThem()
+    {
+        /* Arrange - a group can build its list before anyone can see it, but cannot act on it: an invite's
+           link lands on the group. The rows wait on publication rather than on an admin. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember);
+
+        context.CreateChapterImage(chapter);
+
+        CreateUpload(context, chapter.Id);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.WaitingToBeInvited.Should().Be(1);
+        result.CanInviteUploaded.Should().BeFalse();
+        result.HasRequiredActions.Should().BeFalse();
     }
 
     [Test]
@@ -1923,9 +2090,10 @@ public static class ChapterAdminServiceTests
     }
 
     [Test]
-    public static async Task PublishChapter_WhenPublished_SendsTheInvitesItWasHolding()
+    public static async Task PublishChapter_WhenHoldingInvites_TellsTheOwnerTheyAreWaiting()
     {
-        // Arrange - an unpublished group can prepare a member import, and publishing is what sends it.
+        /* Arrange - an unpublished group can prepare a member import, and publishing gives those invites
+           somewhere to land. Sending them is the owner's own action, so publishing only says so. */
         using var context = CreateMockOdkContext();
 
         var currentMember = context.CreateMember();
@@ -1936,8 +2104,11 @@ public static class ChapterAdminServiceTests
 
         context.CreateChapterImage(chapter);
 
-        var memberAdminService = new Mock<IMemberAdminService>();
-        var service = CreateChapterAdminService(context, memberAdminService: memberAdminService.Object);
+        var invited = context.CreateMember();
+        CreateInvite(context, chapter.Id, invited.Id);
+
+        var memberEmailService = new Mock<IMemberEmailService>();
+        var service = CreateChapterAdminService(context, memberEmailService: memberEmailService.Object);
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
@@ -1950,10 +2121,84 @@ public static class ChapterAdminServiceTests
         // Assert
         result.Success.Should().BeTrue();
 
-        memberAdminService.Verify(
-            x => x.SendQueuedInviteEmails(
-                It.Is<IChapterServiceRequest>(y => y.Chapter.Id == chapter.Id)),
+        memberEmailService.Verify(
+            x => x.SendInvitesWaitingEmail(
+                It.Is<IChapterServiceRequest>(y => y.Chapter.Id == chapter.Id),
+                It.Is<Member>(y => y.Id == currentMember.Id),
+                1),
             Times.Once);
+    }
+
+    [Test]
+    public static async Task PublishChapter_WhenHoldingInvites_DoesNotSendThem()
+    {
+        /* Arrange - the invites wait for the owner to send them, so publishing emails nobody who was
+           imported. Recording one as sent here would leave it holding an invite nobody ever received. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember);
+
+        context.CreateChapterImage(chapter);
+
+        var invited = context.CreateMember();
+        var invite = CreateInvite(context, chapter.Id, invited.Id);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.Publish);
+
+        // Act
+        var result = await service.PublishChapter(request);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        context.Set<MemberChapterInvite>()
+            .Single(x => x.Id == invite.Id)
+            .SentUtc
+            .Should()
+            .BeNull();
+    }
+
+    [Test]
+    public static async Task PublishChapter_WhenHoldingNoInvites_TellsTheOwnerNothing()
+    {
+        // Arrange - which is every group that imported nobody before publishing.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember);
+
+        context.CreateChapterImage(chapter);
+
+        var memberEmailService = new Mock<IMemberEmailService>();
+        var service = CreateChapterAdminService(context, memberEmailService: memberEmailService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.Publish);
+
+        // Act
+        var result = await service.PublishChapter(request);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        memberEmailService.Verify(
+            x => x.SendInvitesWaitingEmail(
+                It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>(), It.IsAny<int>()),
+            Times.Never);
     }
 
     [Test]
@@ -2082,6 +2327,26 @@ public static class ChapterAdminServiceTests
         return mock.Object;
     }
 
+    private static MemberChapterInvite CreateInvite(MockOdkContext context, Guid chapterId, Guid memberId)
+        => context.Create(new MemberChapterInvite
+        {
+            ChapterId = chapterId,
+            CreatedUtc = DateTime.UtcNow.AddDays(-1),
+            Id = Guid.NewGuid(),
+            MemberId = memberId,
+            Token = Guid.NewGuid().ToString()
+        });
+
+    private static MemberChapterImport CreateUpload(MockOdkContext context, Guid chapterId)
+        => context.Create(new MemberChapterImport
+        {
+            ChapterId = chapterId,
+            CreatedUtc = DateTime.UtcNow,
+            EmailAddress = "imported@example.com",
+            Id = Guid.NewGuid(),
+            UploadedUtc = DateTime.UtcNow
+        });
+
     private static ChapterAdminService CreateChapterAdminService(
         MockOdkContext context,
         IHtmlValidator? htmlValidator = null,
@@ -2097,10 +2362,14 @@ public static class ChapterAdminServiceTests
         IGeolocationService? geolocationService = null,
         ILoggingService? loggingService = null,
         ChapterAdminServiceSettings? settings = null,
-        SiteSubscriptionCooldown? siteSubscriptionCooldown = null,
-        IMemberAdminService? memberAdminService = null)
+        SiteSubscriptionCooldown? siteSubscriptionCooldown = null)
     {
         var unitOfWork = CreateMockUnitOfWork(context);
+
+        // One instance for both the service and the machine it fires, so a test verifying an email a
+        // transition sends arranges the same object the step resolves.
+        var memberEmails = memberEmailService ?? CreateMockMemberEmailService();
+
         return new ChapterAdminService(
             unitOfWork,
             new EmailValidationService(new InconclusiveEmailVerifier()),
@@ -2108,7 +2377,7 @@ public static class ChapterAdminServiceTests
             socialMediaService ?? new Mock<ISocialMediaService>().Object,
             notificationService ?? new Mock<INotificationService>().Object,
             imageService ?? CreateMockImageService(isValidImage: true),
-            memberEmailService ?? CreateMockMemberEmailService(),
+            memberEmails,
             topicService ?? CreateMockTopicService(),
             settings ?? CreateChapterAdminServiceSettings(),
             siteSubscriptionCooldown ?? new SiteSubscriptionCooldown(months: 0),
@@ -2122,7 +2391,7 @@ public static class ChapterAdminServiceTests
             // subscription features. A bare mock returns false from every check, which silently turns any
             // feature-gated path into "not permitted" and makes the arrangement look broken instead.
             new AuthorizationService(),
-            CreatePublicationRunner(unitOfWork, memberAdminService ?? Mock.Of<IMemberAdminService>()));
+            CreatePublicationRunner(unitOfWork, memberEmails));
     }
 
     /// <summary>
@@ -2132,13 +2401,13 @@ public static class ChapterAdminServiceTests
     private static StateMachineRunner<
         ChapterPublicationState, ChapterPublicationTrigger, ChapterPublicationContext> CreatePublicationRunner(
         IUnitOfWork unitOfWork,
-        IMemberAdminService memberAdminService)
+        IMemberEmailService memberEmailService)
     {
         var definition = ChapterPublicationStateMachine.Create();
 
         var services = new ServiceCollection()
             .AddSingleton(unitOfWork)
-            .AddSingleton(memberAdminService)
+            .AddSingleton(memberEmailService)
             .AddSingleton(definition)
             .AddScoped<
                 IStateResolver<ChapterPublicationState, ChapterPublicationContext>,

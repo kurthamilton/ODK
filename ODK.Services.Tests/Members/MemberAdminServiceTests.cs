@@ -1371,9 +1371,9 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task SendQueuedInviteEmails_GroupHoldingInvites_SendsThemAndRecordsThemAsSent()
+    public static async Task SendHeldInvites_GroupHoldingInvites_SendsThemAndRecordsThemAsSent()
     {
-        // Arrange - what a group publishing itself does with the invites an earlier import left it holding.
+        // Arrange - what the send action does with the invites an earlier import left the group holding.
         using var context = CreateMockOdkContext(noTracking: true);
 
         var currentMember = context.CreateMember();
@@ -1389,12 +1389,15 @@ public static class MemberAdminServiceTests
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
-            currentMember: currentMember);
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
 
         // Act
-        await service.SendQueuedInviteEmails(request);
+        var result = await service.SendHeldInvites(request);
 
         // Assert
+        result.Success.Should().BeTrue();
+
         emailService.Verify(
             x => x.SendMemberImportInviteEmail(
                 It.IsAny<IChapterServiceRequest>(),
@@ -1410,10 +1413,49 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task SendQueuedInviteEmails_InviteAlreadySent_DoesNotSendItAgain()
+    public static async Task SendHeldInvites_GroupNotPublished_DoesNotSendThem()
     {
-        /* Arrange - the reason the invite records when it was sent. Publishing happens once, but a re-run of
-           the send must not email an invite the import already delivered. */
+        /* Arrange - an invite's link lands on the group, so there is nowhere to send anyone until the group
+           is published. The import raises the invite all the same, and it waits. */
+        using var context = CreateMockOdkContext(noTracking: true);
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var invited = context.CreateMember();
+        var invite = CreateInvite(context, chapter.Id, invited.Id, DateTime.UtcNow.AddDays(-1));
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // Act
+        var result = await service.SendHeldInvites(request);
+
+        // Assert
+        result.Success.Should().BeFalse();
+
+        emailService.Verify(
+            x => x.SendMemberImportInviteEmail(
+                It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>(), It.IsAny<string>()),
+            Times.Never);
+
+        context.Set<MemberChapterInvite>()
+            .Single(x => x.Id == invite.Id)
+            .SentUtc
+            .Should()
+            .BeNull();
+    }
+
+    [Test]
+    public static async Task SendHeldInvites_InviteAlreadySent_DoesNotSendItAgain()
+    {
+        /* Arrange - the reason the invite records when it was sent. The action can be taken again at any
+           time, and must not email an invite that has already gone out. */
         using var context = CreateMockOdkContext();
 
         var currentMember = context.CreateMember();
@@ -1434,12 +1476,15 @@ public static class MemberAdminServiceTests
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
-            currentMember: currentMember);
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
 
         // Act
-        await service.SendQueuedInviteEmails(request);
+        var result = await service.SendHeldInvites(request);
 
         // Assert
+        result.Success.Should().BeFalse();
+
         emailService.Verify(
             x => x.SendMemberImportInviteEmail(
                 It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>(), It.IsAny<string>()),
@@ -1447,9 +1492,9 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
-    public static async Task SendQueuedInviteEmails_AnotherGroupsHeldInvite_LeavesItAlone()
+    public static async Task SendHeldInvites_AnotherGroupsHeldInvite_LeavesItAlone()
     {
-        // Arrange - two groups can each be holding invites, and publishing one says nothing about the other.
+        // Arrange - two groups can each be holding invites, and sending one's says nothing about the other.
         using var context = CreateMockOdkContext(noTracking: true);
 
         var currentMember = context.CreateMember();
@@ -1466,10 +1511,11 @@ public static class MemberAdminServiceTests
 
         var request = CreateMemberChapterAdminServiceRequest(
             chapter: chapter,
-            currentMember: currentMember);
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
 
         // Act
-        await service.SendQueuedInviteEmails(request);
+        await service.SendHeldInvites(request);
 
         // Assert
         emailService.Verify(

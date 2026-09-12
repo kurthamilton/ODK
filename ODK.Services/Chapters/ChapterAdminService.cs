@@ -842,8 +842,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => canSeeMembers
                 ? x.MemberRepository.GetLatestJoinedByChapterId(chapter.Id, DashboardNewestMemberCount)
                 : new DefaultDeferredQueryMultiple<MemberChapterWithAvatarDto>(),
-            // Only where publishing is the outstanding action, which is the only place the number is shown.
-            x => awaitingPublication
+            /* Where publishing is the outstanding action, which says what publishing makes sendable, and
+               where the admin can reach the import page, which is what offers to send them. */
+            x => awaitingPublication || canSeeImports
                 ? x.MemberChapterInviteRepository.GetUnsentCountByChapterId(chapter.Id)
                 : new DefaultDeferredQuery<int>(0),
             x => canSeeImports
@@ -863,6 +864,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             Chapter = chapter,
             CanPublish = awaitingPublication && hasImage,
+            CanSendHeldInvites = canSeeImports && heldInvites > 0 && chapter.IsPublished(),
             HeldInvites = heldInvites,
             MembersAwaitingApproval = canSeeApprovals ? awaitingApproval : null,
             NeedsImage = canSeeImage && !hasImage,
@@ -1448,9 +1450,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var chapter = request.Chapter;
 
-        var image = await _unitOfWork.ChapterImageRepository
-            .GetVersionDtoByChapterId(chapter.Id)
-            .Run();
+        var (image, owner, heldInvites) = await _unitOfWork.Run(
+            x => x.ChapterImageRepository.GetVersionDtoByChapterId(chapter.Id),
+            x => x.MemberRepository.GetChapterOwner(chapter.Id),
+            x => x.MemberChapterInviteRepository.GetUnsentCountByChapterId(chapter.Id));
 
         var result = await _chapterPublicationWorkflow.Fire(
             ChapterPublicationTrigger.Publish,
@@ -1458,6 +1461,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             {
                 Chapter = chapter,
                 HasImage = image != null,
+                HeldInvites = heldInvites,
+                Owner = owner,
                 Request = request
             });
 

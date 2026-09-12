@@ -1,7 +1,9 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Services.Members.ViewModels
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Mvc
 @model InvitedMembersAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
 @{
     var timeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone);
 }
@@ -13,7 +15,22 @@
     "leaves the group holding nothing about them." +
     (Model.Chapter.IsPublished()
         ? string.Empty
-        : " Nobody here has been emailed yet: the invites go out when you publish the group."))
+        : " Nobody here has been emailed yet, and nobody can be until the group is published: the link "
+          + "an invite carries lands on a group nobody outside it can see."))
+
+@if (Model.CanSend)
+{
+    <div class="alert alert-warning d-flex justify-content-between align-items-center">
+        <span>
+            <strong>@Model.Held @StringUtils.Pluralise(Model.Held, "invite")</strong>
+            @StringUtils.Pluralise(Model.Held, "has", "have") not been emailed yet.
+        </span>
+        <form action="@OdkRoutes.GroupAdmin.MembersInvitedSend(Model.Chapter).Path" method="post">
+            @Html.AntiForgeryToken()
+            <button class="btn btn-warning ms-3 text-nowrap">Send invites</button>
+        </form>
+    </div>
+}
 
 @if (Model.Invited.Count > 0)
 {

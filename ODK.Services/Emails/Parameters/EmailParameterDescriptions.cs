@@ -42,6 +42,8 @@ public static class EmailParameterDescriptions
             ["group.urls.refuseInvite"] =
                 "Link the recipient follows to decline their invite and have the details you imported "
                 + "about them deleted",
+            ["invites.count"] = "How many invites are waiting to be sent",
+            ["invites.url"] = "Link to the invited members page, where the invites are sent from",
             ["member.firstName"] = "The recipient's first name",
             ["member.joined"] = "The date the member joined your group",
             ["member.leftReason"] =

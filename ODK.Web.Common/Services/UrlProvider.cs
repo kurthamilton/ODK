@@ -74,6 +74,9 @@ public class UrlProvider : IUrlProvider
 
     public string GroupsUrl() => GetUrl(x => x.Groups.Index());
 
+    public string InvitedMembersAdminUrl(Chapter chapter)
+        => GetUrl(chapter, x => x.GroupAdmin.MembersInvited(chapter).Path);
+
     // Account.Create, not Account.Join: Join is chapter-scoped (/{chapter}/account/join), and a referral
     // is site-wide, so it points at the platform's own sign-up page.
     public string JoinUrl() => GetUrl(x => x.Account.Create());

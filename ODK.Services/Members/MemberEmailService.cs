@@ -389,6 +389,30 @@ public class MemberEmailService : IMemberEmailService
             parameters: null);
     }
 
+    public async Task SendInvitesWaitingEmail(
+        IChapterServiceRequest request,
+        Member owner,
+        int count)
+    {
+        var chapter = request.Chapter;
+
+        var urlProvider = _urlProviderFactory.Create(request, chapter);
+        var culture = await _memberLocaleService.GetCulture(owner.Id);
+
+        var parameters = new InvitesWaitingParameters(culture)
+        {
+            Count = count,
+            Url = urlProvider.InvitedMembersAdminUrl(chapter)
+        };
+
+        await _emailService.SendEmail(
+            request,
+            chapter,
+            owner.ToEmailAddressee(),
+            EmailType.InvitesWaiting,
+            parameters);
+    }
+
     public async Task SendMemberApprovedEmail(
         IChapterServiceRequest request,
         Member member)

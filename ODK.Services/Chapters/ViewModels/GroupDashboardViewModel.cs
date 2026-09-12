@@ -20,10 +20,24 @@ public class GroupDashboardViewModel
     public bool AwaitingPublication => CanPublish || NeedsImageToPublish;
 
     /// <summary>
+    /// Whether inviting the uploaded addresses is an outstanding action. An unpublished group can upload a
+    /// list but not act on it - an invite's link lands on a group nobody outside it can see - so those rows
+    /// are waiting on publication rather than on an admin.
+    /// </summary>
+    public bool CanInviteUploaded => WaitingToBeInvited > 0 && Chapter.IsPublished();
+
+    /// <summary>
     /// Whether the group is approved, unpublished and has the picture publication requires, so publishing
     /// is the outstanding action.
     /// </summary>
     public required bool CanPublish { get; init; }
+
+    /// <summary>
+    /// Whether sending the invites the group is holding is the outstanding action: it is published, so the
+    /// link an invite carries lands somewhere, and the admin can reach the import page that raised them.
+    /// True only where <see cref="HeldInvites"/> is non-zero, so the two are never read apart.
+    /// </summary>
+    public required bool CanSendHeldInvites { get; init; }
 
     public required Chapter Chapter { get; init; }
 
@@ -33,14 +47,15 @@ public class GroupDashboardViewModel
     /// absent: it is the publish section's subject, and an action reported in both places reads as two.
     /// </summary>
     public bool HasRequiredActions =>
+        CanInviteUploaded ||
+        CanSendHeldInvites ||
         NeedsImageAsAction ||
         MembersAwaitingApproval > 0 ||
-        UnrepliedContactMessages > 0 ||
-        WaitingToBeInvited > 0;
+        UnrepliedContactMessages > 0;
 
     /// <summary>
-    /// How many invites the group is holding, which publishing sends. Zero unless publishing is the
-    /// outstanding action, since that is the only place it is reported.
+    /// How many invites the group has raised and not emailed. Reported in two places: as what publishing
+    /// will make sendable, and once published as the action that sends them. Zero where neither applies.
     /// </summary>
     public required int HeldInvites { get; init; }
 

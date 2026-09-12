@@ -14,7 +14,7 @@
     var viewModel = await ChapterViewModelService.GetGroupConversationPage(
         Model.MemberChapterServiceRequest, Model.ConversationId);
 
-    Model.Title = $"{viewModel.Conversation.Subject} | My conversations | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
+    Model.Title = $"{viewModel.Conversation.Subject} | My conversations | {viewModel.Chapter.FullName}";
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

@@ -1,13 +1,9 @@
 ﻿@using ODK.Web.Common.Routes
-@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Home
 @inject IOdkRoutes OdkRoutes
-@inject IRequestStore RequestStore
 @model ChaptersBandViewModel
 @{
-    var platform = RequestStore.Platform;
-
     var continents = Model
         .Countries
         .Select(x => x.Continent)
@@ -53,7 +49,7 @@
                                     : chapter.RedirectUrl;
                                 <li class="nav-item">
                                     <a class="nav-link" target="@(external ? "_blank" : "")" href="@url">
-                                        @chapter.GetDisplayName(platform)
+                                        @chapter.FullName
                                     </a>
                                 </li>
                             }
@@ -79,7 +75,7 @@
                                     : chapter.RedirectUrl;
                                 <li class="nav-item">
                                     <a class="nav-link" target="@(external ? "_blank" : "")" href="@url">
-                                        @chapter.GetDisplayName(platform)
+                                        @chapter.FullName
                                     </a>
                                 </li>
                             }

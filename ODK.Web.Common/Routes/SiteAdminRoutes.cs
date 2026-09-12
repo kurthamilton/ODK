@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Messages;
 
@@ -100,7 +101,7 @@ public class SiteAdminRoutes
 
     public SiteAdminRoute Feature(Guid id) => Features.Child($"/{id}");
 
-    public SiteAdminRoute Group(Guid id) => Groups.Child($"/{id}");
+    public SiteAdminRoute Group(Chapter chapter) => Groups.Child($"/{chapter.Slug}");
 
     public SiteAdminRoute Message(Guid id) => Messages().Child($"/{id}");
 

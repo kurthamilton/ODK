@@ -54,6 +54,6 @@ public static class ChapterPublicationStateMachine
                 .When(new ImageIsPresent())
                 .Then<MarkChapterPublished>()
                 .Then<Commit<ChapterPublicationContext>>()
-                .Then<SendQueuedInvites>())
+                .Then<SendInvitesWaitingEmail>())
         .Build();
 }

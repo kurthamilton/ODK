@@ -75,7 +75,7 @@
 
 @await Html.PartialAsync("Header/_Header", new HeaderViewModel
 {
-    ImageAltText = $"{Model.Chapter.GetDisplayName(platform)} Header Image",
+    ImageAltText = $"{Model.Chapter.FullName} Header Image",
     ImageLink = OdkRoutes.Groups.Group(Model.Chapter),
     ImageUrl = headerImageUrl,
     Navbar = new NavbarViewModel

@@ -5,7 +5,6 @@
 @inject IFeatureService FeatureService
 @inject IRequestStore RequestStore
 @{
-    var platform = RequestStore.Platform;
     var feature = await FeatureService.GetUnseeen(RequestStore.MemberServiceRequest, Model.Name);
     if (feature == null)
     {
@@ -14,7 +13,7 @@
 
     var chapter = RequestStore.ChapterOrDefault;
     var descriptionHtml = feature.DescriptionHtml
-        .Replace("{group.name}", chapter?.GetDisplayName(platform) ?? string.Empty);
+        .Replace("{group.name}", chapter?.FullName ?? string.Empty);
 }
 
 <div class="ms-1 d-inline"

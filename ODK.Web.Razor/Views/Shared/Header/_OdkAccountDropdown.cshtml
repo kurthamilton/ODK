@@ -21,7 +21,7 @@
         .ToDictionary(x => x.Key, x => x.First())
         .Values
         .Where(x => x.Approved())
-        .OrderBy(x => x.GetDisplayName(platform))
+        .OrderBy(x => x.FullName)
         .ToArray();
 }
 
