@@ -201,7 +201,6 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
             Pending = pending
                 .OrderBy(x => x.Chapter.CreatedUtc)
                 .ToArray(),
-            Platform = request.Platform,
             TimeZone = request.CurrentMember.TimeZone
         };
     }
@@ -211,17 +210,23 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
     {
         /* The group's platform, not the request's: an owner's plan is sold as belonging to their group, so
            the plans on offer are the ones the group's own platform sells. */
-        var (platform, chapter) = (request.Chapter.Platform, request.Chapter);
+        var (environment, platform, chapter) = (request.Environment, request.Chapter.Platform, request.Chapter);
 
         var (subscription, siteSubscriptions, prices) = await GetSiteAdminRestrictedContent(request,
-            x => x.MemberSiteSubscriptionRecordRepository.Query().Current().ForChapterOwner(chapter.Id).ToState().GetSingleOrDefault(),
-            x => x.SiteSubscriptionRepository.GetAll(platform),
+            x => x.MemberSiteSubscriptionRecordRepository.Query()
+                .Current()
+                .ForChapterOwner(chapter.Id)
+                .ToState()
+                .GetSingleOrDefault(),
+            x => x.SiteSubscriptionRepository.Query()
+                .ForPlatform(platform)
+                .ForEnvironment(environment)
+                .GetAll(),
             x => x.SiteSubscriptionPriceRepository.GetAll(platform));
 
         return new SiteAdminChapterViewModel
         {
             Chapter = chapter,
-            Platform = platform,
             /* The subscriptions an owner can be put on, plus whichever they are on already - a plan that has
                since stopped being usable still has to appear, or saving the form would move them off it. */
             SiteSubscriptions = siteSubscriptions

@@ -157,18 +157,23 @@
 
             @if (canInvite)
             {
-                <p>
-                    <span>You're about to invite </span>
-                    <strong>@readyCount @StringUtils.Pluralise(readyCount, "member")</strong>
-                    <span> to the group. They become members when they accept.</span>
-                </p>
-
-                @if (!chapter.IsPublished())
+                @* An unpublished group prepares the list and acts on it later: an invite's link lands on
+                   the group, and nobody outside it can see one that is not published yet. Said as a plain
+                   line rather than an alert - it is the state the group is in, not something gone wrong. *@
+                @if (chapter.IsPublished())
                 {
-                    <div class="alert alert-info">
-                        Nothing is emailed now: an invite's link lands on the group, and this one isn't
-                        published yet. The invites are held and go out when you publish it.
-                    </div>
+                    <p>
+                        <span>You're about to invite </span>
+                        <strong>@readyCount @StringUtils.Pluralise(readyCount, "member")</strong>
+                        <span> to the group. They become members when they accept.</span>
+                    </p>
+                }
+                else
+                {
+                    <p>
+                        Invites can be sent after the group is
+                        @(chapter.Approved() ? null : "approved and ")published.
+                    </p>
                 }
 
                 @if (capacity.Limit != null)
@@ -188,7 +193,8 @@
                 {
                     <form method="post" action="@OdkRoutes.GroupAdmin.MembersImportInvite(chapter).Path">
                         @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary"
+                                disabled="@(chapter.IsPublished() ? null : "disabled")">
                             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))
                             <span>Send invites</span>
                         </button>

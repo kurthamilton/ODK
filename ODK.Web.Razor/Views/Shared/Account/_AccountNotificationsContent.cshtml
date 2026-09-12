@@ -3,8 +3,6 @@
 @using ODK.Web.Razor.Models.Notifications
 @model NotificationsPageViewModel
 @{
-    var platform = Model.Platform;
-
     var isAdmin = Model.AdminChapters.Count > 0;
 
     var adminChapterDictionary = Model.AdminChapters.ToDictionary(x => x.Chapter.Id);
@@ -39,7 +37,7 @@
             .Select(dto => new ChapterNotificationSettingsFormViewModel
             {
                 ChapterId = dto.Chapter.Id,
-                ChapterName = dto.Chapter.GetDisplayName(platform),
+                ChapterName = dto.Chapter.FullName,
                 MemberChapterId = dto.MemberChapter.Id,
                 Settings = groups
                     .Select(group => new NotificationSettingFormViewModel

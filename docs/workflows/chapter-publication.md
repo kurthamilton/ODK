@@ -18,4 +18,4 @@ stateDiagram-v2
 | Draft | Approve | Approved | - | 1. records the group as approved (Write)<br>2. commits the changes (Commit)<br>3. tells the owner it is approved (ExternalEffect) |
 | Approved | Approve | Approved | - | - |
 | Published | Approve | Published | - | - |
-| Approved | Publish | Published | with a picture | 1. records the group as published (Write)<br>2. commits the changes (Commit)<br>3. sends the invites it was holding (ExternalEffect) |
+| Approved | Publish | Published | with a picture | 1. records the group as published (Write)<br>2. commits the changes (Commit)<br>3. tells the owner it is holding invites (ExternalEffect) |

@@ -1,15 +1,11 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Web.Common.Routes
-@using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Contact
 @model ChapterConversationsViewModel
 @inject IOdkRoutes OdkRoutes
-@inject IRequestStore RequestStore
 @{
-    var platform = RequestStore.Platform;
-
     var chapterDictionary = Model.Chapters?.ToDictionary(x => x.Id) ?? new();
 
     var groupName = Model.Chapter?.FullName;
@@ -105,7 +101,7 @@
                                         @if (chapter != null)
                                         {
                                             <a href="@OdkRoutes.Groups.Group(chapter)">
-                                                @chapter.GetDisplayName(platform)
+                                                @chapter.FullName
                                             </a>
                                         }
                                     </td>

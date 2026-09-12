@@ -19,9 +19,9 @@
         @if (Model.HeldInvites > 0)
         {
             @* Said with the state rather than beside the button, so it is read whether publishing is
-               available yet or not - it is as much the reason to clear a blocker as it is a warning. *@
+               available yet or not - it is as much the reason to clear a blocker as it is to publish. *@
             <text>
-                Publishing emails the
+                Once it is published you can send the
                 <strong>@Model.HeldInvites @StringUtils.Pluralise(Model.HeldInvites, "invite")</strong>
                 your import is holding.
             </text>

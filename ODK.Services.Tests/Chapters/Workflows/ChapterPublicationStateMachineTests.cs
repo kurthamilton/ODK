@@ -76,11 +76,11 @@ public static class ChapterPublicationStateMachineTests
     }
 
     [Test]
-    public static void Create_Publish_SendsTheInvitesTheGroupWasHolding()
+    public static void Create_Publish_TellsTheOwnerAboutTheInvitesTheGroupIsHolding()
     {
-        /* Arrange - a group can prepare a member import before anyone outside it can see it, so publishing is
-           where those invites go out. After the commit, so nothing is emailed against a publication that
-           went no further. */
+        /* Arrange - a group can prepare a member import before anyone outside it can see it, and sending
+           those invites is the owner's own action, so publishing only says they are waiting. After the
+           commit, so nothing is emailed against a publication that went no further. */
         var definition = ChapterPublicationStateMachine.Create();
 
         // Act
@@ -94,7 +94,7 @@ public static class ChapterPublicationStateMachineTests
         steps.Should().ContainInOrder(
             typeof(MarkChapterPublished),
             typeof(Commit<ChapterPublicationContext>),
-            typeof(SendQueuedInvites));
+            typeof(SendInvitesWaitingEmail));
     }
 
     [Test]

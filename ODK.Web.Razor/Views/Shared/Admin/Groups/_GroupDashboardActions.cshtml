@@ -1,4 +1,5 @@
-﻿@using ODK.Services.Chapters.ViewModels
+﻿@using ODK.Core.Utils
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
@@ -32,8 +33,25 @@
         </div>
     }
 
+    @if (Model.CanSendHeldInvites)
+    {
+        @* The action itself rather than a link to the page that lists them: what is outstanding is the
+           sending, and the invited members page is a menu item away for an admin who wants the names. *@
+        <div class="alert alert-warning d-flex justify-content-between align-items-center mb-0">
+            <span>
+                <strong>@Model.HeldInvites @StringUtils.Pluralise(Model.HeldInvites, "invite")</strong>
+                from your import
+                @StringUtils.Pluralise(Model.HeldInvites, "has", "have") not been emailed yet.
+            </span>
+            <form action="@OdkRoutes.GroupAdmin.MembersInvitedSend(Model.Chapter).Path" method="post">
+                @Html.AntiForgeryToken()
+                <button class="btn btn-warning ms-3 text-nowrap">Send invites</button>
+            </form>
+        </div>
+    }
+
     @if (Model.MembersAwaitingApproval > 0 || Model.UnrepliedContactMessages > 0 ||
-         Model.WaitingToBeInvited > 0)
+         Model.CanInviteUploaded)
     {
         <div class="list-group">
             @if (Model.MembersAwaitingApproval > 0)
@@ -60,7 +78,7 @@
                 </a>
             }
 
-            @if (Model.WaitingToBeInvited > 0)
+            @if (Model.CanInviteUploaded)
             {
                 <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
                    href="@OdkRoutes.GroupAdmin.MembersImport(Model.Chapter).Path">

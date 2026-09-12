@@ -38,7 +38,7 @@
                                 <tr>
                                     <td>
                                         <a href="@Model.OdkRoutes.Groups.Group(chapter.Chapter)">
-                                            @chapter.Chapter.GetDisplayName(Model.Platform)
+                                            @chapter.Chapter.FullName
                                         </a>
                                     </td>
                                     <td>
@@ -68,7 +68,7 @@
                                                 @Html.AntiForgeryToken()
                                                 @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
                                                 {
-                                                    Message = $"Are you sure you want to leave '{chapter.Chapter.GetDisplayName(Model.Platform)}'?",
+                                                    Message = $"Are you sure you want to leave '{chapter.Chapter.FullName}'?",
                                                     Title = "Leave group"
                                                 })
                                                 <button class="btn btn-danger btn-sm">

@@ -4,7 +4,7 @@
 @inject IChapterService ChapterService
 @inject IRequestStore RequestStore
 @{
-    var (platform, memberId) = (RequestStore.Platform, RequestStore.CurrentMember.Id);
+    var memberId = RequestStore.CurrentMember.Id;
     var chapters = await ChapterService.GetChaptersByOwnerId(RequestStore.ServiceRequest, memberId);
     chapters = chapters.Where(x => x.IsOpenForRegistration()).ToArray();
 }
@@ -18,7 +18,7 @@
     <ul class="list-group">
         @foreach (var chapter in chapters)
         {
-            <li class="list-group-item">@chapter.GetDisplayName(platform)</li>
+            <li class="list-group-item">@chapter.FullName</li>
         }        
     </ul>
 }

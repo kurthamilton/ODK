@@ -43,6 +43,11 @@ public interface IUrlProvider
 
     string GroupsUrl();
 
+    /// <summary>
+    /// The group admin's list of who it has invited, which is where invites it is holding are sent from.
+    /// </summary>
+    string InvitedMembersAdminUrl(Chapter chapter);
+
     /// <summary>The public join page, used as the destination in a referral email.</summary>
     string JoinUrl();
 

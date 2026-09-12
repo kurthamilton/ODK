@@ -148,6 +148,13 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
                     Url = urlProvider.EventUrl(chapter, "TEST")
                 }
                 : null,
+            EmailType.InvitesWaiting => chapter != null
+                ? new InvitesWaitingParameters(culture)
+                {
+                    Count = 3,
+                    Url = urlProvider.InvitedMembersAdminUrl(chapter)
+                }
+                : null,
             EmailType.MemberImportActivation => new MemberImportActivationParameters
             {
                 Url = urlProvider.ActivateAccountUrl(chapter, "TEST")

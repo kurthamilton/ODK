@@ -1,9 +1,6 @@
-﻿@using ODK.Core;
-@using ODK.Services.Chapters.ViewModels
+﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
-@using ODK.Web.Razor.Models.Chapters
-@using ODK.Web.Razor.Models.Components
 @model ChapterWithDistanceViewModel
 @inject IOdkRoutes OdkRoutes
 @{
@@ -24,7 +21,7 @@
             }
 
             <div class="d-flex flex-column gap-2">
-                <h6><strong>@Model.Chapter.GetDisplayName(Model.Platform)</strong></h6>
+                <h6><strong>@Model.Chapter.FullName</strong></h6>
                 @if (Model.Location != null)
                 {
                     <div class="d-flex flex-wrap gap-2 small">

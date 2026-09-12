@@ -8,7 +8,8 @@
     "anyone the file has a problem with stays on this page until you deal with them." +
     (Model.Chapter.IsPublished()
         ? string.Empty
-        : " This group isn't published yet, so the invites are held until you publish it."))
+        : " You can upload a file before the group is published, but the invites cannot be sent until "
+          + "it is."))
 
 <div class="section-stack" data-odk-component="_ImportMembersContent">
     @await Html.PartialAsync("Components/_Section", new SectionViewModel

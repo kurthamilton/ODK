@@ -24,7 +24,7 @@ public class SitemapService : ISitemapService
         // on it - and a chapter that is not open for registration renders a stub in place of its content.
         var chapters = approved
             .Where(x => x.IsOpenForRegistration())
-            .OrderBy(x => x.GetDisplayName(request.Platform))
+            .OrderBy(x => x.FullName)
             .ToArray();
 
         if (chapters.Length == 0)

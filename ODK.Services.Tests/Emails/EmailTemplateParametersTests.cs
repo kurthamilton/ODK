@@ -171,6 +171,15 @@ public static class EmailTemplateParametersTests
             };
         }
 
+        if (parametersType == typeof(InvitesWaitingParameters))
+        {
+            return new InvitesWaitingParameters(CultureInfo.InvariantCulture)
+            {
+                Count = 1,
+                Url = "value"
+            };
+        }
+
         if (parametersType == typeof(MemberLeftParameters))
         {
             return new MemberLeftParameters(Member(), CultureInfo.InvariantCulture, TimeZoneInfo.Utc)
@@ -297,6 +306,11 @@ public static class EmailTemplateParametersTests
         if (type == typeof(DateTime))
         {
             return SampleDate;
+        }
+
+        if (type == typeof(int))
+        {
+            return 2;
         }
 
         throw new NotSupportedException(

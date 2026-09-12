@@ -33,6 +33,7 @@ public static class EmailTemplateParameters
                already name it and link to it. Registered all the same, since an empty list is what this
                type has and an absent one is a type nobody declared. */
             [EmailType.GroupApproved] = [],
+            [EmailType.InvitesWaiting] = InvitesWaitingParameters.Names,
             [EmailType.Layout] = LayoutParameters.Names,
             [EmailType.MemberApproved] = [],
             [EmailType.MemberImportActivation] = MemberImportActivationParameters.Names,

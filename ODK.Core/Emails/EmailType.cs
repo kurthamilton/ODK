@@ -112,5 +112,8 @@ public enum EmailType
     SiteConversationMessageAdmin = 35,
 
     [Display(Name = "Membership removed")]
-    MemberRemoved = 36
+    MemberRemoved = 36,
+
+    [Display(Name = "Invites waiting to be sent")]
+    InvitesWaiting = 37
 }

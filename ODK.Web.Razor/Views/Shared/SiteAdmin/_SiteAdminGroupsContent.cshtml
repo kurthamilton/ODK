@@ -49,8 +49,8 @@
 
                         <tr>
                             <td>
-                                <a href="@OdkRoutes.SiteAdmin.Group(chapter.Id)">
-                                    @chapter.GetDisplayName(Model.Platform)
+                                <a href="@OdkRoutes.SiteAdmin.Group(chapter)">
+                                    @chapter.FullName
                                 </a>
                             </td>
                             <td>@chapter.CreatedUtc.ToFriendlyDateString(dateTimeOptions)</td>
@@ -89,7 +89,7 @@
                         var chapter = row.Chapter;
 
                         <tr>
-                            <td>@chapter.GetDisplayName(Model.Platform)</td>
+                            <td>@chapter.FullName</td>
                             <td>@chapter.CreatedUtc.ToFriendlyDateString(dateTimeOptions)</td>
                             <td>
                                 @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel

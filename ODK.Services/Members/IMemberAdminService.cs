@@ -78,17 +78,14 @@ public interface IMemberAdminService
     Task<ServiceResult> SendBulkEmail(
         IMemberChapterAdminServiceRequest request, IReadOnlyCollection<Guid> memberIds, string subject, string body);
 
-    Task SendMemberSubscriptionReminderEmails(IServiceRequest request);
-
     /// <summary>
-    /// Sends the invite emails the group has been holding while it was unpublished, and records them as sent.
-    /// Idempotent - a group holding nothing sends nothing.
+    /// Sends the invite emails the group has been holding, and records them as sent. An import raises an
+    /// invite without sending it while the group is unpublished, because the link it carries lands on a
+    /// group nobody outside it can see, so a published group holding invites is waiting on this.
     /// </summary>
-    /// <remarks>
-    /// Enforces no securable of its own: the publication transition that calls it has already established who
-    /// may publish the group, and the invites were authorised by the import that raised them.
-    /// </remarks>
-    Task SendQueuedInviteEmails(IChapterServiceRequest request);
+    Task<ServiceResult> SendHeldInvites(IMemberChapterAdminServiceRequest request);
+
+    Task SendMemberSubscriptionReminderEmails(IServiceRequest request);
 
     Task SetMemberVisibility(IMemberChapterServiceRequest request, Guid memberId, bool visible);
 

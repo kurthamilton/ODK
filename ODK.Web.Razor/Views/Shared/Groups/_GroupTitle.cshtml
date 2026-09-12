@@ -1,13 +1,8 @@
 ﻿@using ODK.Core.Chapters
-@using ODK.Web.Common.Services
 @model Chapter
-@inject IRequestStore RequestStore
-@{
-    var platform = RequestStore.Platform;
-}
 
 <h1>
     <span>
-        @Model.GetDisplayName(platform)
+        @Model.FullName
     </span>
 </h1>

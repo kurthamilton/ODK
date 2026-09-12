@@ -219,6 +219,16 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("groups/{chapterId:guid}/members/invited/send")]
+    public async Task<IActionResult> SendHeldInvites(Guid chapterId)
+    {
+        var result = await _memberAdminService.SendHeldInvites(MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest));
+
+        AddFeedback(result, "Invites sent");
+        return RedirectToReferrer();
+    }
+
     [HttpPost("groups/{chapterId:guid}/members/subscriptions/{id:guid}/delete")]
     public async Task<IActionResult> DeleteSubscription(Guid chapterId, Guid id)
     {
