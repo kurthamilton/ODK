@@ -18,6 +18,8 @@
 
     window.odk = window.odk || {};
     window.odk.utils = window.odk.utils || {};
+    window.odk.utils.bindAttachTo = bindAttachTo;
+    window.odk.utils.bindScroll = bindScroll;
     window.odk.utils.bindToasts = bindToasts;
     window.odk.utils.bindTooltips = bindTooltips;
 
@@ -27,8 +29,10 @@
         return token ? { 'RequestVerificationToken': token } : {};
     };
 
-    function bindAttachTo() {
-        const $elements = document.querySelectorAll('[data-attach-to]');
+    // Takes the root to search, defaulting to the whole page. Markup injected after load names its own
+    // root: this runs once at startup and cannot see what arrives afterwards.
+    function bindAttachTo($root) {
+        const $elements = ($root ?? document).querySelectorAll('[data-attach-to]');
         $elements.forEach($element => {
             const selector = $element.getAttribute('data-attach-to');
             // An element naming no target has nothing to attach to, and querySelector throws on an empty
@@ -398,8 +402,11 @@
         }
     }
 
-    function bindScroll() {
-        document.querySelectorAll('[data-scroll-indicator]').forEach($indicator => {
+    // Rooted the way bindAttachTo is, and for the same reason. Not idempotent - binding a container twice
+    // leaves it with two of every listener - so an injected fragment passes its own root rather than
+    // re-running this over the page.
+    function bindScroll($root) {
+        ($root ?? document).querySelectorAll('[data-scroll-indicator]').forEach($indicator => {
             const $container = $indicator.closest('[data-scroll]');
             if (!$container) return;
 

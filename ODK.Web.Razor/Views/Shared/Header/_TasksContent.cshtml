@@ -60,39 +60,49 @@
 }
 
 @* Renders the whole control, not just its contents: with nothing outstanding this is empty, so the icon
-   never appears at all. Bootstrap binds dropdowns through a delegated handler on document, so this works
-   when injected after load. *@
+   never appears at all. See odk.tasks.js for what has to be re-bound once this is injected. *@
 @if (taskLinks.Count == 0)
 {
     return;
 }
 
-<div class="dropdown position-relative" role="button">
+<div class="position-relative" role="button"
+     data-bs-toggle="offcanvas" data-bs-target="#tasks-offcanvas" aria-controls="tasks-offcanvas">
     <span class="position-absolute top-0 start-100 translate-middle badge badge-sm rounded-pill bg-danger">
         <span>@(taskLinks.Count > 9 ? "9+" : taskLinks.Count.ToString())</span>
         <span class="visually-hidden">pending tasks</span>
     </span>
 
-    <div class="text-light account-links__user dropdown-toggle"
-         data-bs-toggle="dropdown" data-bs-auto-close="outside">
+    <div class="text-light account-links__user">
         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TodoList))
     </div>
+</div>
 
-    <div class="dropdown-menu dropdown-menu-end p-0">
-        <div class="dropdown-header">
-            <h5 class="m-0">Pending tasks</h5>
-        </div>
-
-        @foreach (var taskLink in taskLinks)
-        {
-            <a class="dropdown-item border-top p-3" href="@taskLink.Path">
-                @if (taskLink.Icon != null)
+@* Moved out of the header, the way the account drawers are: a drawer rendered inside it is clipped by
+   the header's own stacking context. *@
+<div class="d-none" data-attach-to="main">
+    @await Html.PartialAsync("Components/_Offcanvas", new OffcanvasViewModel
+    {
+        BodyClass = "pt-0",
+        Class = "offcanvas-flush",
+        Id = "tasks-offcanvas",
+        Position = "end",
+        Title = "Pending tasks",
+        ContentFunc =
+            @<div class="list-group list-group-flush list-group-border-0">
+                @foreach (var taskLink in taskLinks)
                 {
-                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(taskLink.Icon.Value))
-                }
+                    <a class="list-group-item list-group-item-action" href="@taskLink.Path">
+                        @if (taskLink.Icon != null)
+                        {
+                            <span class="icon">
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(taskLink.Icon.Value))
+                            </span>
+                        }
 
-                <span>@taskLink.Text</span>
-            </a>
-        }
-    </div>
+                        <span>@taskLink.Text</span>
+                    </a>
+                }
+            </div>
+    })
 </div>

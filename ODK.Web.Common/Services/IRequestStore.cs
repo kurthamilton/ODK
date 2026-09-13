@@ -50,6 +50,11 @@ public interface IRequestStore
     Task<ChapterAdminMember?> GetCurrentChapterAdminMember();
 
     /// <summary>
+    /// Whether the group admin menu still carries its moved page - see the implementation for the rule.
+    /// </summary>
+    Task<bool> ShowMovedPageAdminLink();
+
+    /// <summary>
     /// Loads from a request, deriving the platform from its URL and the chapter from its route values.
     /// <paramref name="signedInMemberIds"/> is every member the auth cookie holds, which is the current
     /// member alone for all but a site admin switching accounts.

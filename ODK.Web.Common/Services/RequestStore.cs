@@ -31,7 +31,8 @@ public class RequestStore : IRequestStore
     private readonly IBackgroundTaskService _backgroundTaskService;
     private Chapter? _chapter;
     private ChapterAdminMember? _currentChapterAdminMember;
-    private bool _currentChapterAdminMemberLoaded;
+    private bool _chapterAdminContextLoaded;
+    private ChapterMigration? _chapterMigration;
     private readonly ILoggingService _loggingService;
     private readonly IMemberLocaleService _memberLocaleService;
     private readonly IPlatformProvider _platformProvider;
@@ -89,15 +90,32 @@ public class RequestStore : IRequestStore
 
     public async Task<ChapterAdminMember?> GetCurrentChapterAdminMember()
     {
-        if (_currentChapterAdminMemberLoaded)
-        {
-            return _currentChapterAdminMember;
-        }
-
-        _currentChapterAdminMember = await _unitOfWork.ChapterAdminMemberRepository
-            .GetByMemberId(Platform, CurrentMember.Id, Chapter.Id).Run();
-        _currentChapterAdminMemberLoaded = true;
+        await LoadChapterAdminContext();
         return _currentChapterAdminMember;
+    }
+
+    /// <summary>
+    /// Whether the group admin menu still carries its moved page. A moved page is what a group arriving
+    /// from somewhere else leaves behind, so the offer runs from the point the group went live: an
+    /// unpublished group always sees it, a published one for
+    /// <see cref="RequestStoreSettings.MigrationWindowDays"/> afterwards, and a group that has already
+    /// moved for that long after the move. Publication rather than creation, because a group can be
+    /// months in the making and the window is meant to cover the arrival, not the build.
+    /// </summary>
+    /// <remarks>
+    /// Only the menu entry goes: the page stays public, and its admin page stays reachable at its own
+    /// address behind the same securable. An established group that decides to move its community across
+    /// later finds it through the dashboard's own offer, which this window does not gate.
+    /// </remarks>
+    public async Task<bool> ShowMovedPageAdminLink()
+    {
+        await LoadChapterAdminContext();
+
+        var utcNow = DateTime.UtcNow;
+
+        return !Chapter.IsPublished()
+            || Chapter.PublishedUtc?.AddDays(_settings.MigrationWindowDays) > utcNow
+            || _chapterMigration?.MovedRecently(_settings.MigrationWindowDays, utcNow) == true;
     }
 
     /// <summary>
@@ -122,10 +140,30 @@ public class RequestStore : IRequestStore
     public void Reset()
     {
         _chapter = null;
+        _chapterAdminContextLoaded = false;
+        _chapterMigration = null;
         _currentChapterAdminMember = null;
         _serviceRequest = null;
         Loaded = false;
         SignedInMembers = [];
+    }
+
+    /// <summary>
+    /// What the group admin chrome asks about the current chapter, in one round-trip. Both answers are
+    /// wanted by the admin menu on every admin page, so they load together rather than a query each.
+    /// </summary>
+    private async Task LoadChapterAdminContext()
+    {
+        if (_chapterAdminContextLoaded)
+        {
+            return;
+        }
+
+        (_currentChapterAdminMember, _chapterMigration) = await _unitOfWork.Run(
+            x => x.ChapterAdminMemberRepository.GetByMemberId(Platform, CurrentMember.Id, Chapter.Id),
+            x => x.ChapterMigrationRepository.GetByChapterId(Chapter.Id));
+
+        _chapterAdminContextLoaded = true;
     }
 
     private IDeferredQuerySingleOrDefault<Chapter> GetChapterQuery(

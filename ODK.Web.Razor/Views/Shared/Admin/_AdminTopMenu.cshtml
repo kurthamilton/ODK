@@ -9,7 +9,8 @@
     var chapterAdminMember = await RequestStore.GetCurrentChapterAdminMember();
 
     var nav = AdminNavViewModel.Create(
-        OdkRoutes.GroupAdmin.PermittedNavigation(chapter, chapterAdminMember, currentMember),
+        OdkRoutes.GroupAdmin.PermittedNavigation(
+            chapter, chapterAdminMember, currentMember, await RequestStore.ShowMovedPageAdminLink()),
         Context.Request.Path);
 }
 

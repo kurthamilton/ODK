@@ -200,7 +200,7 @@ public static class DependencyRegistrar
             .AddScoped<IChapterViewModelService, ChapterViewModelService>()
             .AddSingleton(new ChapterViewModelServiceSettings
             {
-                MovedBannerDays = appSettings.Groups.MovedBannerDays
+                MigrationWindowDays = appSettings.Groups.MigrationWindowDays
             })
             .AddScoped<IContactAdminService, ContactAdminService>()
             .AddSingleton(new ContactAdminServiceSettings
@@ -388,7 +388,8 @@ public static class DependencyRegistrar
             .AddScoped<IRequestStore, RequestStore>()
             .AddSingleton(new RequestStoreSettings
             {
-                Environment = appSettings.Environment
+                Environment = appSettings.Environment,
+                MigrationWindowDays = appSettings.Groups.MigrationWindowDays
             })
             .AddScoped<IRequestStoreFactory, RequestStoreFactory>()
             .AddScoped<IServiceRequestFactory, ServiceRequestFactory>()

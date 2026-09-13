@@ -39,7 +39,7 @@ public static class ChapterViewModelServiceTests
             PreviousPlatformName = "Meetup"
         });
 
-        var service = CreateChapterViewModelService(context, movedBannerDays: 30);
+        var service = CreateChapterViewModelService(context, migrationWindowDays: 30);
 
         // Act
         var result = await service.GetGroupHomePage(CreateChapterServiceRequest(chapter));
@@ -64,7 +64,7 @@ public static class ChapterViewModelServiceTests
             PreviousPlatformName = "Meetup"
         });
 
-        var service = CreateChapterViewModelService(context, movedBannerDays: 30);
+        var service = CreateChapterViewModelService(context, migrationWindowDays: 30);
 
         // Act
         var result = await service.GetGroupHomePage(CreateChapterServiceRequest(chapter));
@@ -241,7 +241,7 @@ public static class ChapterViewModelServiceTests
     }
 
     private static ChapterViewModelService CreateChapterViewModelService(
-        MockOdkContext context, int movedBannerDays = 0)
+        MockOdkContext context, int migrationWindowDays = 0)
         => new(
             MockUnitOfWorkFactory.Create(context),
             new AuthorizationService(),
@@ -250,7 +250,7 @@ public static class ChapterViewModelServiceTests
             Mock.Of<IDistanceUnitFactory>(),
             Mock.Of<IGeolocationService>(),
             Mock.Of<ILatLongCalculator>(),
-            new ChapterViewModelServiceSettings { MovedBannerDays = movedBannerDays },
+            new ChapterViewModelServiceSettings { MigrationWindowDays = migrationWindowDays },
             new SiteSubscriptionCooldown(months: 0),
             CreateSubscriptionsPageViewModelFactory());
 

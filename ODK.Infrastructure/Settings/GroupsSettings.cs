@@ -6,7 +6,7 @@ public class GroupsSettings
 
     public required string DefaultCountryCode { get; init; }
 
-    public required int MovedBannerDays { get; init; }
+    public required int MigrationWindowDays { get; init; }
 
     public required string[] ReservedSlugs { get; init; }
 }

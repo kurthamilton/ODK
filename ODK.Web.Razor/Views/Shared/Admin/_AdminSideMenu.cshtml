@@ -9,7 +9,8 @@
     var currentMember = RequestStore.CurrentMember;
     var chapterAdminMember = await RequestStore.GetCurrentChapterAdminMember();
 
-    var sections = OdkRoutes.GroupAdmin.PermittedNavigation(chapter, chapterAdminMember, currentMember);
+    var sections = OdkRoutes.GroupAdmin.PermittedNavigation(
+        chapter, chapterAdminMember, currentMember, await RequestStore.ShowMovedPageAdminLink());
 
     var menuItemGroups = new List<IReadOnlyCollection<MenuItem>>
     {
