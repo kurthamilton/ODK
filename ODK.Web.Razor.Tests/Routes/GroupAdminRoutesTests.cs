@@ -84,13 +84,47 @@ public static class GroupAdminRoutesTests
     }
 
     [Test]
+    public static void PermittedNavigation_ShowMovedPage_IncludesTheMovedPage()
+    {
+        // Arrange
+        var routes = new GroupAdminRoutes(PlatformType.GroupSquirrel);
+        var chapter = CreateChapter();
+
+        // Act
+        var result = routes.PermittedNavigation(
+            chapter, CreateAdminMember(ChapterAdminRole.Owner), CreateMember(), showMovedPage: true);
+
+        // Assert
+        result.SelectMany(x => x.Items).Select(x => x.Route.Path)
+            .Should().Contain(routes.Moved(chapter).Path);
+    }
+
+    [Test]
+    public static void PermittedNavigation_NotShowMovedPage_ExcludesTheMovedPage()
+    {
+        // Arrange - the page itself stays reachable at that path; this only takes it out of the menu.
+        var routes = new GroupAdminRoutes(PlatformType.GroupSquirrel);
+        var chapter = CreateChapter();
+
+        // Act
+        var result = routes.PermittedNavigation(
+            chapter, CreateAdminMember(ChapterAdminRole.Owner), CreateMember(), showMovedPage: false);
+
+        // Assert
+        var items = result.SelectMany(x => x.Items).ToArray();
+        items.Select(x => x.Route.Path).Should().NotContain(routes.Moved(chapter).Path);
+        items.Should().NotBeEmpty();
+    }
+
+    [Test]
     public static void PermittedNavigation_NotAnAdmin_ReturnsEmpty()
     {
         // Arrange
         var routes = new GroupAdminRoutes(PlatformType.GroupSquirrel);
 
         // Act
-        var result = routes.PermittedNavigation(CreateChapter(), adminMember: null, CreateMember());
+        var result = routes.PermittedNavigation(
+            CreateChapter(), adminMember: null, CreateMember(), showMovedPage: true);
 
         // Assert
         result.Should().BeEmpty();
@@ -104,7 +138,7 @@ public static class GroupAdminRoutesTests
 
         // Act
         var result = routes.PermittedNavigation(
-            CreateChapter(), CreateAdminMember(ChapterAdminRole.Owner), CreateMember());
+            CreateChapter(), CreateAdminMember(ChapterAdminRole.Owner), CreateMember(), showMovedPage: true);
 
         // Assert
         result.Should().NotContain(x => x.RequiresSiteAdmin);
@@ -119,7 +153,7 @@ public static class GroupAdminRoutesTests
 
         // Act
         var result = routes.PermittedNavigation(
-            chapter, CreateAdminMember(ChapterAdminRole.Organiser), CreateMember());
+            chapter, CreateAdminMember(ChapterAdminRole.Organiser), CreateMember(), showMovedPage: true);
 
         // Assert
         var paths = result.SelectMany(x => x.Items).Select(x => x.Route.Path).ToArray();
@@ -136,7 +170,8 @@ public static class GroupAdminRoutesTests
         var chapter = CreateChapter();
 
         // Act
-        var result = routes.PermittedNavigation(chapter, adminMember: null, CreateMember(siteAdmin: true));
+        var result = routes.PermittedNavigation(
+            chapter, adminMember: null, CreateMember(siteAdmin: true), showMovedPage: true);
 
         // Assert - a menu item on the platform that has no such page is a link to a 404
         result.SelectMany(x => x.Items).Select(x => x.Route.Path)
@@ -153,7 +188,8 @@ public static class GroupAdminRoutesTests
         var chapter = CreateChapter();
 
         // Act
-        var result = routes.PermittedNavigation(chapter, adminMember: null, CreateMember(siteAdmin: true));
+        var result = routes.PermittedNavigation(
+            chapter, adminMember: null, CreateMember(siteAdmin: true), showMovedPage: true);
 
         // Assert
         result.SelectMany(x => x.Items).Select(x => x.Route.Path)
@@ -169,7 +205,7 @@ public static class GroupAdminRoutesTests
 
         // Act
         var result = routes.PermittedNavigation(
-            CreateChapter(), adminMember: null, CreateMember(siteAdmin: true));
+            CreateChapter(), adminMember: null, CreateMember(siteAdmin: true), showMovedPage: true);
 
         // Assert
         result.Should().Contain(x => x.RequiresSiteAdmin);

@@ -140,7 +140,10 @@ public class GroupAdminRoutes
             return events;
         }
 
-        foreach (var section in PermittedNavigation(chapter, adminMember, currentMember))
+        /* Never the moved page, so whether the group still manages one makes no difference here: it is a
+           signpost rather than somewhere to land, and every role that may open it may open the events page
+           this prefers anyway. */
+        foreach (var section in PermittedNavigation(chapter, adminMember, currentMember, showMovedPage: false))
         {
             if (section.Route.IsPermitted(adminMember, currentMember, Platform))
             {
@@ -287,7 +290,11 @@ public class GroupAdminRoutes
     /// definition of what the admin area contains; the side menu and the admin landing redirect both
     /// derive from it, so a new admin page is registered once here rather than in each consumer.
     /// </summary>
-    public IReadOnlyCollection<GroupAdminNavSection> Navigation(Chapter chapter) =>
+    /// <param name="showMovedPage">
+    /// Whether the group still manages a moved page - <c>IRequestStore.ShowMovedPageAdminLink</c>. Stated
+    /// by the caller because it is read from a row this class has no way to reach.
+    /// </param>
+    public IReadOnlyCollection<GroupAdminNavSection> Navigation(Chapter chapter, bool showMovedPage) =>
     [
         new GroupAdminNavSection
         {
@@ -299,7 +306,9 @@ public class GroupAdminRoutes
                 new(Emails(chapter), "Emails"),
                 new(Questions(chapter), "FAQ"),
                 new(Messages(chapter), "Messages"),
-                new(Moved(chapter), "Moved page"),
+                .. showMovedPage
+                    ? new GroupAdminNavItem[] { new(Moved(chapter), "Moved page") }
+                    : [],
                 new(Settings(chapter), "Settings"),
                 new(Subscription(chapter), "Subscription"),
                 new(Texts(chapter), "Texts"),
@@ -388,11 +397,11 @@ public class GroupAdminRoutes
     /// and safe to pick a redirect target from.
     /// </summary>
     public IReadOnlyCollection<GroupAdminNavSection> PermittedNavigation(
-        Chapter chapter, ChapterAdminMember? adminMember, Member currentMember)
+        Chapter chapter, ChapterAdminMember? adminMember, Member currentMember, bool showMovedPage)
     {
         var permitted = new List<GroupAdminNavSection>();
 
-        foreach (var section in Navigation(chapter))
+        foreach (var section in Navigation(chapter, showMovedPage))
         {
             if (section.RequiresSiteAdmin && !currentMember.SiteAdmin)
             {

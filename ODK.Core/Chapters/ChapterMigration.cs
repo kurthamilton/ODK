@@ -3,8 +3,8 @@
 /// <summary>
 /// A group's move here from somewhere else, and the signpost it leaves behind on the platform it came
 /// from. <see cref="MovedUtc"/> is the switch: set, the group's moved page is public and its home page
-/// carries a welcome banner for as long as <see cref="ChapterMovedBannerWindow"/> allows; null, the row
-/// holds the wording the organiser has written without publishing any of it.
+/// carries a welcome banner for as long as <see cref="MovedRecently"/> allows; null, the row holds the
+/// wording the organiser has written without publishing any of it.
 /// </summary>
 public class ChapterMigration : IChapterEntity
 {
@@ -37,4 +37,13 @@ public class ChapterMigration : IChapterEntity
     public string? PreviousPlatformName { get; set; }
 
     public bool HasMoved() => MovedUtc != null;
+
+    /// <summary>
+    /// Whether the move is recent enough to still be worth saying anything about - which the group's home
+    /// page reads to decide whether to announce it, and the admin menu reads to decide whether the moved
+    /// page is still one of the group's live concerns. <paramref name="withinDays"/> is
+    /// <c>Groups:MigrationWindowDays</c>. A group that has not moved is not recent, it is nothing.
+    /// </summary>
+    public bool MovedRecently(int withinDays, DateTime utcNow)
+        => MovedUtc?.AddDays(withinDays) > utcNow;
 }

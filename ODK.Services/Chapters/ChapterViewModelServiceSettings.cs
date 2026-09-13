@@ -3,7 +3,8 @@
 public class ChapterViewModelServiceSettings
 {
     /// <summary>
-    /// How many days after a move a group's home page still announces it.
+    /// How long a group counts as newly arrived (Groups:MigrationWindowDays) - here, how many days after a
+    /// move its home page still announces it.
     /// </summary>
-    public required int MovedBannerDays { get; init; }
+    public required int MigrationWindowDays { get; init; }
 }

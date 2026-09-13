@@ -719,9 +719,7 @@ public class ChapterViewModelService : IChapterViewModelService
 
         var showInstagramFeed = hasInstagramFeed && privacySettings?.InstagramFeed != false;
 
-        // A null move date - no move, or a moved page switched off - makes the comparison false, which is
-        // the same answer as a move too old to be worth announcing.
-        var announceMove = migration?.MovedUtc?.AddDays(_settings.MovedBannerDays) > DateTime.UtcNow;
+        var announceMove = migration?.MovedRecently(_settings.MigrationWindowDays, DateTime.UtcNow) == true;
 
         return new GroupHomePageViewModel
         {

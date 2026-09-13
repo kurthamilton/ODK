@@ -2,7 +2,7 @@
 @model ChapterMigration
 
 @* Reassures someone arriving on a link shared from the platform the group came from that they have landed
-   in the right place. Shown only while the move is recent - see ChapterMovedBannerWindow. *@
+   in the right place. Shown only while the move is recent - see ChapterMigration.MovedRecently. *@
 
 <div class="alert alert-info" data-odk-component="_GroupMovedBanner">
     @if (!string.IsNullOrEmpty(Model.PreviousPlatformName))
