@@ -262,6 +262,27 @@ public class GroupAdminRoutes
         => Messages(chapter).Child($"?status={status}");
 
     /// <summary>
+    /// Where an organiser sets up the signpost their old platform points at. Group Squirrel only:
+    /// Drunken Knitwits has no member-owned groups to move one into, which is the same reason
+    /// <c>SiteRoutes.Migrate</c> is not served there.
+    /// </summary>
+    public GroupAdminRoute Moved(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => GroupAdminRoute.Default,
+        _ => Group(chapter).Child("/moved", ChapterAdminSecurable.MovedPage, PlatformType.GroupSquirrel)
+    };
+
+    /// <summary>
+    /// Takes the moved page off the group's dashboard. A controller endpoint rather than a page handler,
+    /// for the reason MembersImportEndpoint gives.
+    /// </summary>
+    public GroupAdminRoute MovedDismiss(Chapter chapter) => new()
+    {
+        Path = $"/groups/{chapter.Id}/moved/dismiss",
+        Securable = ChapterAdminSecurable.MovedPage
+    };
+
+    /// <summary>
     /// The full group admin menu tree, before any permission or platform filtering. This is the single
     /// definition of what the admin area contains; the side menu and the admin landing redirect both
     /// derive from it, so a new admin page is registered once here rather than in each consumer.
@@ -278,6 +299,7 @@ public class GroupAdminRoutes
                 new(Emails(chapter), "Emails"),
                 new(Questions(chapter), "FAQ"),
                 new(Messages(chapter), "Messages"),
+                new(Moved(chapter), "Moved page"),
                 new(Settings(chapter), "Settings"),
                 new(Subscription(chapter), "Subscription"),
                 new(Texts(chapter), "Texts"),

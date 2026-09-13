@@ -8,6 +8,8 @@ public static class ChapterTextLabels
 {
     public const string Description = "Description";
 
+    public const string MovedMessage = "Message to your members";
+
     public const string RegisterText = "Registration page message";
 
     public const string ShortDescription = "Short description";

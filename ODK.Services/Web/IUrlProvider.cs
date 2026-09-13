@@ -61,6 +61,17 @@ public interface IUrlProvider
 
     string MessageSiteAdminUrl(Guid messageId);
 
+    /// <summary>
+    /// The group's moved page. Absolute because an organiser's whole use for it is pasting it somewhere
+    /// that is not this site - a description on the platform they came from.
+    /// </summary>
+    /// <remarks>
+    /// The one group URL built against the platform this provider was given rather than the group's own:
+    /// only Group Squirrel serves a moved page, so following a Drunken Knitwits group to Drunken Knitwits
+    /// would name a page that is not there. Pass a provider built for the site the organiser is on.
+    /// </remarks>
+    string MovedPageUrl(Chapter chapter);
+
     string PasswordReset(Chapter? chapter, string token);
 
     string RefuseInviteUrl(Chapter chapter, string inviteToken);

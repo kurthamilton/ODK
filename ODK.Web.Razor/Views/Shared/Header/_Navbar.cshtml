@@ -1,11 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Html
-@using ODK.Core.Chapters
 @using ODK.Services.Chapters
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Header
-@using ODK.Web.Razor.Services
 @model NavbarViewModel
 @inject IChapterViewModelService ChapterViewModelService
 @inject IRequestStore RequestStore
@@ -100,7 +98,7 @@
                            target="@(!string.IsNullOrEmpty(menuItem.ExternalLink) ? "_blank" : null)">
                             @if (!string.IsNullOrEmpty(menuItem.Text))
                             {
-                                <span>@menuItem.Text</span>
+                                <span class="temp">@menuItem.Text</span>
                             }
 
                             @if (menuItem.Icon != null)

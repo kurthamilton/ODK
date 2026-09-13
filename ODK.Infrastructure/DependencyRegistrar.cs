@@ -190,12 +190,18 @@ public static class DependencyRegistrar
             .AddSingleton(new ChapterAdminServiceSettings
             {
                 ContactMessageRecaptchaScoreThreshold = appSettings.Recaptcha.ScoreThreshold,
+                DashboardNewestMemberCount = appSettings.Groups.Dashboard.NewestMemberCount,
+                DashboardUpcomingEventCount = appSettings.Groups.Dashboard.UpcomingEventCount,
                 DefaultCountryCode = appSettings.Groups.DefaultCountryCode,
                 ReservedSlugs = appSettings.Groups.ReservedSlugs
             })
             .AddScoped<IChapterService, ChapterService>()
             .AddScoped<IChapterSiteAdminService, ChapterSiteAdminService>()
             .AddScoped<IChapterViewModelService, ChapterViewModelService>()
+            .AddSingleton(new ChapterViewModelServiceSettings
+            {
+                MovedBannerDays = appSettings.Groups.MovedBannerDays
+            })
             .AddScoped<IContactAdminService, ContactAdminService>()
             .AddSingleton(new ContactAdminServiceSettings
             {
@@ -317,7 +323,8 @@ public static class DependencyRegistrar
             .AddSingleton(new MemberAdminServiceSettings
             {
                 InviteRetentionDays = appSettings.Privacy.Invites.RetentionDays,
-                MemberAvatarSize = appSettings.Members.AvatarSize
+                MemberAvatarSize = appSettings.Members.AvatarSize,
+                SiteAdminMemberSearchLimit = appSettings.Members.SiteAdminSearchLimit
             })
             .AddScoped<IMemberChapterSubscriptionWriter, MemberChapterSubscriptionWriter>()
             .AddScoped<IMemberSiteSubscriptionWriter, MemberSiteSubscriptionWriter>()

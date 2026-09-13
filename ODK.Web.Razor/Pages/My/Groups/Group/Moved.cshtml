@@ -1,0 +1,20 @@
+﻿@page "/my/groups/{slug}/moved"
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Components
+@model MovedModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Moved page";
+
+    var viewModel = await ChapterAdminService.GetChapterMigrationViewModel(
+        Model.MemberChapterAdminServiceRequest);
+}
+
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Moved page",
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterAdminMovedContent", viewModel)</div>,
+    MenuTitle = "Admin",
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
+})

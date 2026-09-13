@@ -18,6 +18,7 @@ public interface IUnitOfWork
     IChapterLinksRepository ChapterLinksRepository { get; }
     IChapterLocationRepository ChapterLocationRepository { get; }
     IChapterMembershipSettingsRepository ChapterMembershipSettingsRepository { get; }
+    IChapterMigrationRepository ChapterMigrationRepository { get; }
     IChapterPageRepository ChapterPageRepository { get; }
     IChapterPaymentAccountRepository ChapterPaymentAccountRepository { get; }
     IChapterPaymentAdjustmentRecoveryRepository ChapterPaymentAdjustmentRecoveryRepository { get; }
@@ -314,6 +315,27 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T16>> query16,
         Func<IUnitOfWork, IDeferredQuery<T17>> query17,
         Func<IUnitOfWork, IDeferredQuery<T18>> query18);
+
+    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19)> Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4,
+        Func<IUnitOfWork, IDeferredQuery<T5>> query5,
+        Func<IUnitOfWork, IDeferredQuery<T6>> query6,
+        Func<IUnitOfWork, IDeferredQuery<T7>> query7,
+        Func<IUnitOfWork, IDeferredQuery<T8>> query8,
+        Func<IUnitOfWork, IDeferredQuery<T9>> query9,
+        Func<IUnitOfWork, IDeferredQuery<T10>> query10,
+        Func<IUnitOfWork, IDeferredQuery<T11>> query11,
+        Func<IUnitOfWork, IDeferredQuery<T12>> query12,
+        Func<IUnitOfWork, IDeferredQuery<T13>> query13,
+        Func<IUnitOfWork, IDeferredQuery<T14>> query14,
+        Func<IUnitOfWork, IDeferredQuery<T15>> query15,
+        Func<IUnitOfWork, IDeferredQuery<T16>> query16,
+        Func<IUnitOfWork, IDeferredQuery<T17>> query17,
+        Func<IUnitOfWork, IDeferredQuery<T18>> query18,
+        Func<IUnitOfWork, IDeferredQuery<T19>> query19);
 
     Task SaveChanges();
 }

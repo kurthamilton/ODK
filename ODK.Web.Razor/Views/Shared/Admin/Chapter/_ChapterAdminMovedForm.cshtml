@@ -1,0 +1,31 @@
+﻿@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Mvc
+@model ChapterMigrationFormViewModel
+
+<div class="form-group mb-3">
+    <div class="form-check form-switch">
+        @Html.OdkCheckBoxFor(x => x.Moved, new { @class = "form-check-input", role = "switch" })
+        @Html.LabelFor(x => x.Moved, new { @class = "form-check-label" })
+    </div>
+    @await Html.PartialAsync("Components/_FormLabelSubtitle",
+        "While this is off the page is not public, and anything you write below is kept but not shown.")
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.PreviousPlatformName, new { @class = "form-label" })
+    @await Html.PartialAsync("Components/_FormLabelSubtitle",
+        "Meetup, Facebook, your mailing list - whatever your members will recognise. Leave it blank and " +
+        "the page simply says you have moved.")
+    @* Plain text rather than rich text: it is a name dropped into a sentence, not a paragraph. *@
+    @Html.TextBoxFor(x => x.PreviousPlatformName, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.PreviousPlatformName)
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.MessageHtml, new { @class = "form-label" })
+    @await Html.PartialAsync("Components/_FormLabelSubtitle",
+        "Why you moved, in your own words. Optional - the page reads perfectly well without it.")
+    @Html.OdkHtmlEditorTextAreaFor(x => x.MessageHtml, Model.ValidateUrl,
+        htmlAttributes: new { @class = "form-control", rows = 6 })
+    @Html.ValidationMessageFor(x => x.MessageHtml)
+</div>

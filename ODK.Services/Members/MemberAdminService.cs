@@ -30,8 +30,6 @@ namespace ODK.Services.Members;
 
 public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 {
-    private const int SiteAdminMemberSearchLimit = 50;
-
     private readonly StateMachineRunner<AccountState, AccountTrigger, AccountContext> _accountWorkflow;
     private readonly IAccountContextFactory _accountContextFactory;
     private readonly IAuthorizationService _authorizationService;
@@ -655,14 +653,14 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 ? x.MemberRepository
                     .Query(y => y.Search(trimmed))
                     .OrderBy(y => y.FirstName)
-                    .Take(SiteAdminMemberSearchLimit + 1)
+                    .Take(_settings.SiteAdminMemberSearchLimit + 1)
                     .GetAll()
                 : new DefaultDeferredQueryMultiple<Member>());
 
         return new SiteAdminMemberSearchViewModel
         {
             Rows = members
-                .Take(SiteAdminMemberSearchLimit)
+                .Take(_settings.SiteAdminMemberSearchLimit)
                 .Select(x => new SiteAdminMemberSearchRowViewModel
                 {
                     Current = x.Id == request.CurrentMember.Id,
@@ -674,7 +672,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 })
                 .ToArray(),
             Search = trimmed,
-            Truncated = members.Count > SiteAdminMemberSearchLimit
+            Truncated = members.Count > _settings.SiteAdminMemberSearchLimit
         };
     }
 

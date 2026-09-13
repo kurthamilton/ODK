@@ -116,6 +116,13 @@ public class GroupRoutes
 
     public string Members(Chapter chapter) => GroupPath(chapter, "/members");
 
+    /// <summary>
+    /// The signpost a group that moved here leaves on the platform it came from. A permanent address
+    /// rather than a temporary one: an organiser puts it in a group description, an announcement and old
+    /// event listings, and people keep arriving through those long after the move.
+    /// </summary>
+    public string Moved(Chapter chapter) => GroupPath(chapter, "/moved");
+
     public string PastEvents(Chapter chapter) => $"{Events(chapter)}/past";
 
     public string Profile(Chapter chapter) => GroupPath(chapter, "/profile");

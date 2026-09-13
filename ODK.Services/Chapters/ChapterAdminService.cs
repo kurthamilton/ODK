@@ -45,12 +45,6 @@ namespace ODK.Services.Chapters;
 
 public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 {
-    // How much of the group the admin dashboard shows at a glance. Both are a row of cards wide, so the
-    // numbers are what fits rather than what is available.
-    private const int DashboardNewestMemberCount = 4;
-
-    private const int DashboardUpcomingEventCount = 3;
-
     private static readonly Dictionary<PlatformType, IReadOnlyCollection<PageType>> _platformPages =
         new()
         {
@@ -736,6 +730,34 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
+    public async Task<ServiceResult> DismissMovedPagePrompt(IMemberChapterAdminServiceRequest request)
+    {
+        var chapter = request.Chapter;
+
+        var migration = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.ChapterMigrationRepository.GetByChapterId(chapter.Id));
+
+        if (migration == null)
+        {
+            _unitOfWork.ChapterMigrationRepository.Add(new ChapterMigration
+            {
+                ChapterId = chapter.Id,
+                PromptDismissedUtc = DateTime.UtcNow
+            });
+        }
+        else
+        {
+            // Left alone where it is already set, so dismissing twice does not move the date.
+            migration.PromptDismissedUtc ??= DateTime.UtcNow;
+            _unitOfWork.ChapterMigrationRepository.Update(migration);
+        }
+
+        await _unitOfWork.SaveChanges();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult<string>> GenerateChapterPaymentAccountSetupUrl(
         IMemberChapterAdminServiceRequest request, string refreshPath, string returnPath)
     {
@@ -802,6 +824,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var canSeeMessages = adminMember.HasAccessTo(ChapterAdminSecurable.ContactMessages, currentMember);
         var canSeeEvents = adminMember.HasAccessTo(ChapterAdminSecurable.Events, currentMember);
         var canSeeImports = adminMember.HasAccessTo(ChapterAdminSecurable.MemberImport, currentMember);
+        var canSeeMovedPage = adminMember.HasAccessTo(ChapterAdminSecurable.MovedPage, currentMember);
 
         // Approved and unpublished, so publishing is the outstanding action. Whether it can happen yet
         // depends on the picture.
@@ -817,7 +840,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             heldInvites,
             waitingToBeInvited,
             otherMembers,
-            invites
+            invites,
+            migration
         ) = await _unitOfWork.Run(
             x => canSeeApprovals
                 ? x.MemberChapterRepository.Query(platform).ForChapter(chapter.Id).Approved(false).Count()
@@ -833,14 +857,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                     .Query(q => q.ForChapter(chapter.Id).OnOrAfter(DateTime.UtcNow))
                     .Summary()
                     .OrderBy(e => e.Event.DateUtc)
-                    .Take(DashboardUpcomingEventCount)
+                    .Take(_settings.DashboardUpcomingEventCount)
                     .GetAll()
                 : new DefaultDeferredQueryMultiple<EventSummaryDto>(),
             x => canSeeImage || awaitingPublication
                 ? x.ChapterImageRepository.GetVersionDtoByChapterId(chapter.Id)
                 : DefaultDeferredQuerySingleOrDefault.For<ChapterImageVersionDto>(),
             x => canSeeMembers
-                ? x.MemberRepository.GetLatestJoinedByChapterId(chapter.Id, DashboardNewestMemberCount)
+                ? x.MemberRepository.GetLatestJoinedByChapterId(chapter.Id, _settings.DashboardNewestMemberCount)
                 : new DefaultDeferredQueryMultiple<MemberChapterWithAvatarDto>(),
             /* Where publishing is the outstanding action, which says what publishing makes sendable, and
                where the admin can reach the import page, which is what offers to send them. */
@@ -856,7 +880,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             // Sent or held: an invite nobody has accepted yet still means the members have been brought in.
             x => canSeeImports
                 ? x.MemberChapterInviteRepository.GetCountByChapterId(chapter.Id)
-                : new DefaultDeferredQuery<int>(0));
+                : new DefaultDeferredQuery<int>(0),
+            x => canSeeMovedPage
+                ? x.ChapterMigrationRepository.GetByChapterId(chapter.Id)
+                : DefaultDeferredQuerySingleOrDefault.For<ChapterMigration>());
 
         var hasImage = image != null;
 
@@ -872,6 +899,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             NewestMembers = canSeeMembers ? newestMembers : null,
             PromptMemberImport =
                 canSeeImports && otherMembers == 0 && waitingToBeInvited == 0 && invites == 0,
+            PromptMovedPage =
+                canSeeMovedPage
+                && chapter.IsPublished()
+                && migration?.HasMoved() != true
+                && migration?.PromptDismissedUtc == null,
             UnrepliedContactMessages = canSeeMessages ? unrepliedMessages : null,
             WaitingToBeInvited = canSeeImports ? waitingToBeInvited : null,
             UpcomingEvents = canSeeEvents ? upcomingEvents : null
@@ -1067,6 +1099,27 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Chapter = chapter,
             Message = message,
             Replies = replies
+        };
+    }
+
+    public async Task<ChapterMigrationAdminPageViewModel> GetChapterMigrationViewModel(
+        IMemberChapterAdminServiceRequest request)
+    {
+        var chapter = request.Chapter;
+
+        var migration = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.ChapterMigrationRepository.GetByChapterId(chapter.Id));
+
+        // No chapter, so the URL is built against the site the organiser is on rather than the one that
+        // owns the group - see IUrlProvider.MovedPageUrl.
+        var urlProvider = _urlProviderFactory.Create(request, chapter: null);
+
+        return new ChapterMigrationAdminPageViewModel
+        {
+            Chapter = chapter,
+            Migration = migration,
+            MovedPageUrl = urlProvider.MovedPageUrl(chapter)
         };
     }
 
@@ -1984,6 +2037,55 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         else
         {
             _unitOfWork.ChapterMembershipSettingsRepository.Update(settings);
+        }
+
+        await _unitOfWork.SaveChanges();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdateChapterMigration(
+        IMemberChapterAdminServiceRequest request,
+        ChapterMigrationUpdateModel model)
+    {
+        var chapter = request.Chapter;
+
+        var migration = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.ChapterMigrationRepository.GetByChapterId(chapter.Id));
+
+        migration ??= new ChapterMigration();
+
+        var messages = ValidateChapterText(
+                ChapterTextLabels.MovedMessage, model.MessageHtml, migration.MessageHtml)
+            .ToArray();
+
+        if (messages.Length > 0)
+        {
+            return ServiceResult.Failure(messages);
+        }
+
+        // An empty box means nothing was written rather than something empty was, so both optional fields
+        // store null - the page renders a section per value it has, and an empty string would earn one.
+        migration.MessageHtml = !string.IsNullOrWhiteSpace(model.MessageHtml) ? model.MessageHtml : null;
+        migration.PreviousPlatformName = !string.IsNullOrWhiteSpace(model.PreviousPlatformName)
+            ? model.PreviousPlatformName.NormaliseWhitespace()
+            : null;
+
+        /* An existing move date survives a save that leaves the page on, so editing the wording does not
+           restart the home page banner's window. */
+        migration.MovedUtc = model.Moved
+            ? migration.MovedUtc ?? DateTime.UtcNow
+            : null;
+
+        if (migration.ChapterId == default)
+        {
+            migration.ChapterId = chapter.Id;
+            _unitOfWork.ChapterMigrationRepository.Add(migration);
+        }
+        else
+        {
+            _unitOfWork.ChapterMigrationRepository.Update(migration);
         }
 
         await _unitOfWork.SaveChanges();

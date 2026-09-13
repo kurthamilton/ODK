@@ -1,0 +1,184 @@
+﻿@using ODK.Core.Events
+@using ODK.Core.Utils
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Services.Platforms
+@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Mvc
+@model GroupMovedPageViewModel
+@inject IOdkRoutes OdkRoutes
+@inject IPlatformProvider PlatformProvider
+@inject IRequestStore RequestStore
+@{
+    var chapter = Model.Chapter;
+    var groupName = chapter.GetDisplayName(RequestStore.Platform);
+    var groupUrl = OdkRoutes.Groups.Group(chapter);
+    var platformName = PlatformProvider.GetName(RequestStore.Platform);
+    var previousPlatformName = Model.Migration.PreviousPlatformName;
+}
+
+<div class="section-stack" data-odk-component="_GroupMovedContent">
+    @* Only whoever can still reach an unpublished group sees this, so the check is the published state
+       itself rather than a role. Positioned against the .preview-label-container wrapper _Body puts around
+       the page container, the way _GroupBody does it. *@
+    @if (!chapter.IsPublished())
+    {
+        <div class="preview-label">
+            <span>Preview</span>
+        </div>
+    }
+
+    <p class="lead">
+        @if (!string.IsNullOrEmpty(previousPlatformName))
+        {
+            <span>This group has moved from @previousPlatformName.</span>
+        }
+        else
+        {
+            <span>This group has moved.</span>
+        }
+        <span>You'll find it here on @platformName from now on.</span>
+    </p>
+
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Heading = new HeadingViewModel
+        {
+            Title = "Our new home",
+            Type = HeadingType.H3
+        },
+        BodyContentFunc =
+            @<div class="d-flex flex-column gap-3">
+                @if (Model.Image != null)
+                {
+                    <a href="@groupUrl" class="link-hover link-hover--opacity">
+                        <img src="@OdkRoutes.Groups.Image(chapter.Id, Model.Image.Version)"
+                             alt="@groupName" class="w-100" />
+                    </a>
+                }
+
+                <div>
+                    <h4 class="mb-1">
+                        <a href="@groupUrl">@groupName</a>
+                    </h4>
+                    @if (!string.IsNullOrEmpty(Model.ShortDescription))
+                    {
+                        <p class="mb-0">@Model.ShortDescription</p>
+                    }
+                </div>
+
+                <p class="mb-0">
+                    Upcoming events, group information and everything you need to stay involved are all
+                    at our new home.
+                </p>
+
+                <div class="button-container">
+                    @if (Model.IsMember)
+                    {
+                        <a href="@groupUrl" class="btn btn-primary">Go to @groupName</a>
+                    }
+                    else
+                    {
+                        <a href="@OdkRoutes.Groups.Join(chapter)" class="btn btn-success">
+                            Join @groupName
+                        </a>
+                        <a href="@groupUrl" class="btn btn-outline-primary">Have a look round first</a>
+                    }
+                </div>
+
+                @if (!Model.IsMember)
+                {
+                    <p class="text-muted mb-0">
+                        Already invited? If the organisers have sent you an invitation by email, follow
+                        the link in it instead - that activates the account they have already set up for
+                        you.
+                    </p>
+                }
+            </div>
+    })
+
+    @if (Model.NextEvent != null)
+    {
+        var nextEvent = Model.NextEvent.Event;
+        var localTime = Event.ToLocalTime(nextEvent.DateUtc, chapter.TimeZone);
+
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Next event",
+                Type = HeadingType.H3
+            },
+            BodyContentFunc =
+                @<div class="d-flex flex-column gap-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Calendar))
+                            <span>
+                                <span>@localTime.ToFriendlyDateString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = chapter.TimeZone })</span>
+                                <span>@Event.ToLocalTimeString(nextEvent.DateUtc, nextEvent.EndTime, chapter.TimeZone)</span>
+                                @if (localTime.TimeOfDay.TotalSeconds > 0)
+                                {
+                                    <span>@Html.ChapterTimeZoneLabel(chapter.TimeZone, nextEvent.DateUtc)</span>
+                                }
+                            </span>
+                        </div>
+
+                        <h4 class="mb-0 mt-1">@nextEvent.Name</h4>
+
+                        @if (Model.NextEvent.Venue != null)
+                        {
+                            @await Html.PartialAsync("Components/_Location", Model.NextEvent.Venue.Name)
+                        }
+                    </div>
+
+                    <div class="button-container">
+                        <a href="@OdkRoutes.Groups.Event(chapter, nextEvent.Shortcode)"
+                           class="btn btn-outline-primary">
+                            View event
+                        </a>
+                    </div>
+                </div>
+        })
+    }
+
+    @if (!string.IsNullOrEmpty(Model.Migration.MessageHtml))
+    {
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "A message from the organisers",
+                Type = HeadingType.H3
+            },
+            BodyContent = Html.Raw(Model.Migration.MessageHtml)
+        })
+    }
+
+    @if (Model.ShowContact)
+    {
+        @await Html.PartialAsync("Components/_Section", new SectionViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Questions?",
+                Type = HeadingType.H3
+            },
+            BodyContentFunc =
+                @<p class="mb-0">
+                    <a href="@OdkRoutes.Groups.Contact(chapter)">
+                        @StringUtils.Coalesce(Model.ContactPage?.Title, "Contact the organisers")
+                    </a>
+                    and they will get back to you.
+                </p>
+        })
+    }
+
+    @* Deliberately the only mention of the platform on the page: someone arriving here is looking for
+       their group, not for somewhere to host one. *@
+    <p class="text-muted small mb-0">
+        This group is hosted on @platformName.
+        <a href="@OdkRoutes.Site.About">Learn more</a>
+    </p>
+</div>

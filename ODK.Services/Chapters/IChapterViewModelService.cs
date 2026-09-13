@@ -31,6 +31,8 @@ public interface IChapterViewModelService
 
     Task<GroupJoinPageViewModel> GetGroupJoinPage(IChapterServiceRequest request);
 
+    Task<GroupMovedPageViewModel> GetGroupMovedPage(IChapterServiceRequest request);
+
     Task<GroupProfilePageViewModel> GetGroupProfilePage(IMemberChapterServiceRequest request);
 
     Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(IChapterServiceRequest request);

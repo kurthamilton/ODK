@@ -19,7 +19,8 @@
     @await Html.PartialAsync("Home/_ChaptersBand", new ChaptersBandViewModel
     {
         Chapters = chapters,
-        Countries = countries
+        Countries = countries,
+        Platform = platform
     })
 
     <img class="img--hero" src="/assets/img/home-hero.jpg" />

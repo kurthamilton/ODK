@@ -94,6 +94,14 @@ public class GroupDashboardViewModel
     /// </summary>
     public required bool PromptMemberImport { get; init; }
 
+    /// <summary>
+    /// Whether to offer the admin a moved page: the group is published, so a page pointing at it lands
+    /// somewhere, it has not set one up, nobody has dismissed the offer, and the admin can reach the page
+    /// that sets it up. Deliberately not part of <see cref="HasRequiredActions"/> - a group that never
+    /// moved here from anywhere has nothing outstanding, which is why the offer can be dismissed.
+    /// </summary>
+    public required bool PromptMovedPage { get; init; }
+
     public required int? UnrepliedContactMessages { get; init; }
 
     /// <summary>

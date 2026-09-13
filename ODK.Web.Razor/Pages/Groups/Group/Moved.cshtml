@@ -1,0 +1,25 @@
+﻿@page "/groups/{slug}/moved"
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Components
+@model MovedModel
+@inject IChapterViewModelService ChapterViewModelService
+@{
+    Layout = "_HomeLayout";
+
+    var viewModel = await ChapterViewModelService.GetGroupMovedPage(Model.ChapterServiceRequest);
+
+    Model.Title = $"{Model.Chapter.GetDisplayName(Model.Platform)} has moved";
+    Model.Description = viewModel.ShortDescription;
+
+    /* The group page, not this one. This is a signpost that says the same thing about the same group, and
+       the group page is the one worth landing on - so a link shared onwards from here consolidates there
+       rather than competing with it. */
+    Model.Path = Model.OdkRoutes.Groups.Group(Model.Chapter);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Groups/_GroupMovedContent", viewModel),
+    TitleContent = await Html.PartialAsync("Groups/_GroupTitle", Model.Chapter),
+    WidthClass = "col-12 col-lg-8"
+})

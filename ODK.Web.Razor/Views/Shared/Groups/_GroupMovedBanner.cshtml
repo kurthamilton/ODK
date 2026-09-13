@@ -1,0 +1,16 @@
+﻿@using ODK.Core.Chapters
+@model ChapterMigration
+
+@* Reassures someone arriving on a link shared from the platform the group came from that they have landed
+   in the right place. Shown only while the move is recent - see ChapterMovedBannerWindow. *@
+
+<div class="alert alert-info" data-odk-component="_GroupMovedBanner">
+    @if (!string.IsNullOrEmpty(Model.PreviousPlatformName))
+    {
+        <span>We've recently moved here from @Model.PreviousPlatformName. Welcome!</span>
+    }
+    else
+    {
+        <span>We've recently moved here. Welcome!</span>
+    }
+</div>
