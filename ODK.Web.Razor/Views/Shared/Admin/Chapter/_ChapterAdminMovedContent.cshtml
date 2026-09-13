@@ -1,0 +1,72 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Components
+@model ChapterMigrationAdminPageViewModel
+@{
+    var moved = Model.Migration?.HasMoved() == true;
+}
+
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "A page you can point your old community at, so anyone still finding you there is sent here.")
+
+<div class="section-stack">
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Heading = new HeadingViewModel
+        {
+            Title = "Your moved page",
+            Type = HeadingType.H3
+        },
+        BodyContentFunc =
+            @<div>
+                <form method="post" action="/groups/@Model.Chapter.Id/moved">
+                    @Html.AntiForgeryToken()
+
+                    @await Html.PartialAsync("Admin/Chapter/_ChapterAdminMovedForm",
+                        new ChapterMigrationFormViewModel
+                        {
+                            MessageHtml = Model.Migration?.MessageHtml,
+                            Moved = moved,
+                            PreviousPlatformName = Model.Migration?.PreviousPlatformName,
+                            ValidateUrl = $"/groups/{Model.Chapter.Id}/texts/validate"
+                        })
+
+                    <button class="btn btn-primary">Update</button>
+                </form>
+            </div>
+    })
+
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Heading = new HeadingViewModel
+        {
+            Title = "What to do with it",
+            Type = HeadingType.H3
+        },
+        BodyContentFunc =
+            @<div class="d-flex flex-column gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <code class="text-break">@Model.MovedPageUrl</code>
+                    @await Html.PartialAsync("Components/_CopyToClipboard", new CopyToClipboardViewModel
+                    {
+                        Text = Model.MovedPageUrl
+                    })
+                </div>
+
+                @if (!moved)
+                {
+                    <p class="text-muted mb-0">
+                        The address is fixed and will not change, so you can get it ready before you
+                        publish the page. It only works once you have.
+                    </p>
+                }
+
+                <p class="mb-0">
+                    Put it in your old group's description, in an announcement, and in the descriptions of
+                    events people still have links to. Leave the old group where it is rather than deleting
+                    it - people keep arriving through search results, bookmarks and old messages for a long
+                    time, and this page is what meets them when they do.
+                </p>
+            </div>
+    })
+</div>

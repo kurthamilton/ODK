@@ -2,5 +2,7 @@
 
 public class MembersSettings
 {
-    public int AvatarSize { get; set; }
+    public required int AvatarSize { get; init; }
+
+    public required int SiteAdminSearchLimit { get; init; }
 }

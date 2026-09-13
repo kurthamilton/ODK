@@ -46,6 +46,8 @@ public static class PublicRoutesTests
         ("/{chaptername}/account/join", "a step in signing up"),
         ("/groups/{slug}/join", "a step in joining a group, and needs an account already"),
         ("/groups/{slug}/accept-invite", "reached from an invite link, with its token"),
+        ("/groups/{slug}/moved", "a signpost reached from the platform a group moved from; it says what the "
+            + "group page says and points its canonical there, so the group page is the one indexed"),
         ("/{chaptername}/refuse-invite", "reached from an invite link, with its token"),
         ("/groups/{slug}/refuse-invite", "reached from an invite link, with its token"),
         ("/{chaptername}/events/{shortcode}/checkout", "a step in buying a ticket"),

@@ -1782,7 +1782,8 @@ public static class MemberAdminServiceTests
             new MemberAdminServiceSettings
             {
                 InviteRetentionDays = InviteRetentionDays,
-                MemberAvatarSize = 75
+                MemberAvatarSize = 75,
+                SiteAdminMemberSearchLimit = 50
             });
     }
 

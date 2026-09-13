@@ -93,6 +93,8 @@ public class UrlProvider : IUrlProvider
 
     public string MessageSiteAdminUrl(Guid messageId) => GetUrl(x => x.SiteAdmin.Message(messageId).Path);
 
+    public string MovedPageUrl(Chapter chapter) => GetUrl(x => x.Groups.Moved(chapter));
+
     public string PasswordReset(Chapter? chapter, string token)
         => GetUrl(chapter, x => x.Account.PasswordReset(chapter, token));
 

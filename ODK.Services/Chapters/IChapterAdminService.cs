@@ -40,6 +40,12 @@ public interface IChapterAdminService
 
     Task<ServiceResult> DeleteChapterSubscription(IMemberChapterAdminServiceRequest request, Guid id);
 
+    /// <summary>
+    /// Takes the moved page off the group's dashboard. Idempotent - dismissing an already dismissed
+    /// prompt leaves the date it was first dismissed alone.
+    /// </summary>
+    Task<ServiceResult> DismissMovedPagePrompt(IMemberChapterAdminServiceRequest request);
+
     Task<ServiceResult<string>> GenerateChapterPaymentAccountSetupUrl(
         IMemberChapterAdminServiceRequest request, string refreshPath, string returnPath);
 
@@ -63,6 +69,8 @@ public interface IChapterAdminService
         IMemberChapterAdminServiceRequest request, MessageStatus status);
 
     Task<ChapterMessageAdminPageViewModel> GetChapterMessageViewModel(IMemberChapterAdminServiceRequest request, Guid id);
+
+    Task<ChapterMigrationAdminPageViewModel> GetChapterMigrationViewModel(IMemberChapterAdminServiceRequest request);
 
     Task<ChapterPaymentAccountAdminPageViewModel> GetChapterPaymentAccountViewModel(IMemberChapterAdminServiceRequest request);
 
@@ -138,6 +146,10 @@ public interface IChapterAdminService
     Task<ServiceResult> UpdateChapterMembershipSettings(
         IMemberChapterAdminServiceRequest request,
         ChapterMembershipSettingsUpdateModel model);
+
+    Task<ServiceResult> UpdateChapterMigration(
+        IMemberChapterAdminServiceRequest request,
+        ChapterMigrationUpdateModel model);
 
     Task<ServiceResult> UpdateChapterPages(
         IMemberChapterAdminServiceRequest request,

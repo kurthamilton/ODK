@@ -25,6 +25,125 @@ namespace ODK.Services.Tests.Chapters;
 public static class ChapterViewModelServiceTests
 {
     [Test]
+    public static async Task GetGroupHomePage_WhenMoveIsInsideTheBannerWindow_ReturnsIt()
+    {
+        // Arrange
+        using var context = new MockOdkContext();
+
+        var chapter = context.CreateChapter();
+
+        context.Create(new ChapterMigration
+        {
+            ChapterId = chapter.Id,
+            MovedUtc = DateTime.UtcNow.AddDays(-29),
+            PreviousPlatformName = "Meetup"
+        });
+
+        var service = CreateChapterViewModelService(context, movedBannerDays: 30);
+
+        // Act
+        var result = await service.GetGroupHomePage(CreateChapterServiceRequest(chapter));
+
+        // Assert
+        result.RecentMove.Should().NotBeNull();
+        result.RecentMove.PreviousPlatformName.Should().Be("Meetup");
+    }
+
+    [Test]
+    public static async Task GetGroupHomePage_WhenMoveIsOutsideTheBannerWindow_ReturnsNull()
+    {
+        // Arrange
+        using var context = new MockOdkContext();
+
+        var chapter = context.CreateChapter();
+
+        context.Create(new ChapterMigration
+        {
+            ChapterId = chapter.Id,
+            MovedUtc = DateTime.UtcNow.AddDays(-31),
+            PreviousPlatformName = "Meetup"
+        });
+
+        var service = CreateChapterViewModelService(context, movedBannerDays: 30);
+
+        // Act
+        var result = await service.GetGroupHomePage(CreateChapterServiceRequest(chapter));
+
+        // Assert
+        result.RecentMove.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task GetGroupMovedPage_WhenGroupHasNoMigration_Throws()
+    {
+        // Arrange
+        using var context = new MockOdkContext();
+
+        var chapter = context.CreateChapter();
+
+        var service = CreateChapterViewModelService(context);
+
+        // Act
+        Func<Task> act = () => service.GetGroupMovedPage(CreateChapterServiceRequest(chapter));
+
+        // Assert
+        await act.Should().ThrowAsync<OdkNotFoundException>();
+    }
+
+    [Test]
+    public static async Task GetGroupMovedPage_WhenMovedPageNotPublished_Throws()
+    {
+        // Arrange
+        using var context = new MockOdkContext();
+
+        var chapter = context.CreateChapter();
+
+        // Wording written but the page switched off, which is what a null MovedUtc means.
+        context.Create(new ChapterMigration
+        {
+            ChapterId = chapter.Id,
+            MessageHtml = "<p>Somewhere better</p>",
+            PreviousPlatformName = "Meetup"
+        });
+
+        var service = CreateChapterViewModelService(context);
+
+        // Act
+        Func<Task> act = () => service.GetGroupMovedPage(CreateChapterServiceRequest(chapter));
+
+        // Assert
+        await act.Should().ThrowAsync<OdkNotFoundException>();
+    }
+
+    [Test]
+    public static async Task GetGroupMovedPage_WhenMovedPagePublished_ReturnsTheOrganisersWording()
+    {
+        // Arrange
+        using var context = new MockOdkContext();
+
+        var chapter = context.CreateChapter();
+
+        context.Create(new ChapterMigration
+        {
+            ChapterId = chapter.Id,
+            MessageHtml = "<p>Somewhere better</p>",
+            MovedUtc = DateTime.UtcNow,
+            PreviousPlatformName = "Meetup"
+        });
+
+        var service = CreateChapterViewModelService(context);
+
+        // Act
+        var result = await service.GetGroupMovedPage(CreateChapterServiceRequest(chapter));
+
+        // Assert
+        result.Chapter.Id.Should().Be(chapter.Id);
+        result.Migration.MessageHtml.Should().Be("<p>Somewhere better</p>");
+        result.Migration.PreviousPlatformName.Should().Be("Meetup");
+        result.IsMember.Should().BeFalse();
+    }
+
+    [Test]
     public static async Task GetGroupSubscriptionPage_ReturnsTheSameSubscriptionsAsTheChapterServicePath()
     {
         // Arrange
@@ -105,7 +224,24 @@ public static class ChapterViewModelServiceTests
     private static ChapterService CreateChapterService(MockOdkContext context)
         => new(MockUnitOfWorkFactory.Create(context), CreateSubscriptionsPageViewModelFactory());
 
-    private static ChapterViewModelService CreateChapterViewModelService(MockOdkContext context)
+    private static IChapterServiceRequest CreateChapterServiceRequest(Chapter chapter)
+    {
+        var mock = new Mock<IChapterServiceRequest>();
+
+        mock.Setup(x => x.Chapter)
+            .Returns(chapter);
+
+        mock.Setup(x => x.Environment)
+            .Returns(EnvironmentType.Dev);
+
+        mock.Setup(x => x.Platform)
+            .Returns(PlatformType.GroupSquirrel);
+
+        return mock.Object;
+    }
+
+    private static ChapterViewModelService CreateChapterViewModelService(
+        MockOdkContext context, int movedBannerDays = 0)
         => new(
             MockUnitOfWorkFactory.Create(context),
             new AuthorizationService(),
@@ -114,6 +250,7 @@ public static class ChapterViewModelServiceTests
             Mock.Of<IDistanceUnitFactory>(),
             Mock.Of<IGeolocationService>(),
             Mock.Of<ILatLongCalculator>(),
+            new ChapterViewModelServiceSettings { MovedBannerDays = movedBannerDays },
             new SiteSubscriptionCooldown(months: 0),
             CreateSubscriptionsPageViewModelFactory());
 

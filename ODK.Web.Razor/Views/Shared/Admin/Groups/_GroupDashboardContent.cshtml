@@ -68,6 +68,45 @@
         })
     }
 
+    @if (Model.PromptMovedPage)
+    {
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Tell your old community",
+                Type = headingType
+            },
+            BodyContentFunc =
+                @<div>
+                    <p>
+                        If this group ran somewhere else before, it can have a page there that points
+                        here - with your next event on it. Put its address in your old group's
+                        description and anyone still finding you there is sent straight to you.
+                    </p>
+                    <p class="text-muted">
+                        Nothing is published until you switch the page on.
+                    </p>
+                    <div class="button-container">
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Class = "btn btn-primary",
+                            Icon = IconType.Home,
+                            Route = OdkRoutes.GroupAdmin.Moved(Model.Chapter),
+                            Text = "Set up the moved page"
+                        })
+
+                        @* Posts rather than links, because it writes. The dismissal is the group's, so it
+                           takes this panel off the dashboard for every organiser. *@
+                        <form method="post" action="@OdkRoutes.GroupAdmin.MovedDismiss(Model.Chapter).Path">
+                            @Html.AntiForgeryToken()
+                            <button class="btn btn-link">This group didn't move here</button>
+                        </form>
+                    </div>
+                </div>
+        })
+    }
+
     @if (Model.UpcomingEvents != null)
     {
         @* A section is null when the admin can't reach the page behind it, and empty when the group has

@@ -23,6 +23,7 @@ public enum ChapterAdminSecurable
     MemberImport,
     Members,
     MembershipSettings,
+    MovedPage,
     Pages,
     PaymentAccount,
     PaymentRefunds,

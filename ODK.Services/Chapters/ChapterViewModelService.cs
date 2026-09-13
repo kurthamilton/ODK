@@ -37,6 +37,7 @@ public class ChapterViewModelService : IChapterViewModelService
     private readonly IGeolocationService _geolocationService;
     private readonly ILatLongCalculator _latLongCalculator;
     private readonly ILoggingService _loggingService;
+    private readonly ChapterViewModelServiceSettings _settings;
     private readonly SiteSubscriptionCooldown _siteSubscriptionCooldown;
     private readonly ISocialMediaService _socialMediaService;
     private readonly ISubscriptionsPageViewModelFactory _subscriptionsPageViewModelFactory;
@@ -50,6 +51,7 @@ public class ChapterViewModelService : IChapterViewModelService
         IDistanceUnitFactory distanceUnitFactory,
         IGeolocationService geolocationService,
         ILatLongCalculator latLongCalculator,
+        ChapterViewModelServiceSettings settings,
         SiteSubscriptionCooldown siteSubscriptionCooldown,
         ISubscriptionsPageViewModelFactory subscriptionsPageViewModelFactory)
     {
@@ -58,6 +60,7 @@ public class ChapterViewModelService : IChapterViewModelService
         _geolocationService = geolocationService;
         _latLongCalculator = latLongCalculator;
         _loggingService = loggingService;
+        _settings = settings;
         _siteSubscriptionCooldown = siteSubscriptionCooldown;
         _socialMediaService = socialMediaService;
         _subscriptionsPageViewModelFactory = subscriptionsPageViewModelFactory;
@@ -639,7 +642,8 @@ public class ChapterViewModelService : IChapterViewModelService
             chapterTopics,
             chapterPages,
             location,
-            isAdmin
+            isAdmin,
+            migration
         ) = await _unitOfWork.Run(
             x => currentMember != null
                 ? x.MemberSubscriptionRecordRepository
@@ -680,7 +684,8 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterLocationRepository.GetByChapterId(chapter.Id),
             x => currentMember != null
                 ? x.ChapterAdminMemberRepository.IsAdmin(platform, chapter.Id, currentMember.Id)
-                : new DefaultDeferredQueryAny(false));
+                : new DefaultDeferredQueryAny(false),
+            x => x.ChapterMigrationRepository.GetByChapterId(chapter.Id));
 
         var eventIds = upcomingEventDtos
             .Concat(recentEventDtos)
@@ -714,6 +719,10 @@ public class ChapterViewModelService : IChapterViewModelService
 
         var showInstagramFeed = hasInstagramFeed && privacySettings?.InstagramFeed != false;
 
+        // A null move date - no move, or a moved page switched off - makes the comparison false, which is
+        // the same answer as a move too old to be worth announcing.
+        var announceMove = migration?.MovedUtc?.AddDays(_settings.MovedBannerDays) > DateTime.UtcNow;
+
         return new GroupHomePageViewModel
         {
             Chapter = chapter,
@@ -743,6 +752,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 })
                 .ToArray(),
             RecentEvents = recentEventViewModels,
+            RecentMove = announceMove ? migration : null,
             Texts = texts,
             Topics = chapterTopics.Select(x => x.Topic).ToArray(),
             UpcomingEvents = upcomingEventViewModels
@@ -784,6 +794,75 @@ public class ChapterViewModelService : IChapterViewModelService
             PropertyOptions = propertyOptions,
             RegistrationOpen = chapter.IsOpenForRegistration(),
             Texts = texts
+        };
+    }
+
+    /// <summary>
+    /// The signpost a group leaves behind on the platform it came from. Only a group that has declared a
+    /// move has one - the guard lives here rather than on the page, so a group that has not moved cannot
+    /// have a public page asserting that it has.
+    /// </summary>
+    public async Task<GroupMovedPageViewModel> GetGroupMovedPage(IChapterServiceRequest request)
+    {
+        var (chapter, currentMember) = (request.Chapter, request.CurrentMemberOrDefault);
+
+        var (
+            migration,
+            image,
+            texts,
+            chapterPages,
+            upcomingEventDtos,
+            membershipSettings,
+            privacySettings,
+            memberSubscription
+        ) = await _unitOfWork.Run(
+            x => x.ChapterMigrationRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterImageRepository.GetVersionDtoByChapterId(chapter.Id),
+            x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPageRepository.GetByChapterId(chapter.Id),
+            // More than the one event the page shows, because visibility is resolved below rather than in
+            // the query - the next event a visitor may see is not always the next event there is.
+            x => x.EventRepository
+                .Query(x => x.ForChapter(chapter.Id).After(DateTime.UtcNow))
+                .WithVenue()
+                .OrderBy(x => x.Event.DateUtc)
+                .Page(1, 3)
+                .GetAll(),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
+            x => currentMember != null
+                ? x.MemberSubscriptionRecordRepository
+                    .Query()
+                    .Current()
+                    .ForMember(currentMember.Id)
+                    .ForChapter(chapter.Id)
+                    .ToChapterSubscription()
+                    .GetSingleOrDefault()
+                : DefaultDeferredQuerySingleOrDefault.For<MemberChapterSubscription>());
+
+        if (migration?.HasMoved() != true)
+        {
+            throw new OdkNotFoundException("Group has not moved");
+        }
+
+        var upcomingEventViewModels = ToGroupPageListEvents(
+            upcomingEventDtos,
+            [],
+            [],
+            currentMember,
+            memberSubscription,
+            membershipSettings,
+            privacySettings);
+
+        return new GroupMovedPageViewModel
+        {
+            Chapter = chapter,
+            ContactPage = chapterPages.FirstOrDefault(x => x.PageType == PageType.Contact),
+            Image = image,
+            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
+            Migration = migration,
+            NextEvent = upcomingEventViewModels.FirstOrDefault(),
+            ShortDescription = texts?.ShortDescription
         };
     }
 

@@ -1049,6 +1049,179 @@ public static class ChapterAdminServiceTests
     }
 
     [Test]
+    public static async Task GetGroupDashboardViewModel_WhenPublishedGroupHasNoMovedPage_PromptsMovedPage()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: currentMember,
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        context.CreateChapterImage(chapter);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert - an offer rather than an outstanding action, so it doesn't make the group look busy.
+        result.PromptMovedPage.Should().BeTrue();
+        result.HasRequiredActions.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenGroupNotPublished_DoesNotPromptMovedPage()
+    {
+        // Arrange - a moved page points at a group nobody outside it can see yet, so publishing comes first.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(approvedUtc: DateTime.UtcNow, owner: currentMember);
+
+        context.CreateChapterImage(chapter);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.PromptMovedPage.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenMovedPagePublished_DoesNotPromptMovedPage()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = CreatePublishedChapter(context, currentMember);
+
+        context.Create(new ChapterMigration
+        {
+            ChapterId = chapter.Id,
+            MovedUtc = DateTime.UtcNow
+        });
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.PromptMovedPage.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenPromptDismissed_DoesNotPromptMovedPage()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = CreatePublishedChapter(context, currentMember);
+
+        context.Create(new ChapterMigration
+        {
+            ChapterId = chapter.Id,
+            PromptDismissedUtc = DateTime.UtcNow
+        });
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.PromptMovedPage.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task DismissMovedPagePrompt_WhenGroupHasNoMigration_CreatesOneDismissed()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = CreatePublishedChapter(context, currentMember);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.DismissMovedPagePrompt(request);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var migration = context.Set<ChapterMigration>().Single(x => x.ChapterId == chapter.Id);
+        migration.PromptDismissedUtc.Should().NotBeNull();
+        migration.MovedUtc.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task DismissMovedPagePrompt_WhenAlreadyDismissed_KeepsTheOriginalDate()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = CreatePublishedChapter(context, currentMember);
+
+        var dismissedUtc = DateTime.UtcNow.AddDays(-10);
+
+        context.Create(new ChapterMigration
+        {
+            ChapterId = chapter.Id,
+            MessageHtml = "<p>Somewhere better</p>",
+            PromptDismissedUtc = dismissedUtc
+        });
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        await service.DismissMovedPagePrompt(request);
+
+        // Assert - and the wording the organiser wrote is left alone.
+        var migration = context.Set<ChapterMigration>().Single(x => x.ChapterId == chapter.Id);
+        migration.PromptDismissedUtc.Should().Be(dismissedUtc);
+        migration.MessageHtml.Should().Be("<p>Somewhere better</p>");
+    }
+
+    [Test]
     public static async Task GetGroupDashboardViewModel_WhenGroupHasNoPicture_RequiresOne()
     {
         // Arrange
@@ -2266,6 +2439,22 @@ public static class ChapterAdminServiceTests
 
     private static IUnitOfWork CreateMockUnitOfWork(MockOdkContext? context = null) => MockUnitOfWorkFactory.Create(context);
 
+    /// <summary>
+    /// An approved, published group with the picture publication requires, owned by
+    /// <paramref name="owner"/> - the state a dashboard prompt about an established group is read against.
+    /// </summary>
+    private static Chapter CreatePublishedChapter(MockOdkContext context, Member owner)
+    {
+        var chapter = context.CreateChapter(
+            approvedUtc: DateTime.UtcNow,
+            owner: owner,
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        context.CreateChapterImage(chapter);
+
+        return chapter;
+    }
+
     private static IImageService CreateMockImageService(bool isValidImage, byte[]? processedData = null)
     {
         var mock = new Mock<IImageService>();
@@ -2435,6 +2624,8 @@ public static class ChapterAdminServiceTests
         new ChapterAdminServiceSettings
         {
             ContactMessageRecaptchaScoreThreshold = 0.5,
+            DashboardNewestMemberCount = 4,
+            DashboardUpcomingEventCount = 3,
             DefaultCountryCode = defaultCountryCode ?? "",
             ReservedSlugs = reservedSlugs ?? []
         };

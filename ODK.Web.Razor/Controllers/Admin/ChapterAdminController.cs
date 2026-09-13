@@ -439,6 +439,36 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("groups/{chapterId:guid}/moved/dismiss")]
+    public async Task<IActionResult> DismissMovedPagePrompt(Guid chapterId)
+    {
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.MovedPage, MemberChapterServiceRequest);
+        var result = await _chapterAdminService.DismissMovedPagePrompt(request);
+
+        AddFeedback(result, "Moved page hidden from your dashboard");
+
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("groups/{chapterId:guid}/moved")]
+    public async Task<IActionResult> UpdateChapterMigration(Guid chapterId,
+        [FromForm] ChapterMigrationFormSubmitViewModel viewModel)
+    {
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.MovedPage, MemberChapterServiceRequest);
+        var result = await _chapterAdminService.UpdateChapterMigration(request, new ChapterMigrationUpdateModel
+        {
+            MessageHtml = viewModel.MessageHtml,
+            Moved = viewModel.Moved,
+            PreviousPlatformName = viewModel.PreviousPlatformName
+        });
+
+        AddFeedback(result, "Moved page updated");
+
+        return RedirectToReferrer();
+    }
+
     [HttpPost("groups/{chapterId:guid}/texts")]
     public async Task<IActionResult> UpdateChapterTexts(Guid chapterId,
         [FromForm] ChapterTextsFormSubmitViewModel viewModel)
