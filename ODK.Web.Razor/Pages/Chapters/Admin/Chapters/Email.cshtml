@@ -25,11 +25,10 @@
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Title = "",
+    Title = email.Email.Name,
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = Model.AdminRoutes.Emails(chapter).Path, Text = "Emails" },
-        new MenuItem { Text = email.Email.Name }
+        new MenuItem { Link = Model.AdminRoutes.Emails(chapter).Path, Text = "Emails" }
     },
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterAdminEmailContent", viewModel)</div>
 })
