@@ -27,13 +27,10 @@
 }
 
 <div class="section-stack">
+    @* Titled by the page, so no heading of its own. *@
     @await Html.PartialAsync("Components/_Section", new SectionViewModel
     {
-        Heading = new HeadingViewModel
-        {
-            Title = "Email settings",
-            Type = HeadingType.H3
-        },
+        Heading = null,
         @* DisabledContentFunc rather than hiding it, matching the template form: a group that set a title
            before its subscription changed keeps sending it, so it needs to see what is set even when it can no
            longer change it. UpdateChapterEmailSettings enforces this too - the read-only markup is
