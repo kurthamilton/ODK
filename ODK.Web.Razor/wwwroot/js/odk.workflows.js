@@ -56,8 +56,7 @@
                 primaryBorderColor: cssValue('--bs-border-color', '#dee2e6'),
                 primaryTextColor: cssValue('--bs-body-color', '#212529'),
                 lineColor: cssValue('--bs-body-color', '#212529'),
-                textColor: cssValue('--bs-body-color', '#212529'),
-                fontFamily: cssValue('--bs-body-font-family', 'inherit')
+                textColor: cssValue('--bs-body-color', '#212529')
             }
         });
 

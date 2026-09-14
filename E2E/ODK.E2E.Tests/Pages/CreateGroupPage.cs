@@ -18,6 +18,13 @@ internal class CreateGroupPage
 
     private const string SubmitButton = "[data-submit='parent']";
 
+    /// <summary>
+    /// The new group's admin page, which a finished wizard redirects to. A slug is lowercase
+    /// alphanumeric and hyphens, so <c>new</c> is excluded explicitly - the wizard's own URL is
+    /// <c>/my/groups/new</c> and would otherwise satisfy the wait before the redirect happened.
+    /// </summary>
+    private static readonly Regex GroupAdminUrl = new(@"/my/groups/(?!new/?$)(?<slug>[a-z0-9-]+)/?$");
+
     private readonly IPage _page;
 
     public CreateGroupPage(IPage page)
@@ -25,15 +32,15 @@ internal class CreateGroupPage
         _page = page;
     }
 
-    public async Task<Guid> CreateGroup(string name)
+    public async Task<string> CreateGroup(string name)
     {
         await FillWizard(name);
 
-        // Step 4 - finish. On success the app redirects to the new group's admin page (/my/groups/{id}).
+        // Step 4 - finish. On success the app redirects to the new group's admin page (/my/groups/{slug}).
         await _page.ClickAsync(SubmitButton);
         try
         {
-            await _page.WaitForURLAsync(new Regex("/my/groups/[0-9a-fA-F-]{36}"), new() { Timeout = 15000 });
+            await _page.WaitForURLAsync(GroupAdminUrl, new() { Timeout = 15000 });
         }
         catch (TimeoutException)
         {
@@ -42,7 +49,7 @@ internal class CreateGroupPage
                 $"Create group did not redirect to the group admin page. URL='{_page.Url}'. Page text: {body[..Math.Min(800, body.Length)]}");
         }
 
-        return ExtractChapterId(_page.Url);
+        return ExtractSlug(_page.Url);
     }
 
     /// <summary>
@@ -66,17 +73,15 @@ internal class CreateGroupPage
         return await _page.TextContentAsync(FeedbackToasts) ?? string.Empty;
     }
 
-    private static Guid ExtractChapterId(string url)
+    private static string ExtractSlug(string url)
     {
-        var match = Regex.Match(
-            url,
-            "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
+        var match = GroupAdminUrl.Match(url);
         if (!match.Success)
         {
-            throw new InvalidOperationException($"Could not find a group id in the redirect URL '{url}'.");
+            throw new InvalidOperationException($"Could not find a group slug in the redirect URL '{url}'.");
         }
 
-        return Guid.Parse(match.Value);
+        return match.Groups["slug"].Value;
     }
 
     private async Task FillWizard(string name)

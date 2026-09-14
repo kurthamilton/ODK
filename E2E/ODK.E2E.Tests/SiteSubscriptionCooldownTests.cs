@@ -78,11 +78,11 @@ public class SiteSubscriptionCooldownTests : DefaultPageTest
         await new LoginPage(Page).LogIn(owner.Email, owner.Password);
 
         // Act
-        var chapterId = await new CreateGroupPage(Page).CreateGroup(NewGroupName());
+        var slug = await new CreateGroupPage(Page).CreateGroup(NewGroupName());
 
         // Assert - the wizard finished and the group is there, which is the cooldown still standing in for a
         // live subscription.
-        (await ChapterDataHelper.GetSlug(chapterId)).Should().NotBeEmpty();
+        (await ChapterDataHelper.GetChapterId(slug)).Should().NotBeEmpty();
     }
 
     [Test]

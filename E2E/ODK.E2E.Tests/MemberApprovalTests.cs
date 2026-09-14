@@ -67,14 +67,14 @@ public class MemberApprovalTests : DefaultPageTest
         // Act - the owner approves them from the approvals page.
         await new LoginPage(Page).LogIn(owner.Email, owner.Password);
         var approvals = new MemberApprovalsAdminPage(Page);
-        (await approvals.IsAwaitingApproval(group.ChapterId, memberId))
+        (await approvals.IsAwaitingApproval(group, memberId))
             .Should().BeTrue("the member should be listed before being approved");
 
-        await approvals.Approve(group.ChapterId, memberId);
+        await approvals.Approve(group, memberId);
 
         // Assert - they are in, off the list, and have been told.
         (await Chapters.IsApprovedMember(member.Email, group.ChapterId)).Should().BeTrue();
-        (await approvals.IsAwaitingApproval(group.ChapterId, memberId))
+        (await approvals.IsAwaitingApproval(group, memberId))
             .Should().BeFalse("an approved member is no longer waiting");
 
         var after = await SentEmails.GetSubjects(member.Email, expectedCount: before.Count + 1);
@@ -94,7 +94,7 @@ public class MemberApprovalTests : DefaultPageTest
         var memberId = await Members.GetMemberId(member.Email);
 
         await new LoginPage(Page).LogIn(owner.Email, owner.Password);
-        await new MemberApprovalsAdminPage(Page).Approve(group.ChapterId, memberId);
+        await new MemberApprovalsAdminPage(Page).Approve(group, memberId);
 
         var afterFirst = await SentEmails.GetSubjects(member.Email, expectedCount: 3);
         afterFirst.Should().Contain(
@@ -136,7 +136,7 @@ public class MemberApprovalTests : DefaultPageTest
         await MemberSubscriptions.EnsureActive(ownerId, subscription.Id, subscription.PriceId);
 
         // The feature only makes the setting reachable; the group still has to turn it on.
-        await Provisioning.RequireMemberApproval(owner, group.ChapterId);
+        await Provisioning.RequireMemberApproval(owner, group);
 
         var member = await Provisioning.JoinGroupAsMember(group);
 

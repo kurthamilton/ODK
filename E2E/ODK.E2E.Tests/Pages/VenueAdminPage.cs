@@ -3,7 +3,7 @@ using Microsoft.Playwright;
 namespace ODK.E2E.Tests.Pages;
 
 /// <summary>
-/// The admin create-venue page (Default <c>/my/groups/{chapterId}/events/venues/new</c>,
+/// The admin create-venue page (Default <c>/my/groups/{slug}/events/venues/new</c>,
 /// DrunkenKnitwits <c>/{chapterName}/admin/events/venues/create</c>). The shared form is identical on
 /// both platforms; only the URL differs, so the caller passes the platform-correct create path. On
 /// success the app redirects to the venues list.
