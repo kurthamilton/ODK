@@ -43,39 +43,37 @@
     });
 }
 
-<div data-odk-component="_SiteHeader">
-    <nav class="navbar navbar-dark bg-dark text-light border-bottom border-light navbar-expand-md">
-        <div class="container-md" data-site-header>
-            <a href="/" class="navbar-brand">
-                <img class="site-logo" src="/assets/groupsquirrel/logo3-outline.svg" />
-            </a>            
+<nav data-odk-component="_SiteHeader" class="site-header navbar navbar-dark bg-dark text-light border-bottom border-light navbar-expand-md">
+    <div class="container-md" data-site-header>
+        <a href="/" class="navbar-brand">
+            <img class="site-logo" src="/assets/groupsquirrel/logo3-outline.svg" />
+        </a>            
 
-            <div class="d-flex gap-4 ms-auto align-items-center order-md-5">
-                @await Html.PartialAsync("Header/_SiteTasksDropdown")
-                @await Html.PartialAsync("Header/_NotificationDropdown")
-                @await Html.PartialAsync("Header/_SiteAccountDropdown")
-                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#site-nav"
-                        aria-controls="site-nav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-            </div>
-
-            @await Html.PartialAsync("Components/_Offcanvas", new OffcanvasViewModel
-            {
-                Id = "site-nav",
-                Breakpoint = "md",
-                Position = "end",
-                Class = "site-nav",
-                Title = "Menu",
-                ContentFunc = @<ul class="navbar-nav">
-                    @foreach (var menuItem in menuItems)
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link" href="@menuItem.Link">@menuItem.Text</a>
-                        </li>
-                    }
-                </ul>
-            })
+        <div class="d-flex gap-4 ms-auto align-items-center order-md-5">
+            @await Html.PartialAsync("Header/_SiteTasksDropdown")
+            @await Html.PartialAsync("Header/_NotificationDropdown")
+            @await Html.PartialAsync("Header/_SiteAccountDropdown")
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#site-nav"
+                    aria-controls="site-nav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
         </div>
-    </nav>
-</div>
+
+        @await Html.PartialAsync("Components/_Offcanvas", new OffcanvasViewModel
+        {
+            Id = "site-nav",
+            Breakpoint = "md",
+            Position = "end",
+            Class = "site-nav",
+            Title = "Menu",
+            ContentFunc = @<ul class="navbar-nav">
+                @foreach (var menuItem in menuItems)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" href="@menuItem.Link">@menuItem.Text</a>
+                    </li>
+                }
+            </ul>
+        })
+    </div>
+</nav>

@@ -1,4 +1,4 @@
-.site-logo {
+﻿.site-logo {
     height: 40px;
 }
 
@@ -7,6 +7,17 @@
 // _Section, which carries its own heading spacing.
 .content-heading {
     margin-bottom: 1rem;
+}
+
+// Below md the site's links live behind the toggler in this bar, so a bar scrolled out of view takes the
+// only way to another page with it. From md up the links sit in the bar itself, where scrolling the
+// page never puts them out of reach.
+@include media-breakpoint-down(md) {
+    .site-header {
+        position: sticky;
+        top: 0;
+        z-index: $zindex-sticky;
+    }
 }
 
 @include media-breakpoint-up(md) {
