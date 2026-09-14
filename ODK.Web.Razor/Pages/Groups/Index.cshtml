@@ -52,9 +52,8 @@
                 <p>
                     <span>No matching results.</span>
 
-                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                    @await Html.PartialAsync("Components/_StartGroupLink", new StartGroupLinkViewModel
                     {
-                        Route = Model.OdkRoutes.GroupAdmin.Create(),
                         Text = "Create a group"
                     })
                 </p>

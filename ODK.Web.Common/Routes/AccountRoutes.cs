@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Web;
 using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Core.Platforms;
 
 namespace ODK.Web.Common.Routes;
@@ -22,6 +23,14 @@ public class AccountRoutes : RoutesBase
         PlatformType.DrunkenKnitwits => "/",
         _ => AccountPath(null, "/create")
     };
+
+    /// <summary>
+    /// The sign-up page, told what the member is signing up in order to do, so the journey that brought
+    /// them here survives an activation email and a sign-in.
+    /// </summary>
+    public string Create(SignUpIntentType intent) => intent == SignUpIntentType.None
+        ? Create()
+        : $"{Create()}?intent={intent}";
 
     public string Conversation(Chapter? chapter, Guid id) => $"{Conversations(chapter)}/{id}";
 
@@ -118,6 +127,14 @@ public class AccountRoutes : RoutesBase
     public string Pending(Chapter? chapter) => AccountPath(
         Platform == PlatformType.DrunkenKnitwits ? chapter : null,
         "/pending");
+
+    /// <summary>
+    /// The page a sign-up lands on while its activation email is in flight, told what the member was
+    /// signing up to do so it can say what is still to come.
+    /// </summary>
+    public string Pending(Chapter? chapter, SignUpIntentType? intent) => intent == null
+        ? Pending(chapter)
+        : $"{Pending(chapter)}?intent={intent}";
 
     public string PersonalDetails(Chapter? chapter) => AccountPath(chapter, string.Empty);
 

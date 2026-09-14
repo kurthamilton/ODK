@@ -13,6 +13,9 @@ public class MemberActivationTokenMap : IEntityTypeConfiguration<MemberActivatio
 
         builder.HasKey(x => x.MemberId);
 
+        builder.Property(x => x.Intent)
+            .HasColumnName("SignUpIntentTypeId");
+
         builder.HasOne<Member>()
             .WithOne()
             .HasForeignKey<MemberActivationToken>(x => x.MemberId);

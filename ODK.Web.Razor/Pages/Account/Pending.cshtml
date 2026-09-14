@@ -1,4 +1,5 @@
 ﻿@page "/account/pending"
+@using ODK.Core.Members
 @using ODK.Web.Razor.Models.Components
 @model PendingModel
 @{
@@ -20,5 +21,11 @@
             <div class="alert alert-success">
                 Thank you for signing up. An email has been sent to your email address containing a link to activate your account.
             </div>
+            @if (Model.Intent == SignUpIntentType.CreateGroup)
+            {
+                <p>
+                    Once your account is active we will take you straight to the form that creates your group.
+                </p>
+            }
         </div>
 })

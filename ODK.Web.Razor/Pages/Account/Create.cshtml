@@ -22,6 +22,7 @@
                 @await Html.PartialAsync("Account/_AccountCreateForm", new AccountCreateFormViewModel
                 {
                     GoogleClientId = viewModel.GoogleClientId,
+                    Intent = Model.Intent,
                     Location = viewModel.Location,
                     PostedLocation = Model.PostedLocation,
                     PostedOAuth = Model.PostedOAuth,

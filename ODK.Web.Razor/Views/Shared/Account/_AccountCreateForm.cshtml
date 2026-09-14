@@ -15,7 +15,7 @@
             Title = "Identity",
             ContentFunc = 
                 @<div>
-                    @await Html.PartialAsync("Account/_PersonalDetailsForm", Model.PostedPersonalDetails ?? new PersonalDetailsFormViewModel())
+                    @await Html.PartialAsync("Account/_PersonalDetailsForm", Model.PostedPersonalDetails ?? new PersonalDetailsFormViewModel { Intent = Model.Intent })
                     <hr class="mt-0" />
                     @await Html.PartialAsync("Account/_OAuthDetailsForm", Model.PostedOAuth ?? new OAuthDetailsFormViewModel())
                     <div class="form-group mb-3">

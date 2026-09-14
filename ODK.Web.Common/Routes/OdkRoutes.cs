@@ -1,5 +1,6 @@
 ﻿using System;
 using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Web.Common.Services;
 
@@ -62,4 +63,14 @@ public class OdkRoutes : IOdkRoutes
         => chapter != null && chapter.IsPublished()
             ? Groups.Error(chapter, statusCode)
             : $"/error/{statusCode}";
+
+    /* A switch rather than a stored path. The intent is written when a sign-up starts and read after a link
+       is followed from an inbox, so a destination carried alongside it would be a redirect target supplied
+       by a query string and honoured from an email - an open redirect. This can only name a route the
+       application already states. */
+    public string? SignUpDestination(SignUpIntentType? intent) => intent switch
+    {
+        SignUpIntentType.CreateGroup => GroupAdmin.Create().Path,
+        _ => null
+    };
 }

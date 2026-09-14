@@ -1,0 +1,33 @@
+﻿@using ODK.Core.Members
+@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@model StartGroupLinkViewModel
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
+
+@* An anonymous visitor goes to sign up rather than to the create-group form, which is behind [Authorize]
+   and would bounce them to a login page that says nothing about the group they came here to create. The
+   intent travels with them, so the form is still where they land once the account exists. *@
+@if (RequestStore.CurrentMemberOrDefault == null)
+{
+    <a class="@Model.Class" href="@OdkRoutes.Account.Create(SignUpIntentType.CreateGroup)"
+       data-odk-component="_StartGroupLink">
+        @if (Model.Icon != null)
+        {
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(Model.Icon.Value))
+        }
+        <span>@Model.Text</span>
+    </a>
+}
+else
+{
+    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+    {
+        Class = Model.Class,
+        Icon = Model.Icon,
+        Route = OdkRoutes.GroupAdmin.Create(),
+        Text = Model.Text
+    })
+}

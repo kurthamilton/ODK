@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using ODK.Core.Chapters;
+using ODK.Core.Members;
 
 namespace ODK.Services.Users.ViewModels;
 
@@ -18,6 +19,13 @@ public class PersonalDetailsFormViewModel
     [Required]
     [DisplayName("First name")]
     public string FirstName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// What the visitor came here to do, where the link that sent them said so. Posted back so it survives
+    /// the form, and spent onto the activation token. Null for anyone signing up unprompted, which is most
+    /// of them, and not rendered at all for a member editing their own details.
+    /// </summary>
+    public SignUpIntentType? Intent { get; set; }
 
     /// <summary>
     /// The invite the visitor arrived with, posted back so the submit can see that they hold it. Null for
