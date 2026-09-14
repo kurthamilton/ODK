@@ -222,6 +222,26 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("groups/{chapterId:guid}/members/invited/{id:guid}/cancel")]
+    public async Task<IActionResult> CancelInvite(Guid chapterId, Guid id)
+    {
+        var result = await _memberAdminService.CancelInvite(MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest), id);
+
+        AddFeedback(result);
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("groups/{chapterId:guid}/members/invited/{id:guid}/resend")]
+    public async Task<IActionResult> ResendInvite(Guid chapterId, Guid id)
+    {
+        var result = await _memberAdminService.ResendInvite(MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest), id);
+
+        AddFeedback(result);
+        return RedirectToReferrer();
+    }
+
     [HttpPost("groups/{chapterId:guid}/members/invited/send")]
     public async Task<IActionResult> SendHeldInvites(Guid chapterId)
     {

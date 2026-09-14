@@ -232,6 +232,20 @@ public class GroupAdminRoutes
     public GroupAdminRoute MembersInvited(Chapter chapter)
         => Members(chapter).Child("/invited", ChapterAdminSecurable.MemberImport);
 
+    /// <summary>Withdraws one outstanding invite.</summary>
+    public GroupAdminRoute MembersInvitedCancel(Chapter chapter, Guid memberId) => new()
+    {
+        Path = $"/groups/{chapter.Id}/members/invited/{memberId}/cancel",
+        Securable = ChapterAdminSecurable.MemberImport
+    };
+
+    /// <summary>Emails one invite the group has already sent.</summary>
+    public GroupAdminRoute MembersInvitedResend(Chapter chapter, Guid memberId) => new()
+    {
+        Path = $"/groups/{chapter.Id}/members/invited/{memberId}/resend",
+        Securable = ChapterAdminSecurable.MemberImport
+    };
+
     /// <summary>
     /// Emails the invites the group is holding. A controller endpoint rather than a page handler, for the
     /// reason MembersImportEndpoint gives.

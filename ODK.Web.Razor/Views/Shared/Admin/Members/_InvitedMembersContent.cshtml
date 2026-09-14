@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Mvc
 @model InvitedMembersAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
@@ -17,6 +18,13 @@
         ? string.Empty
         : " Nobody here has been emailed yet, and nobody can be until the group is published: the link "
           + "an invite carries lands on a group nobody outside it can see."))
+
+@* Not an edit of the address. An imported account is a real member record, so changing its address here
+   would be an admin editing somebody's account rather than correcting a list. *@
+<p class="text-muted">
+    To correct a wrong address, cancel the invite and
+    <a href="@OdkRoutes.GroupAdmin.MembersImport(Model.Chapter).Path">upload the corrected details</a> again.
+</p>
 
 @if (Model.CanSend)
 {
@@ -53,6 +61,7 @@
                     <th>Member</th>
                     <th>Details received</th>
                     <th>Deleted</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -90,6 +99,41 @@
                                 {
                                     TimeZone = timeZone
                                 })
+                            </div>
+                        </td>
+                        <td>
+                            @* A form is a block, so the two sit in a flex row rather than stacking. *@
+                            <div class="button-container justify-content-end">
+                                @* Only on an invite that has been emailed and is past its cooldown. One the
+                                   group is still holding is sent by the batch action above, not resent. *@
+                                @if (invite.CanResend)
+                                {
+                                    <form action="@OdkRoutes.GroupAdmin.MembersInvitedResend(Model.Chapter, invite.Member.Id).Path"
+                                          method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button data-bs-toggle="tooltip" data-bs-title="Resend invite"
+                                                class="btn-icon">
+                                            @await Html.PartialAsync("Components/_Icon",
+                                                new IconViewModel(IconType.Envelope))
+                                        </button>
+                                    </form>
+                                }
+                                <form action="@OdkRoutes.GroupAdmin.MembersInvitedCancel(Model.Chapter, invite.Member.Id).Path"
+                                      method="post">
+                                    @Html.AntiForgeryToken()
+                                    @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                    {
+                                        Message = $"{invite.Member.FullName} will no longer be able to accept. " +
+                                                  "If they have not activated an account here, the one raised " +
+                                                  "for them is deleted with the invite.",
+                                        Title = "Cancel invite"
+                                    })
+                                    <button data-bs-toggle="tooltip" data-bs-title="Cancel invite"
+                                            class="btn-icon text-danger">
+                                        @await Html.PartialAsync("Components/_Icon",
+                                            new IconViewModel(IconType.Times))
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>

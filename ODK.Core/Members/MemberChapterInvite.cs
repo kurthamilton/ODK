@@ -25,4 +25,15 @@ public class MemberChapterInvite : IDatabaseEntity, IChapterEntity
     /// Emailed to the member as part of the invite link. See the remarks on the type.
     /// </summary>
     public string Token { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether this invite can be emailed again. It has to have been emailed once - a group holding an
+    /// unsent invite sends it rather than resending it - and the cooldown since has to have passed.
+    /// </summary>
+    /// <remarks>
+    /// The single definition of the rule, so the page offering the action and the service performing it
+    /// cannot disagree about whether it is available.
+    /// </remarks>
+    public bool IsResendable(int cooldownHours, DateTime utcNow)
+        => SentUtc != null && SentUtc.Value.AddHours(cooldownHours) <= utcNow;
 }

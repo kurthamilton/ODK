@@ -37,6 +37,8 @@ namespace ODK.Services.Tests.Members;
 [Parallelizable]
 public static class MemberAdminServiceTests
 {
+    private const int InviteResendCooldownHours = 24;
+
     private const int InviteRetentionDays = 90;
 
     [Test]
@@ -113,6 +115,92 @@ public static class MemberAdminServiceTests
         emailService.Verify(
             x => x.SendMemberApprovedEmail(It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>()),
             Times.Never);
+    }
+
+    [Test]
+    public static async Task CancelInvite_UnactivatedMember_DeletesTheInviteAndTheAccountItRaised()
+    {
+        /* Arrange - an imported account exists only to hold the invite, so withdrawing the invite leaves
+           the group holding nothing about somebody who never replied. It also returns the place the invite
+           was taking against the owner's plan. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+        var imported = context.CreateMember(activated: false);
+
+        CreateInvite(context, chapter.Id, imported.Id, DateTime.UtcNow.AddDays(-1));
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // Act
+        var result = await service.CancelInvite(request, imported.Id);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        context.Set<MemberChapterInvite>().Any(x => x.MemberId == imported.Id).Should().BeFalse();
+        context.Set<Member>().Any(x => x.Id == imported.Id).Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task CancelInvite_ActivatedMember_KeepsTheAccount()
+    {
+        /* Arrange - somebody who signed up independently after being imported owns their account, and it
+           outlives any invite. Deleting it here would delete a member over a withdrawn invitation. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+        var invited = context.CreateMember();
+
+        CreateInvite(context, chapter.Id, invited.Id, DateTime.UtcNow.AddDays(-1));
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // Act
+        var result = await service.CancelInvite(request, invited.Id);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        context.Set<MemberChapterInvite>().Any(x => x.MemberId == invited.Id).Should().BeFalse();
+        context.Set<Member>().Any(x => x.Id == invited.Id).Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task CancelInvite_NoOutstandingInvite_Fails()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+        var stranger = context.CreateMember();
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // Act
+        var result = await service.CancelInvite(request, stranger.Id);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        context.Set<Member>().Any(x => x.Id == stranger.Id).Should().BeTrue();
     }
 
     [Test]
@@ -551,6 +639,157 @@ public static class MemberAdminServiceTests
         result.Should().NotBeNull();
         result.Pending.Should().HaveCount(1);
         result.Pending.First().Id.Should().Be(pendingMember.Id);
+    }
+
+    [Test]
+    public static async Task ResendInvite_SentAndPastTheCooldown_EmailsItAgainWithoutMovingTheClock()
+    {
+        /* Arrange - the retention period runs from when the details were received, so emailing an invite
+           again must not restart it. Only SentUtc moves. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        var invited = context.CreateMember(activated: false);
+
+        var receivedUtc = DateTime.UtcNow.AddDays(-10);
+        CreateInvite(
+            context,
+            chapter.Id,
+            invited.Id,
+            receivedUtc,
+            sentUtc: DateTime.UtcNow.AddHours(-(InviteResendCooldownHours + 1)));
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // Act
+        var result = await service.ResendInvite(request, invited.Id);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var invite = context.Set<MemberChapterInvite>().Single(x => x.MemberId == invited.Id);
+
+        invite.CreatedUtc.Should().BeCloseTo(receivedUtc, TimeSpan.FromSeconds(1));
+        invite.SentUtc.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+
+        emailService.Verify(
+            x => x.SendMemberImportInviteEmail(
+                It.IsAny<IChapterServiceRequest>(),
+                It.Is<Member>(m => m.Id == invited.Id),
+                It.IsAny<string>()),
+            Times.Once);
+    }
+
+    [Test]
+    public static async Task ResendInvite_WithinTheCooldown_Fails()
+    {
+        /* Arrange - the invite goes to somebody who has not asked us for anything, so the cooldown is the
+           only thing between an organiser chasing a reply and several copies of it. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        var invited = context.CreateMember(activated: false);
+        var sentUtc = DateTime.UtcNow.AddHours(-1);
+
+        CreateInvite(context, chapter.Id, invited.Id, DateTime.UtcNow.AddDays(-10), sentUtc: sentUtc);
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateMemberAdminService(context, memberEmailService: emailService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // Act
+        var result = await service.ResendInvite(request, invited.Id);
+
+        // Assert
+        result.Success.Should().BeFalse();
+
+        context.Set<MemberChapterInvite>().Single(x => x.MemberId == invited.Id)
+            .SentUtc.Should().BeCloseTo(sentUtc, TimeSpan.FromSeconds(1));
+
+        emailService.Verify(
+            x => x.SendMemberImportInviteEmail(
+                It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Test]
+    public static async Task ResendInvite_HeldInvite_Fails()
+    {
+        /* Arrange - an invite the group has never emailed is sent by SendHeldInvites, not resent here.
+           Accepting it would give the page two controls that both email the same invite. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        var invited = context.CreateMember(activated: false);
+
+        CreateInvite(context, chapter.Id, invited.Id, DateTime.UtcNow.AddDays(-10));
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // Act
+        var result = await service.ResendInvite(request, invited.Id);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        context.Set<MemberChapterInvite>().Single(x => x.MemberId == invited.Id).SentUtc.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task ResendInvite_UnpublishedGroup_Fails()
+    {
+        // Arrange - the link an invite carries lands on a group nobody outside it can see.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+        var invited = context.CreateMember(activated: false);
+
+        CreateInvite(
+            context,
+            chapter.Id,
+            invited.Id,
+            DateTime.UtcNow.AddDays(-10),
+            sentUtc: DateTime.UtcNow.AddDays(-9));
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // Act
+        var result = await service.ResendInvite(request, invited.Id);
+
+        // Assert
+        result.Success.Should().BeFalse();
     }
 
     [Test]
@@ -1913,6 +2152,7 @@ public static class MemberAdminServiceTests
     private static MemberAdminService CreateMemberAdminService(
         MockOdkContext context,
         IAuthorizationService? authorizationService = null,
+        int? inviteResendCooldownHours = null,
         IMemberEmailService? memberEmailService = null,
         IMemberImageService? memberImageService = null,
         IMemberService? memberService = null)
@@ -1930,6 +2170,11 @@ public static class MemberAdminServiceTests
             authorizationService ?? CreateMockAuthorizationService(),
             memberImageService ?? CreateMockMemberImageService(isValid: true),
             emailService,
+            // The real one over the same context: cancelling an invite delegates to it, and what that does
+            // to the account behind the invite is the thing worth asserting.
+            new MemberInviteService(
+                unitOfWork,
+                new MemberInviteServiceSettings { RetentionDays = InviteRetentionDays }),
             new MockBackgroundTaskService(),
             new MemberChapterSubscriptionWriter(unitOfWork),
             new EmailValidationService(new InconclusiveEmailVerifier()),
@@ -1942,6 +2187,7 @@ public static class MemberAdminServiceTests
             new SiteSubscriptionCooldown(months: 0),
             new MemberAdminServiceSettings
             {
+                InviteResendCooldownHours = inviteResendCooldownHours ?? InviteResendCooldownHours,
                 InviteRetentionDays = InviteRetentionDays,
                 MemberAvatarSize = 75,
                 SiteAdminMemberSearchLimit = 50

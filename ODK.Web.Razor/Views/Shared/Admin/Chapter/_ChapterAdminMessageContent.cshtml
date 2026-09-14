@@ -40,7 +40,11 @@
             <div class="form-group mb-3">
                 <label class="form-label">Replied</label>
                 <p>
-                    @Model.Message.RepliedUtc.Value.ToFriendlyDateTimeString(new FriendlyDateStringOptions { IncludeDayOfWeek = true, TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone) })
+                    @Model.Message.RepliedUtc.Value.ToFriendlyDateTimeString(new FriendlyDateStringOptions 
+                    { 
+                        IncludeDayOfWeek = true, 
+                        TimeZone = Html.DisplayTimeZone(Model.Chapter.TimeZone) 
+                    })
                 </p>
             </div>
         }

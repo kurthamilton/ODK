@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Services.Emails.Validation;
 using ODK.Web.Common.Services;

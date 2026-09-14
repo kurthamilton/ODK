@@ -41,6 +41,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     private readonly IMemberChapterSubscriptionWriter _memberChapterSubscriptionWriter;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
+    private readonly IMemberInviteService _memberInviteService;
     private readonly IMemberService _memberService;
     private readonly IServiceRequestFactory _serviceRequestFactory;
     private readonly MemberAdminServiceSettings _settings;
@@ -53,6 +54,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         IAuthorizationService authorizationService,
         IMemberImageService memberImageService,
         IMemberEmailService memberEmailService,
+        IMemberInviteService memberInviteService,
         IBackgroundTaskService backgroundTaskService,
         IMemberChapterSubscriptionWriter memberChapterSubscriptionWriter,
         IEmailValidationService emailValidationService,
@@ -75,6 +77,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         _memberChapterSubscriptionWriter = memberChapterSubscriptionWriter;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
+        _memberInviteService = memberInviteService;
         _memberService = memberService;
         _serviceRequestFactory = serviceRequestFactory;
         _settings = settings;
@@ -102,6 +105,16 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             _chapterMembershipContextFactory.CreateForApproval(request, member));
 
         return result.ToServiceResult();
+    }
+
+    /* Authorises and hands off. What happens to an invite that goes away is the invite service's, shared
+       with the member refusing one and with the purge; who is allowed to withdraw this group's is not
+       something that service is ever told about. */
+    public async Task<ServiceResult> CancelInvite(IMemberChapterAdminServiceRequest request, Guid memberId)
+    {
+        await AssertMemberIsChapterAdmin(request);
+
+        return await _memberInviteService.CancelInvite(request, memberId);
     }
 
     public async Task<AdminMemberAdminPageViewModel> GetAdminMemberViewModel(
@@ -199,7 +212,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         {
             Chapter = chapter,
             Invited = invited
-                .Select(x => ToInvitedMemberViewModel(x, utcNow))
+                .Select(x => ToInvitedMemberViewModel(x, chapter.IsPublished(), utcNow))
                 .ToArray(),
             Platform = platform,
             RetentionDays = _settings.InviteRetentionDays
@@ -904,6 +917,52 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return ServiceResult.Successful();
     }
 
+    public async Task<ServiceResult> ResendInvite(IMemberChapterAdminServiceRequest request, Guid memberId)
+    {
+        var chapter = request.Chapter;
+
+        var invite = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.MemberChapterInviteRepository.GetByMemberId(memberId, chapter.Id));
+
+        if (invite == null)
+        {
+            return ServiceResult.Failure("There is no outstanding invite for that person");
+        }
+
+        if (!chapter.IsPublished())
+        {
+            return ServiceResult.Failure("Invites cannot be sent until the group is published");
+        }
+
+        /* An invite the group is holding is sent rather than resent, and SendHeldInvites is that action.
+           Accepting it here would give the page two controls that both email the same invite, differing
+           only in a state the admin has to read off somewhere else. */
+        if (invite.SentUtc == null)
+        {
+            return ServiceResult.Failure("That invite has not been sent yet");
+        }
+
+        /* The invite goes to somebody who has not asked us for anything, so a cooldown is the only thing
+           between an organiser chasing a reply and several copies of it. Stated in hours rather than as a
+           date, which would have to be formatted in a timezone and a culture this far from the request. */
+        var cooldownHours = _settings.InviteResendCooldownHours;
+        if (!invite.IsResendable(cooldownHours, DateTime.UtcNow))
+        {
+            return ServiceResult.Failure(
+                $"That invite was sent less than {cooldownHours} " +
+                $"{StringUtils.Pluralise(cooldownHours, "hour")} ago");
+        }
+
+        MarkInvitesSent([invite]);
+
+        await _unitOfWork.SaveChanges();
+
+        EnqueueInviteEmails(request, chapter.Id, [invite]);
+
+        return ServiceResult.Successful("Invite sent again");
+    }
+
     public async Task RotateMemberImage(IMemberChapterAdminServiceRequest request, Guid memberId)
     {
         var member = await GetMember(request, memberId);
@@ -1198,7 +1257,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         .Select(x => x.MemberId)
         .ToHashSet();
 
-    private InvitedMemberViewModel ToInvitedMemberViewModel(MemberChapterInviteDto dto, DateTime utcNow)
+    private InvitedMemberViewModel ToInvitedMemberViewModel(
+        MemberChapterInviteDto dto, bool published, DateTime utcNow)
     {
         var (invite, member) = (dto.Invite, dto.Member);
 
@@ -1207,6 +1267,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         return new InvitedMemberViewModel
         {
+            // An unpublished group can resend nothing: the link an invite carries lands nowhere yet.
+            CanResend = published && invite.IsResendable(_settings.InviteResendCooldownHours, utcNow),
+
             // Rounded up, so an invite with hours left reads as a day rather than as due.
             DaysRemaining = remaining > TimeSpan.Zero
                 ? (int)Math.Ceiling(remaining.TotalDays)

@@ -8,6 +8,12 @@ public interface IMemberAdminService
 {
     Task<ServiceResult> ApproveMember(IMemberChapterAdminServiceRequest request, Guid memberId);
 
+    /// <summary>
+    /// Withdraws an outstanding invite, and with it the account an import raised to hold it where that
+    /// invite was the only reason the account existed.
+    /// </summary>
+    Task<ServiceResult> CancelInvite(IMemberChapterAdminServiceRequest request, Guid memberId);
+
     Task<AdminMemberAdminPageViewModel> GetAdminMemberViewModel(IMemberChapterAdminServiceRequest request, Guid memberId);
 
     Task<AdminMembersAdminPageViewModel> GetAdminMembersAdminPageViewModel(IMemberChapterAdminServiceRequest request);
@@ -68,6 +74,12 @@ public interface IMemberAdminService
     Task<InviteStagedMembersResult> InviteStagedMembers(IMemberChapterAdminServiceRequest request);
 
     Task<ServiceResult> RemoveMemberFromChapter(IMemberChapterAdminServiceRequest request, Guid memberId, string? reason);
+
+    /// <summary>
+    /// Emails an invite the group has already sent, once the cooldown since the last send has passed. An
+    /// invite the group is still holding is sent by <see cref="SendHeldInvites"/>, not by this.
+    /// </summary>
+    Task<ServiceResult> ResendInvite(IMemberChapterAdminServiceRequest request, Guid memberId);
 
     Task RotateMemberImage(IMemberChapterAdminServiceRequest request, Guid memberId);
 

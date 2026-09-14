@@ -14,6 +14,30 @@ public class MemberInviteService : IMemberInviteService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<ServiceResult> CancelInvite(IChapterServiceRequest request, Guid memberId)
+    {
+        /* Every invite the member holds, not just this group's: the account an import raised goes when the
+           last invite that would have brought it to life does, so whether this is the last one is a fact
+           about the member rather than about the group. */
+        var (invite, member, held) = await _unitOfWork.Run(
+            x => x.MemberChapterInviteRepository.GetByMemberId(memberId, request.Chapter.Id),
+            x => x.MemberRepository.GetByIdOrDefault(memberId),
+            x => x.MemberChapterInviteRepository.GetByMemberIds([memberId]));
+
+        // The member is read without assuming they exist, so an id naming nobody is the same answer as an
+        // id naming somebody with no invite rather than a failure to load.
+        if (invite == null || member == null)
+        {
+            return ServiceResult.Failure("There is no outstanding invite for that person");
+        }
+
+        DiscardInvites([invite], [member], held);
+
+        await _unitOfWork.SaveChanges();
+
+        return ServiceResult.Successful("Invite cancelled");
+    }
+
     public async Task<int> PurgeExpiredInvites()
     {
         /* Measured from when the invite was raised, not from when it was emailed: the retention period the
@@ -68,6 +92,15 @@ public class MemberInviteService : IMemberInviteService
         return ServiceResult.Successful();
     }
 
+    /// <summary>
+    /// Deletes <paramref name="discarded"/>, then any of <paramref name="members"/> the discard leaves with
+    /// nothing. <paramref name="held"/> is every invite those members hold, across all groups, so a member
+    /// invited elsewhere survives losing this one.
+    /// </summary>
+    /// <remarks>
+    /// Shared by the three ways an invite goes away - withdrawn, refused, purged - so what happens to the
+    /// account behind it is one answer rather than three. Stages the writes and commits nothing.
+    /// </remarks>
     private void DiscardInvites(
         IReadOnlyCollection<MemberChapterInvite> discarded,
         IReadOnlyCollection<Member> members,
@@ -84,6 +117,9 @@ public class MemberInviteService : IMemberInviteService
             .GroupBy(x => x.MemberId)
             .ToDictionary(x => x.Key, x => x.ToArray());
 
+        /* An activated account is the member's own and outlives any invite. An unactivated one exists only
+           because an import raised it, so it goes when the last invite that would have brought it to life
+           does - leaving the group holding nothing about somebody who never replied. */
         var abandoned = members
             .Where(member => !member.Activated)
             .Where(member => !heldByMemberId.TryGetValue(member.Id, out var invites) ||

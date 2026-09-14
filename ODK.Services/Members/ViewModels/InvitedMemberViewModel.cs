@@ -4,6 +4,12 @@ namespace ODK.Services.Members.ViewModels;
 
 public class InvitedMemberViewModel
 {
+    /// <summary>
+    /// Whether emailing this invite again is offered: the group is published so the link lands somewhere,
+    /// the invite has been sent once, and the cooldown since has passed.
+    /// </summary>
+    public required bool CanResend { get; init; }
+
     public required int DaysRemaining { get; init; }
 
     public required DateTime DeletedUtc { get; init; }
