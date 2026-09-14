@@ -34,6 +34,18 @@
 
 @if (Model.Invited.Count > 0)
 {
+    @* Only the non-zero halves. A summary that is mostly zeroes teaches people to stop reading it. *@
+    <div class="d-flex flex-wrap gap-3 mb-3 text-muted">
+        @if (Model.AwaitingActivation > 0)
+        {
+            <span>@Model.AwaitingActivation awaiting account activation</span>
+        }
+        @if (Model.ExistingAccounts > 0)
+        {
+            <span>@Model.ExistingAccounts with an existing account</span>
+        }
+    </div>
+
     <div class="table-responsive">
         <table class="table table-striped">
             <thead>

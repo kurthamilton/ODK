@@ -189,7 +189,10 @@ public class MemberAdminController : AdminControllerBase
         var result = await _memberAdminService.InviteStagedMembers(MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest));
 
-        AddFeedback(result, "Invites sent");
+        /* No fallback wording. Whether the invites were emailed or are being held for publication is the
+           group's state rather than this action's, so there is nothing a literal here could say that is
+           true in both cases - the service states what it did. */
+        AddFeedback(result);
 
         if (!result.Success)
         {
@@ -225,7 +228,7 @@ public class MemberAdminController : AdminControllerBase
         var result = await _memberAdminService.SendHeldInvites(MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.MemberImport, MemberChapterServiceRequest));
 
-        AddFeedback(result, "Invites sent");
+        AddFeedback(result);
         return RedirectToReferrer();
     }
 
