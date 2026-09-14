@@ -79,6 +79,7 @@ public static class PublishChapterTaskProviderTests
         {
             Chapters = [CreateChapter(approved: true, published: false)],
             ChapterProperties = [],
+            ChaptersWithShortDescription = [],
             ChaptersWithImage = [],
             HasAvatar = true,
             Member = CreateMember(),
@@ -129,6 +130,7 @@ public static class PublishChapterTaskProviderTests
     {
         Chapters = [],
         ChapterProperties = [],
+        ChaptersWithShortDescription = [],
         ChaptersWithImage = chaptersWithImage,
         HasAvatar = true,
         Member = CreateMember(),

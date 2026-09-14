@@ -91,6 +91,32 @@ public static class MemberTaskServiceTests
         tasks.Should().BeEmpty();
     }
 
+    [Test]
+    public static async Task GetOutstandingTasks_OwnedGroupWithoutShortDescription_ReturnsTask()
+    {
+        // Arrange
+        using var context = new MockOdkContext();
+
+        var member = context.CreateMember();
+        var summarised = context.CreateChapter(owner: member);
+        var unsummarised = context.CreateChapter(owner: member);
+        context.CreateChapterTexts(summarised);
+
+        var service = new MemberTaskService(
+            MockUnitOfWorkFactory.Create(context), [new AddChapterShortDescriptionTaskProvider()]);
+        var request = CreateRequest(member);
+
+        // Act
+        var tasks = await service.GetOutstandingTasks(request);
+
+        // Assert
+        var task = tasks.Should().ContainSingle().Subject;
+        task.Type.Should().Be(MemberTaskType.AddChapterShortDescription);
+
+        task.Chapter.Should().NotBeNull();
+        task.Chapter.Id.Should().Be(unsummarised.Id);
+    }
+
     private static IMemberServiceRequest CreateRequest(Member member) =>
         Mock.Of<IMemberServiceRequest>(x =>
             x.CurrentMember == member && x.Platform == PlatformType.GroupSquirrel);

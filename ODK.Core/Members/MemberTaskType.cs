@@ -6,5 +6,6 @@ public enum MemberTaskType
     CompleteChapterProfile = 1,
     UploadImage = 2,
     PublishChapter = 3,
-    UploadChapterImage = 4
+    UploadChapterImage = 4,
+    AddChapterShortDescription = 5
 }

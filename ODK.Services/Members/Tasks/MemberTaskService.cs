@@ -25,16 +25,21 @@ public class MemberTaskService : IMemberTaskService
         var chapterIds = chapters.Select(x => x.Id).ToArray();
         var ownedChapterIds = ownedChapters.Select(x => x.Id).ToArray();
 
-        var (chapterProperties, memberProperties, chapterImages) = await _unitOfWork.Run(
+        var (chapterProperties, memberProperties, chapterImages, chapterTexts) = await _unitOfWork.Run(
             x => x.ChapterPropertyRepository.GetByChapterIds(chapterIds),
             x => x.MemberPropertyRepository.GetByMemberId(member.Id),
-            x => x.ChapterImageRepository.GetVersionDtosByChapterIds(ownedChapterIds));
+            x => x.ChapterImageRepository.GetVersionDtosByChapterIds(ownedChapterIds),
+            x => x.ChapterTextsRepository.GetByChapterIds(ownedChapterIds));
 
         var context = new MemberTaskContext
         {
             Chapters = chapters,
             ChapterProperties = chapterProperties,
             ChaptersWithImage = chapterImages.Select(x => x.ChapterId).ToArray(),
+            ChaptersWithShortDescription = chapterTexts
+                .Where(x => !string.IsNullOrWhiteSpace(x.ShortDescription))
+                .Select(x => x.ChapterId)
+                .ToArray(),
             HasAvatar = avatarVersion != null,
             Member = member,
             MemberProperties = memberProperties,

@@ -41,6 +41,7 @@ public static class UploadImageTaskProviderTests
     {
         Chapters = [],
         ChapterProperties = [],
+        ChaptersWithShortDescription = [],
         ChaptersWithImage = [],
         HasAvatar = hasAvatar,
         Member = new Member { Id = Guid.NewGuid(), TimeZone = TimeZoneInfo.Utc },

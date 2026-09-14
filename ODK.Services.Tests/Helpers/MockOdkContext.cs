@@ -218,6 +218,13 @@ internal class MockOdkContext : OdkContext
         });
     }
 
+    internal ChapterTexts CreateChapterTexts(Chapter chapter, string? shortDescription = null)
+        => Create(new ChapterTexts
+        {
+            ChapterId = chapter.Id,
+            ShortDescription = shortDescription ?? "A group"
+        });
+
     internal Country CreateCountry(
         Currency? currency = null,
         string? isoCode2 = null)

@@ -12,33 +12,33 @@ using ODK.Services.Members.Tasks.Providers;
 namespace ODK.Services.Tests.Members.Tasks;
 
 [Parallelizable]
-public static class UploadChapterImageTaskProviderTests
+public static class AddChapterShortDescriptionTaskProviderTests
 {
     [Test]
-    public static void GetTasks_OwnedChapterWithoutImage_ReturnsUploadTask()
+    public static void GetTasks_OwnedChapterWithoutShortDescription_ReturnsTask()
     {
         // Arrange
         var chapter = CreateChapter();
-        var context = CreateContext(PlatformType.GroupSquirrel, [chapter], chaptersWithImage: []);
+        var context = CreateContext([chapter], chaptersWithShortDescription: []);
 
         // Act
-        var tasks = new UploadChapterImageTaskProvider().GetTasks(context);
+        var tasks = new AddChapterShortDescriptionTaskProvider().GetTasks(context);
 
         // Assert
         var task = tasks.Should().ContainSingle().Subject;
-        task.Type.Should().Be(MemberTaskType.UploadChapterImage);
+        task.Type.Should().Be(MemberTaskType.AddChapterShortDescription);
         task.Chapter.Should().Be(chapter);
     }
 
     [Test]
-    public static void GetTasks_OwnedChapterWithImage_ReturnsNoTask()
+    public static void GetTasks_OwnedChapterWithShortDescription_ReturnsNoTask()
     {
         // Arrange
         var chapter = CreateChapter();
-        var context = CreateContext(PlatformType.GroupSquirrel, [chapter], chaptersWithImage: [chapter.Id]);
+        var context = CreateContext([chapter], chaptersWithShortDescription: [chapter.Id]);
 
         // Act
-        var tasks = new UploadChapterImageTaskProvider().GetTasks(context);
+        var tasks = new AddChapterShortDescriptionTaskProvider().GetTasks(context);
 
         // Assert
         tasks.Should().BeEmpty();
@@ -47,12 +47,13 @@ public static class UploadChapterImageTaskProviderTests
     [Test]
     public static void GetTasks_DrunkenKnitwits_ReturnsNoTask()
     {
-        // Arrange - Drunken Knitwits never displays a group image, so asking for one there would be asking
-        // for something the platform then ignores. This is the whole reason for the platform check.
-        var context = CreateContext(PlatformType.DrunkenKnitwits, [CreateChapter()], chaptersWithImage: []);
+        // Arrange - Drunken Knitwits does not list groups, so it never shows a short description and
+        // asking for one there would be asking for something the platform then ignores.
+        var context = CreateContext(
+            [CreateChapter()], chaptersWithShortDescription: [], platform: PlatformType.DrunkenKnitwits);
 
         // Act
-        var tasks = new UploadChapterImageTaskProvider().GetTasks(context);
+        var tasks = new AddChapterShortDescriptionTaskProvider().GetTasks(context);
 
         // Assert
         tasks.Should().BeEmpty();
@@ -61,7 +62,7 @@ public static class UploadChapterImageTaskProviderTests
     [Test]
     public static void GetTasks_OnlyChaptersTheMemberOwns_AreConsidered()
     {
-        // Arrange - belonging to a group doesn't make its picture the member's responsibility.
+        // Arrange - belonging to a group doesn't make its summary the member's responsibility.
         var context = new MemberTaskContext
         {
             Chapters = [CreateChapter()],
@@ -76,26 +77,27 @@ public static class UploadChapterImageTaskProviderTests
         };
 
         // Act
-        var tasks = new UploadChapterImageTaskProvider().GetTasks(context);
+        var tasks = new AddChapterShortDescriptionTaskProvider().GetTasks(context);
 
         // Assert
         tasks.Should().BeEmpty();
     }
 
     [Test]
-    public static void GetTasks_SomeOwnedChaptersHaveImages_ReturnsTasksOnlyForThoseWithout()
+    public static void GetTasks_SomeOwnedChaptersHaveShortDescriptions_ReturnsTasksOnlyForThoseWithout()
     {
         // Arrange
-        var withImage = CreateChapter();
-        var withoutImage = CreateChapter();
+        var withShortDescription = CreateChapter();
+        var withoutShortDescription = CreateChapter();
         var context = CreateContext(
-            PlatformType.GroupSquirrel, [withImage, withoutImage], chaptersWithImage: [withImage.Id]);
+            [withShortDescription, withoutShortDescription],
+            chaptersWithShortDescription: [withShortDescription.Id]);
 
         // Act
-        var tasks = new UploadChapterImageTaskProvider().GetTasks(context);
+        var tasks = new AddChapterShortDescriptionTaskProvider().GetTasks(context);
 
         // Assert
-        tasks.Select(x => x.Chapter).Should().BeEquivalentTo([withoutImage]);
+        tasks.Select(x => x.Chapter).Should().BeEquivalentTo([withoutShortDescription]);
     }
 
     private static Chapter CreateChapter() => new()
@@ -106,14 +108,14 @@ public static class UploadChapterImageTaskProviderTests
     };
 
     private static MemberTaskContext CreateContext(
-        PlatformType platform,
         IReadOnlyCollection<Chapter> ownedChapters,
-        IReadOnlyCollection<Guid> chaptersWithImage) => new()
+        IReadOnlyCollection<Guid> chaptersWithShortDescription,
+        PlatformType platform = PlatformType.GroupSquirrel) => new()
     {
         Chapters = [],
         ChapterProperties = [],
-        ChaptersWithShortDescription = [],
-        ChaptersWithImage = chaptersWithImage,
+        ChaptersWithShortDescription = chaptersWithShortDescription,
+        ChaptersWithImage = [],
         HasAvatar = true,
         Member = CreateMember(),
         MemberProperties = [],

@@ -20,6 +20,12 @@ public class MemberTaskContext
     /// </summary>
     public required IReadOnlyCollection<Guid> ChaptersWithImage { get; init; }
 
+    /// <summary>
+    /// Ids of the member's owned chapters that already have a short description, so a provider can tell
+    /// "no short description" from "not owned" without querying per chapter.
+    /// </summary>
+    public required IReadOnlyCollection<Guid> ChaptersWithShortDescription { get; init; }
+
     public required bool HasAvatar { get; init; }
 
     public required Member Member { get; init; }

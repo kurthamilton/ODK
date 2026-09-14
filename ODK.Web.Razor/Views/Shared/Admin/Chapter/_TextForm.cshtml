@@ -3,13 +3,16 @@
 @using ODK.Web.Razor.Mvc
 @model ChapterTextsFormViewModel
 
-<div class="form-group mb-3">
-    @Html.LabelFor(x => x.ShortDescription, new { @class = "form-label" })
-    @await Html.PartialAsync("Components/_FormLabelSubtitle", GroupsResource.ShortDescriptionHelpText)
-    @* Plain text rather than rich text, so no editor and nothing to check for markup. *@
-    @Html.TextAreaFor(x => x.ShortDescription, new { @class = "form-control", rows = 2 })
-    @Html.ValidationMessageFor(x => x.ShortDescription)
-</div>
+@if (Model.ShowShortDescription)
+{
+    <div class="form-group mb-3">
+        @Html.LabelFor(x => x.ShortDescription, new { @class = "form-label" })
+        @await Html.PartialAsync("Components/_FormLabelSubtitle", GroupsResource.ShortDescriptionHelpText)
+        @* Plain text rather than rich text, so no editor and nothing to check for markup. *@
+        @Html.TextAreaFor(x => x.ShortDescription, new { @class = "form-control", rows = 2 })
+        @Html.ValidationMessageFor(x => x.ShortDescription)
+    </div>
+}
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.DescriptionHtml, new { @class = "form-label" })

@@ -77,6 +77,7 @@ public static class CompleteChapterProfileTaskProviderTests
     {
         Chapters = [chapter],
         ChapterProperties = chapterProperties,
+        ChaptersWithShortDescription = [],
         ChaptersWithImage = [],
         HasAvatar = true,
         Member = new Member { Id = Guid.NewGuid(), TimeZone = chapter.TimeZone },
