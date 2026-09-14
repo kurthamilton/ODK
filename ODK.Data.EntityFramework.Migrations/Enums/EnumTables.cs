@@ -71,6 +71,10 @@ public static class EnumTables
         {
             Name = "PlatformTypes"
         },
+        [typeof(SignUpIntentType)] = new EnumTable
+        {
+            Name = "SignUpIntentTypes"
+        },
         [typeof(SiteFeatureType)] = new EnumTable
         {
             Name = "SiteFeatures"

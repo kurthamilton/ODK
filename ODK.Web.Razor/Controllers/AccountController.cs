@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
 using ODK.Core.Images;
+using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Services.Authentication;
 using ODK.Services.Authentication.OAuth;
@@ -63,8 +64,9 @@ public class AccountController : OdkControllerBase
             return RedirectToReferrer();
         }
 
-        AddFeedback("Your account has been activated. You can now login.", FeedbackType.Success);
-        return Redirect(OdkRoutes.Account.Login(chapter: null));
+        AddFeedback(ActivatedMessage(result.Intent), FeedbackType.Success);
+        return Redirect(OdkRoutes.Account.Login(
+            chapter: null, OdkRoutes.SignUpDestination(result.Intent)));
     }
 
     [AllowAnonymous]
@@ -453,4 +455,10 @@ public class AccountController : OdkControllerBase
         AddFeedback(result, "Interests updated");
         return RedirectToReferrer();
     }
+
+    private static string ActivatedMessage(SignUpIntentType? intent) => intent switch
+    {
+        SignUpIntentType.CreateGroup => "Your account has been activated. Sign in to create your group.",
+        _ => "Your account has been activated. You can now login."
+    };
 }

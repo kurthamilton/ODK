@@ -21,6 +21,10 @@
     @* odk.referrer.js fills this from local storage, where the join page put the utm_source value. *@
     @Html.HiddenFor(x => x.ReferralId, new { data_odk_referrer = "" })
 
+    @* Carries what the visitor came to do through the form, so a sign-up started from the migrate page is
+       still a sign-up to create a group by the time it is submitted. *@
+    @Html.HiddenFor(x => x.Intent)
+
     @* Carries the invite into the submit, which trusts it in place of an activation email while the address
        it was sent to is the one being registered. *@
     @Html.HiddenFor(x => x.InviteToken)

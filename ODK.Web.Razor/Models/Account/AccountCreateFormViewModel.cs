@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Countries;
+using ODK.Core.Members;
 using ODK.Core.Topics;
 using ODK.Services.Users.ViewModels;
 using ODK.Web.Razor.Models.Topics;
@@ -8,6 +9,9 @@ namespace ODK.Web.Razor.Models.Account;
 public class AccountCreateFormViewModel
 {
     public required string GoogleClientId { get; init; }
+
+    /// <summary>What the visitor came here to do, where the link that sent them said so.</summary>
+    public SignUpIntentType? Intent { get; init; }
 
     public required Location? Location { get; init; }
 

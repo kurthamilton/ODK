@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
+using ODK.Core.Members;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Topics.Models;
@@ -12,6 +13,12 @@ namespace ODK.Web.Razor.Pages.Account;
 
 public class CreateModel : OdkPageModel
 {
+    /// <summary>
+    /// What the visitor came here to do, where the link that sent them said so. Held on the page so the
+    /// form can post it back, and spent onto the activation token by the sign-up.
+    /// </summary>
+    public SignUpIntentType? Intent { get; private set; }
+
     [OdkInject]
     public required IMemberService MemberService { get; set; }
 
@@ -27,8 +34,9 @@ public class CreateModel : OdkPageModel
 
     public TopicPickerFormSubmitViewModel? PostedTopics { get; private set; }
 
-    public void OnGet()
+    public void OnGet([FromQuery] SignUpIntentType? intent)
     {
+        Intent = intent;
     }
 
     public async Task<IActionResult> OnPostAsync(
@@ -39,10 +47,15 @@ public class CreateModel : OdkPageModel
     {
         var newTopics = NewTopicModel.Build(topics.NewTopicGroups, topics.NewTopics);
 
+        /* Read off the form rather than the query string: this is a POST, and the value reaches it through
+           the hidden field the form posted back. */
+        Intent = personalDetails.Intent;
+
         var model = new AccountCreateModel
         {
             EmailAddress = personalDetails.EmailAddress,
             FirstName = personalDetails.FirstName,
+            Intent = personalDetails.Intent,
             LastName = personalDetails.LastName,
             Location = location.Lat != null && location.Long != null
                 ? new LatLong(location.Lat.Value, location.Long.Value)
@@ -80,14 +93,16 @@ public class CreateModel : OdkPageModel
             return Page();
         }
 
-        // A successful result with no member means the address already belonged to an activated account.
-        // That is reported identically to a genuine signup so nobody can probe for members.
+        /* An activated account here is either an address that already had one - reported identically to a
+           genuine signup so nobody can probe for members - or one a provider has vouched for. The second
+           issues no activation token, so the intent is honoured here rather than when one is spent. */
         if (result.Value?.Activated == true)
         {
             AddFeedback(result, "Your account has been created and is now ready to use");
-            return Redirect(OdkRoutes.Account.Login(chapter: null));
+            return Redirect(OdkRoutes.Account.Login(
+                chapter: null, OdkRoutes.SignUpDestination(Intent)));
         }
 
-        return Redirect(OdkRoutes.Account.Pending(chapter: null));
+        return Redirect(OdkRoutes.Account.Pending(chapter: null, Intent));
     }
 }

@@ -11,7 +11,11 @@ public interface IAuthenticationService
         string activationToken,
         string password);
 
-    Task<ServiceResult> ActivateSiteAccount(
+    /// <summary>
+    /// Activates an account from a site activation link, and reports what the sign-up that issued the link
+    /// was for so the caller can send the member where they were going.
+    /// </summary>
+    Task<ActivateAccountResult> ActivateSiteAccount(
         IServiceRequest request,
         string activationToken,
         string password);

@@ -25,11 +25,10 @@
         Content =
             @<div class="d-flex flex-column gap-3">
                 <div class="button-container justify-content-center">
-                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                    @await Html.PartialAsync("Components/_StartGroupLink", new StartGroupLinkViewModel
                     {
                         Class = "btn btn-primary",
                         Icon = IconType.Rocket,
-                        Route = OdkRoutes.GroupAdmin.Create(),
                         Text = ButtonResources.StartYourGroup
                     })
                     <a class="btn btn-outline-primary" href="@OdkRoutes.Site.Migrate">
@@ -198,11 +197,10 @@
             @<div class="d-flex flex-column gap-3">
                 <p class="mb-0">@HomePageResources.StartANewGroupOrBringAnExistingOneWithYou</p>
                 <div class="button-container justify-content-center">
-                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                    @await Html.PartialAsync("Components/_StartGroupLink", new StartGroupLinkViewModel
                     {
                         Class = "btn btn-primary",
                         Icon = IconType.Rocket,
-                        Route = OdkRoutes.GroupAdmin.Create(),
                         Text = ButtonResources.StartYourGroup
                     })
                     <a class="btn btn-outline-primary" href="@OdkRoutes.Site.Migrate">

@@ -87,11 +87,10 @@
                     @HomePageResources.NoRebuildingYourMemberListNoStartingOver
                 </p>
                 <div class="button-container">
-                    @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                    @await Html.PartialAsync("Components/_StartGroupLink", new StartGroupLinkViewModel
                     {
                         Class = "btn btn-primary",
                         Icon = IconType.Rocket,
-                        Route = OdkRoutes.GroupAdmin.Create(),
                         Text = ButtonResources.StartYourGroup
                     })
                     <a class="btn btn-outline-primary" href="@OdkRoutes.Site.Pricing">

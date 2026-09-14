@@ -6,7 +6,9 @@
 
 <hr/>
 
-<form action="/account/login/google" method="post" data-oauth-submit>
+@* Carries the return URL the same way the password form does. Without it a member who was sent here from
+   somewhere - the create-group form most of all - is signed in and then dropped at the home page. *@
+<form action="/account/login/google?returnUrl=@Model.ReturnUrl" method="post" data-oauth-submit>
     @Html.AntiForgeryToken()
     <input type="hidden" name="token" data-oauth-token />
     @await Html.PartialAsync("Components/_GoogleLoginButton", new GoogleLoginButtonViewModel

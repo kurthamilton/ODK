@@ -9,6 +9,10 @@ namespace ODK.Services.Members.Workflows.Account.Steps;
 /// was one - a sign-up to the site itself carries no group, and the token is not scoped. The value is resolved
 /// before the machine runs, because the caller needs it too.
 /// </summary>
+/// <remarks>
+/// It also carries what the sign-up was for, which only a sign-up to the site can state: the token is the
+/// one thing connecting a form filled in here to a link followed from an inbox, possibly in another browser.
+/// </remarks>
 public sealed class IssueActivationToken : IStep<AccountContext>
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -28,6 +32,7 @@ public sealed class IssueActivationToken : IStep<AccountContext>
         {
             ActivationToken = context.RequiredActivationToken,
             ChapterId = context.Chapter?.Id,
+            Intent = context.SiteProfile?.Intent,
             MemberId = context.RequiredNewMember.Id
         });
 

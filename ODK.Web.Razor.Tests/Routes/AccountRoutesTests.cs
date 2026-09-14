@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using NUnit.Framework;
 using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Web.Common.Routes;
 
@@ -9,6 +10,33 @@ namespace ODK.Web.Razor.Tests.Routes;
 [Parallelizable]
 public static class AccountRoutesTests
 {
+    [Test]
+    public static void Create_WithAnIntent_StatesItOnTheSignUpPage()
+    {
+        /* Arrange - the CTA states what the visitor came to do, because the sign-up leaves the browser for
+           an inbox and nothing else survives that. */
+        var routes = new AccountRoutes(PlatformType.GroupSquirrel);
+
+        // Act
+        var result = routes.Create(SignUpIntentType.CreateGroup);
+
+        // Assert
+        result.Should().Be("/account/create?intent=CreateGroup");
+    }
+
+    [Test]
+    public static void Create_WithNoIntent_ReturnsThePlainSignUpPage()
+    {
+        // Arrange
+        var routes = new AccountRoutes(PlatformType.GroupSquirrel);
+
+        // Act
+        var result = routes.Create(SignUpIntentType.None);
+
+        // Assert
+        result.Should().Be("/account/create");
+    }
+
     [Test]
     public static void Pending_DrunkenKnitwitsWithChapter_ReturnsTheChapterScopedPage()
     {

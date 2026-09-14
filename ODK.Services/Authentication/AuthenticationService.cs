@@ -87,7 +87,7 @@ public class AuthenticationService : IAuthenticationService
         return result.ToServiceResult();
     }
 
-    public async Task<ServiceResult> ActivateSiteAccount(
+    public async Task<ActivateAccountResult> ActivateSiteAccount(
         IServiceRequest request,
         string activationToken,
         string password)
@@ -100,14 +100,22 @@ public class AuthenticationService : IAuthenticationService
            are separate URLs a member can arrive at, so the wrong one is a bad link, not a bad request. */
         if (token == null || token.ChapterId != null)
         {
-            return ServiceResult.Failure("The link you followed is no longer valid");
+            return ActivateAccountResult.Failure("The link you followed is no longer valid");
         }
 
         var context = await _accountContextFactory.CreateForSiteActivation(request, token, password);
 
         var result = await _accountWorkflow.Fire(AccountTrigger.Activate, context);
 
-        return result.ToServiceResult();
+        var serviceResult = result.ToServiceResult();
+        if (!serviceResult.Success)
+        {
+            return ActivateAccountResult.FromResult(serviceResult);
+        }
+
+        /* Read off the row rather than the database: the transition has just deleted it, and the intent is
+           spent with it. */
+        return ActivateAccountResult.Activated(token.Intent);
     }
 
     public async Task<ServiceResult> ChangePassword(Guid memberId, string currentPassword, string newPassword)
