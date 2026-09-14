@@ -33,6 +33,22 @@
         </div>
     }
 
+    @if (Model.NeedsShortDescription)
+    {
+        <div class="alert alert-warning d-flex justify-content-between align-items-center mb-0">
+            <span>
+                This group has no short description. It is the line that describes your group wherever it
+                is listed.
+            </span>
+            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+            {
+                Class = "btn btn-warning ms-3 text-nowrap",
+                Route = OdkRoutes.GroupAdmin.Texts(Model.Chapter),
+                Text = "Add a short description"
+            })
+        </div>
+    }
+
     @if (Model.CanSendHeldInvites)
     {
         @* The action itself rather than a link to the page that lists them: what is outstanding is the

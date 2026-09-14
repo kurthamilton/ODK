@@ -825,6 +825,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var canSeeEvents = adminMember.HasAccessTo(ChapterAdminSecurable.Events, currentMember);
         var canSeeImports = adminMember.HasAccessTo(ChapterAdminSecurable.MemberImport, currentMember);
         var canSeeMovedPage = adminMember.HasAccessTo(ChapterAdminSecurable.MovedPage, currentMember);
+        var canSeeTexts = adminMember.HasAccessTo(ChapterAdminSecurable.Texts, currentMember);
 
         // Approved and unpublished, so publishing is the outstanding action. Whether it can happen yet
         // depends on the picture.
@@ -841,7 +842,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             waitingToBeInvited,
             otherMembers,
             invites,
-            migration
+            migration,
+            texts
         ) = await _unitOfWork.Run(
             x => canSeeApprovals
                 ? x.MemberChapterRepository.Query(platform).ForChapter(chapter.Id).Approved(false).Count()
@@ -883,7 +885,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 : new DefaultDeferredQuery<int>(0),
             x => canSeeMovedPage
                 ? x.ChapterMigrationRepository.GetByChapterId(chapter.Id)
-                : DefaultDeferredQuerySingleOrDefault.For<ChapterMigration>());
+                : DefaultDeferredQuerySingleOrDefault.For<ChapterMigration>(),
+            x => canSeeTexts
+                ? x.ChapterTextsRepository.GetByChapterId(chapter.Id)
+                : DefaultDeferredQuerySingleOrDefault.For<ChapterTexts>());
 
         var hasImage = image != null;
 
@@ -896,6 +901,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             MembersAwaitingApproval = canSeeApprovals ? awaitingApproval : null,
             NeedsImage = canSeeImage && !hasImage,
             NeedsImageToPublish = awaitingPublication && !hasImage,
+            NeedsShortDescription = canSeeTexts && string.IsNullOrWhiteSpace(texts?.ShortDescription),
             NewestMembers = canSeeMembers ? newestMembers : null,
             PromptMemberImport =
                 canSeeImports && otherMembers == 0 && waitingToBeInvited == 0 && invites == 0,
@@ -1457,6 +1463,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return new ChapterTextsAdminPageViewModel
         {
             Chapter = chapter,
+            ShowShortDescription = ChapterTexts.ShowsShortDescription(request.Platform),
             Texts = texts
         };
     }
@@ -2520,8 +2527,16 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         texts.DescriptionHtml = model.DescriptionHtml;
         texts.RegisterTextHtml = model.RegisterTextHtml;
-        texts.ShortDescription = model.ShortDescription;
         texts.WelcomeTextHtml = model.WelcomeTextHtml;
+
+        /* A platform that does not show the short description does not offer the box either, so its post
+           carries nothing for it - and a form that never asked must leave what the group already has
+           alone. Where the box is offered an emptied one clears it, which is why this is the platform
+           rather than the value. */
+        if (ChapterTexts.ShowsShortDescription(request.Platform))
+        {
+            texts.ShortDescription = model.ShortDescription;
+        }
 
         if (texts.ChapterId == default)
         {

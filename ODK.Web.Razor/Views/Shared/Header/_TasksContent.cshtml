@@ -18,6 +18,15 @@
     {
         switch (task.Type)
         {
+            case MemberTaskType.AddChapterShortDescription when task.Chapter != null:
+                taskLinks.Add(new TaskLinkViewModel
+                {
+                    Icon = IconType.Edit,
+                    Path = OdkRoutes.GroupAdmin.Texts(task.Chapter).Path,
+                    Text = $"Add a short description for {task.Chapter.FullName}"
+                });
+                break;
+
             case MemberTaskType.CompleteChapterProfile when task.Chapter != null:
                 taskLinks.Add(new TaskLinkViewModel
                 {

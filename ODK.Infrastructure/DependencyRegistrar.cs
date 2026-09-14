@@ -341,6 +341,7 @@ public static class DependencyRegistrar
             .AddAccountWorkflows()
             .AddChapterWorkflows()
             .AddScoped<IMemberTaskService, MemberTaskService>()
+            .AddScoped<IMemberTaskProvider, AddChapterShortDescriptionTaskProvider>()
             .AddScoped<IMemberTaskProvider, CompleteChapterProfileTaskProvider>()
             .AddScoped<IMemberTaskProvider, PublishChapterTaskProvider>()
             .AddScoped<IMemberTaskProvider, UploadChapterImageTaskProvider>()

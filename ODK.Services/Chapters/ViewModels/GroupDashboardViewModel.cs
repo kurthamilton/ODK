@@ -50,6 +50,7 @@ public class GroupDashboardViewModel
         CanInviteUploaded ||
         CanSendHeldInvites ||
         NeedsImageAsAction ||
+        NeedsShortDescription ||
         MembersAwaitingApproval > 0 ||
         UnrepliedContactMessages > 0;
 
@@ -79,6 +80,13 @@ public class GroupDashboardViewModel
     /// the publish section can name it as the blocker.
     /// </summary>
     public required bool NeedsImageToPublish { get; init; }
+
+    /// <summary>
+    /// Whether the group has no short description. It is the line the group is listed by, so without one
+    /// the group appears in the results saying nothing about itself - outstanding whatever state the group
+    /// is in, and unlike the picture it does not block publication, so it is only ever reported here.
+    /// </summary>
+    public required bool NeedsShortDescription { get; init; }
 
     /// <summary>
     /// The members who most recently joined, newest first. Null when the admin can't reach the members

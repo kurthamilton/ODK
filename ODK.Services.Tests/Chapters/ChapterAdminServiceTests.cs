@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -1063,6 +1063,8 @@ public static class ChapterAdminServiceTests
 
         context.CreateChapterImage(chapter);
 
+        context.CreateChapterTexts(chapter);
+
         var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
@@ -1259,6 +1261,8 @@ public static class ChapterAdminServiceTests
             approvedUtc: DateTime.UtcNow,
             owner: currentMember);
 
+        context.CreateChapterTexts(chapter);
+
         var service = CreateChapterAdminService(context);
 
         var request = CreateMemberChapterAdminServiceRequest(
@@ -1320,6 +1324,8 @@ public static class ChapterAdminServiceTests
             owner: currentMember);
 
         context.CreateChapterImage(chapter);
+
+        context.CreateChapterTexts(chapter);
 
         var service = CreateChapterAdminService(context);
 
@@ -1386,6 +1392,8 @@ public static class ChapterAdminServiceTests
             owner: currentMember);
 
         context.CreateChapterImage(chapter);
+
+        context.CreateChapterTexts(chapter);
 
         CreateInvite(context, chapter.Id, context.CreateMember().Id);
 
@@ -1457,6 +1465,7 @@ public static class ChapterAdminServiceTests
             afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
 
         context.CreateChapterImage(chapter);
+        context.CreateChapterTexts(chapter);
 
         var service = CreateChapterAdminService(context);
 
@@ -1469,6 +1478,80 @@ public static class ChapterAdminServiceTests
 
         // Assert
         result.HasRequiredActions.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenGroupHasNoShortDescription_RequiresOne()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.NeedsShortDescription.Should().BeTrue();
+        result.HasRequiredActions.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenGroupShortDescriptionIsBlank_RequiresOne()
+    {
+        // Arrange - a texts row exists but says nothing, which is the same gap as having no row at all.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        context.CreateChapterTexts(chapter, shortDescription: " ");
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.NeedsShortDescription.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenGroupHasAShortDescription_DoesNotRequireOne()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        context.CreateChapterTexts(chapter);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.NeedsShortDescription.Should().BeFalse();
     }
 
     [Test]
@@ -1485,6 +1568,8 @@ public static class ChapterAdminServiceTests
             afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
 
         context.CreateChapterImage(chapter);
+
+        context.CreateChapterTexts(chapter);
 
         var service = CreateChapterAdminService(context);
 
@@ -1604,6 +1689,8 @@ public static class ChapterAdminServiceTests
             owner: currentMember);
 
         context.CreateChapterImage(chapter);
+
+        context.CreateChapterTexts(chapter);
 
         CreateUpload(context, chapter.Id);
 
@@ -2118,6 +2205,73 @@ public static class ChapterAdminServiceTests
 
         // Assert
         result.Success.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task UpdateChapterTexts_PlatformWithoutShortDescription_LeavesTheStoredOneAlone()
+    {
+        // Arrange - Drunken Knitwits does not offer the box, so its post carries nothing for it. A group
+        // that moved platforms keeps whatever summary it already had.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            adminMembers: [currentMember],
+            platform: PlatformType.DrunkenKnitwits);
+
+        var texts = context.Create(
+            CreateChapterTexts(chapter: chapter, shortDescription: "A group worth joining"));
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            platform: PlatformType.DrunkenKnitwits,
+            securable: ChapterAdminSecurable.Texts);
+
+        var model = CreateChapterTextsUpdateModel(shortDescription: null);
+
+        // Act
+        var result = await service.UpdateChapterTexts(request, model);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        texts.ShortDescription.Should().Be("A group worth joining");
+    }
+
+    [Test]
+    public static async Task UpdateChapterTexts_PlatformWithShortDescriptionPostsAnEmptyOne_ClearsIt()
+    {
+        // Arrange - where the box is offered, emptying it is the member saying so.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(adminMembers: [currentMember]);
+
+        var texts = context.Create(
+            CreateChapterTexts(chapter: chapter, shortDescription: "A group worth joining"));
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            platform: PlatformType.GroupSquirrel,
+            securable: ChapterAdminSecurable.Texts);
+
+        var model = CreateChapterTextsUpdateModel(shortDescription: null);
+
+        // Act
+        var result = await service.UpdateChapterTexts(request, model);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        texts.ShortDescription.Should().BeNull();
     }
 
     [Test]
@@ -2808,11 +2962,15 @@ public static class ChapterAdminServiceTests
     private static ChapterImage CreateChapterImage(Chapter chapter)
         => new ChapterImage { ChapterId = chapter.Id };
 
-    private static ChapterTexts CreateChapterTexts(Chapter chapter, string? descriptionHtml = null)
+    private static ChapterTexts CreateChapterTexts(
+        Chapter chapter,
+        string? descriptionHtml = null,
+        string? shortDescription = null)
         => new ChapterTexts
         {
             ChapterId = chapter.Id,
             DescriptionHtml = descriptionHtml ?? "Test description",
+            ShortDescription = shortDescription,
             WelcomeTextHtml = "Welcome to the test chapter",
             RegisterTextHtml = "Register here"
         };
