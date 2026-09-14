@@ -2,6 +2,9 @@
 
 public record MemberAdminServiceSettings
 {
+    /// <summary>How long after an invite is emailed before it can be emailed again.</summary>
+    public required int InviteResendCooldownHours { get; init; }
+
     public required int InviteRetentionDays { get; init; }
 
     public required int MemberAvatarSize { get; init; }

@@ -322,6 +322,7 @@ public static class DependencyRegistrar
             .AddScoped<IMemberAdminService, MemberAdminService>()
             .AddSingleton(new MemberAdminServiceSettings
             {
+                InviteResendCooldownHours = appSettings.Members.InviteResendCooldownHours,
                 InviteRetentionDays = appSettings.Privacy.Invites.RetentionDays,
                 MemberAvatarSize = appSettings.Members.AvatarSize,
                 SiteAdminMemberSearchLimit = appSettings.Members.SiteAdminSearchLimit
