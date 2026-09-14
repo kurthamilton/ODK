@@ -61,7 +61,11 @@ public interface IMemberAdminService
     /// the limit in the order the rows happen to be read: the rows stay, so the admin removes some and
     /// tries again.
     /// </remarks>
-    Task<ServiceResult> InviteStagedMembers(IMemberChapterAdminServiceRequest request);
+    /// <summary>
+    /// Raises invites for the addresses the group is holding, and reports what that did. An unpublished
+    /// group raises them and emails nothing - see <c>SendHeldInvites</c>.
+    /// </summary>
+    Task<InviteStagedMembersResult> InviteStagedMembers(IMemberChapterAdminServiceRequest request);
 
     Task<ServiceResult> RemoveMemberFromChapter(IMemberChapterAdminServiceRequest request, Guid memberId, string? reason);
 

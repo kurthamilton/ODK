@@ -375,6 +375,41 @@ public static class MemberAdminServiceTests
     }
 
     [Test]
+    public static async Task GetInvitedMembersViewModel_SplitsAwaitingActivationFromExistingAccounts()
+    {
+        /* Arrange - how many of the people invited have no account here yet is the number a group cannot
+           work out from the list, and the one an import is really reporting. Two who have to activate, one
+           who already had an account. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var now = DateTime.UtcNow;
+        var imported = context.CreateMember(activated: false);
+        var alsoImported = context.CreateMember(activated: false);
+        var hadAnAccount = context.CreateMember();
+
+        CreateInvite(context, chapter.Id, imported.Id, now.AddDays(-3));
+        CreateInvite(context, chapter.Id, alsoImported.Id, now.AddDays(-2));
+        CreateInvite(context, chapter.Id, hadAnAccount.Id, now.AddDays(-1));
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        // Act
+        var result = await service.GetInvitedMembersViewModel(request);
+
+        // Assert
+        result.AwaitingActivation.Should().Be(2);
+        result.ExistingAccounts.Should().Be(1);
+    }
+
+    [Test]
     public static async Task GetInvitedMembersViewModel_StatesWhenEachInviteIsDeleted()
     {
         /* Arrange - nothing moves an invite's date, so when it will be deleted is worked out from the
@@ -858,6 +893,132 @@ public static class MemberAdminServiceTests
             .Count(x => x.MemberId == invited.Id && x.ChapterId == chapter.Id)
             .Should()
             .Be(1);
+    }
+
+    [Test]
+    public static async Task InviteStagedMembers_MixedBatch_ReportsWhatTheGroupDid()
+    {
+        /* Arrange - the numbers are the only thing that tells an organiser the import did what they meant.
+           One of each kind of row: somebody new, somebody who already has an account, somebody already in
+           the group, and an address that cannot be emailed. Published, so the invites go out. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var existingMember = context.CreateMember(
+            afterCreate: x => x.EmailAddress = "existing@example.com");
+        var alreadyIn = context.CreateMember(
+            afterCreate: x => x.EmailAddress = "member@example.com");
+
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription(),
+            members: [alreadyIn],
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        StageImport(
+            context,
+            chapter,
+            ("new@example.com", "New", "Member"),
+            ("existing@example.com", "Existing", "Member"),
+            ("member@example.com", "Already", "Member"),
+            ("not-an-email", "Bad", "Address"));
+
+        // Act
+        var result = await service.InviteStagedMembers(request);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        result.NewAccounts.Should().Be(1);
+        result.ExistingAccounts.Should().Be(1);
+        result.Invited.Should().Be(2);
+        result.AlreadyInGroup.Should().Be(1);
+        result.Invalid.Should().Be(1);
+        result.AlreadyInvited.Should().Be(0);
+
+        // Published, so the emails went rather than being held.
+        result.Held.Should().BeFalse();
+        result.Message.Should().Be("2 people invited. 1 will need to activate an account.");
+    }
+
+    [Test]
+    public static async Task InviteStagedMembers_UnpublishedGroup_SaysNothingHasBeenEmailed()
+    {
+        /* Arrange - the message is the one place the publication boundary is visible to an organiser, so it
+           has to say the invites are being held rather than claim they were sent. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription());
+
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        StageImport(context, chapter, ("new@example.com", "New", "Member"));
+
+        // Act
+        var result = await service.InviteStagedMembers(request);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Invited.Should().Be(1);
+        result.Held.Should().BeTrue();
+        result.Message.Should()
+            .Be("1 person invited. Nobody has been emailed yet - publish the group to send the invites.");
+    }
+
+    [Test]
+    public static async Task InviteStagedMembers_NothingLeftToDo_SaysNobodyWasInvited()
+    {
+        // Arrange - every held row is somebody the group already has, so there is nothing to claim.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var alreadyIn = context.CreateMember(
+            afterCreate: x => x.EmailAddress = "member@example.com");
+
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription(),
+            members: [alreadyIn],
+            afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
+
+        SeedDefaultSiteSubscription(context, PlatformType.GroupSquirrel);
+
+        var service = CreateMemberAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MemberImport);
+
+        StageImport(context, chapter, ("member@example.com", "Already", "Member"));
+
+        // Act
+        var result = await service.InviteStagedMembers(request);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Invited.Should().Be(0);
+        result.AlreadyInGroup.Should().Be(1);
+        result.Message.Should().Be("Nobody was invited");
     }
 
     [TestCase(PlatformType.GroupSquirrel)]

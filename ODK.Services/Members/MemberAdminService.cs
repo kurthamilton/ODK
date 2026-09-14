@@ -676,7 +676,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         };
     }
 
-    public async Task<ServiceResult> InviteStagedMembers(IMemberChapterAdminServiceRequest request)
+    public async Task<InviteStagedMembersResult> InviteStagedMembers(IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
 
@@ -704,7 +704,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         if (staged.Count == 0)
         {
-            return ServiceResult.Failure("There is nobody waiting to be invited");
+            return InviteStagedMembersResult.Failure("There is nobody waiting to be invited");
         }
 
         /* A second round-trip, because which accounts to look up is not known until the held rows are.
@@ -750,9 +750,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
            try again. */
         if (!capacity.Fits(placesRequired))
         {
-            return ServiceResult.Failure(ImportCapacityMessage(capacity, placesRequired));
+            return InviteStagedMembersResult.Failure(ImportCapacityMessage(capacity, placesRequired));
         }
 
+        /* What the group actually asked, which is not the same as what classified as importable: a guard
+           can still refuse a row the capacity check let through. */
+        var invitedStatuses = new List<MemberImportRowStatus>();
         var raisedInvites = new List<MemberChapterInvite>();
         var resolved = new List<MemberChapterImport>();
 
@@ -800,6 +803,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 continue;
             }
 
+            invitedStatuses.Add(status);
             raisedInvites.Add(membershipContext.RequiredRaisedInvite);
             resolved.Add(row);
         }
@@ -823,7 +827,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             EnqueueInviteEmails(request, chapter.Id, raisedInvites);
         }
 
-        return ServiceResult.Successful();
+        return InviteStagedMembersResult.Recorded(
+            statuses.Values.ToArray(), invitedStatuses, held: !send);
     }
 
     public async Task<ServiceResult> SendHeldInvites(IMemberChapterAdminServiceRequest request)
