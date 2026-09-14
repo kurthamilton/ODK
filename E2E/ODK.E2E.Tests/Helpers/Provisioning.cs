@@ -134,11 +134,11 @@ internal static class Provisioning
 
     public static async Task<TestGroup> CreateGroup(TestAccount owner, string name)
     {
-        var chapterId = Guid.Empty;
-        await RunAs(owner, async page => chapterId = await new CreateGroupPage(page).CreateGroup(name));
+        var slug = string.Empty;
+        await RunAs(owner, async page => slug = await new CreateGroupPage(page).CreateGroup(name));
 
-        var slug = await new ChapterDataHelper(E2ESettings.ConnectionString)
-            .GetSlug(chapterId);
+        var chapterId = await new ChapterDataHelper(E2ESettings.ConnectionString)
+            .GetChapterId(slug);
         return new TestGroup(chapterId, slug, name);
     }
 
@@ -197,8 +197,8 @@ internal static class Provisioning
     /// test's own browser stays anonymous. The owner's subscription has to carry the feature first - see
     /// <see cref="EnsureMemberApprovalSiteSubscription"/> - because the switch is not rendered without it.
     /// </summary>
-    public static Task RequireMemberApproval(TestAccount owner, Guid chapterId)
-        => RunAs(owner, page => new MembershipSettingsAdminPage(page).RequireApproval(chapterId));
+    public static Task RequireMemberApproval(TestAccount owner, TestGroup group)
+        => RunAs(owner, page => new MembershipSettingsAdminPage(page).RequireApproval(group));
 
     /// <summary>
     /// Provisions a fresh member of a Default group: a new account joins through the UI. Approval state is

@@ -1,8 +1,9 @@
 namespace ODK.E2E.Data;
 
 /// <summary>
-/// Reads group (Chapter) and membership state directly from the database, for driving the UI (the join
-/// URL needs the group's slug) and for asserting outcomes (approval timestamp, membership existence).
+/// Reads group (Chapter) and membership state directly from the database, for resolving what a URL
+/// carries (a group is keyed by its slug) and for asserting outcomes (approval timestamp, membership
+/// existence).
 /// </summary>
 public class ChapterDataHelper : DataHelperBase
 {
@@ -21,6 +22,17 @@ public class ChapterDataHelper : DataHelperBase
         return await builder.ExecuteScalar<DateTime?>();
     }
 
+    public async Task<Guid> GetChapterId(string slug)
+    {
+        const string sql = "SELECT Id FROM Chapters WHERE Slug = @slug";
+
+        await using var builder = Builder(sql)
+            .AddParameter("@slug", slug);
+
+        return await builder.ExecuteScalar<Guid?>()
+            ?? throw new InvalidOperationException($"No group found with slug '{slug}'.");
+    }
+
     public async Task<DateTime?> GetPublishedUtc(Guid chapterId)
     {
         const string sql = "SELECT PublishedUtc FROM Chapters WHERE Id = @id";
@@ -29,17 +41,6 @@ public class ChapterDataHelper : DataHelperBase
             .AddParameter("@id", chapterId);
 
         return await builder.ExecuteScalar<DateTime?>();
-    }
-
-    public async Task<string> GetSlug(Guid chapterId)
-    {
-        const string sql = "SELECT Slug FROM Chapters WHERE Id = @id";
-
-        await using var builder = Builder(sql)
-            .AddParameter("@id", chapterId);
-
-        return await builder.ExecuteScalar<string>()
-            ?? throw new InvalidOperationException($"No group found with id '{chapterId}'.");
     }
 
     public async Task<string> GetTimeZoneId(Guid chapterId)
