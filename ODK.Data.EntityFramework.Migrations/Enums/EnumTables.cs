@@ -31,6 +31,10 @@ public static class EnumTables
         {
             Name = "ChapterPaymentAdjustmentTypes"
         },
+        [typeof(ChecklistItemType)] = new EnumTable
+        {
+            Name = "ChecklistItemTypes"
+        },
         [typeof(DataType)] = new EnumTable
         {
             Name = "DataTypes"

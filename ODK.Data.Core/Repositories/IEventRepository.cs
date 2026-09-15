@@ -15,6 +15,13 @@ public interface IEventRepository : IReadWriteRepository<Event, IEventQueryBuild
 
     IDeferredQueryMultiple<Event> GetByVenueId(Guid venueId);
 
+    /// <summary>
+    /// The group's earliest created event, or null where it has none. The checklist reads its
+    /// <see cref="Event.CreatedUtc"/>, dating the step by when it actually happened rather than by when
+    /// the dashboard noticed.
+    /// </summary>
+    IDeferredQuerySingleOrDefault<Event> GetFirstCreatedByChapterId(Guid chapterId);
+
     IDeferredQuery<int> GetCountByChapterId(Guid chapterId, string? venueSlug, DateTime? fromUtc, DateTime? toUtcExclusive);
 
     IDeferredQuery<int> GetPastEventCountByChapterId(Guid chapterId);

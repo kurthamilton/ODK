@@ -1,7 +1,6 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model GroupDashboardViewModel
 @inject IOdkRoutes OdkRoutes
@@ -18,37 +17,6 @@
 @* The alerts carry their own spacing, so they are stripped of it and the column spaces every action
    equally however few of them there are. *@
 <div class="d-flex flex-column gap-3">
-    @if (Model.NeedsImageAsAction)
-    {
-        <div class="alert alert-warning d-flex justify-content-between align-items-center mb-0">
-            <span>
-                This group has no picture. It is shown on your group page and wherever your group is listed.
-            </span>
-            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-            {
-                Class = "btn btn-warning ms-3 text-nowrap",
-                Route = OdkRoutes.GroupAdmin.Image(Model.Chapter),
-                Text = "Add a picture"
-            })
-        </div>
-    }
-
-    @if (Model.NeedsShortDescription)
-    {
-        <div class="alert alert-warning d-flex justify-content-between align-items-center mb-0">
-            <span>
-                This group has no short description. It is the line that describes your group wherever it
-                is listed.
-            </span>
-            @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
-            {
-                Class = "btn btn-warning ms-3 text-nowrap",
-                Route = OdkRoutes.GroupAdmin.Texts(Model.Chapter),
-                Text = "Add a short description"
-            })
-        </div>
-    }
-
     @if (Model.CanSendHeldInvites)
     {
         @* The action itself rather than a link to the page that lists them: what is outstanding is the

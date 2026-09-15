@@ -218,12 +218,50 @@ internal class MockOdkContext : OdkContext
         });
     }
 
-    internal ChapterTexts CreateChapterTexts(Chapter chapter, string? shortDescription = null)
+    internal ChapterTexts CreateChapterTexts(
+        Chapter chapter,
+        string? shortDescription = null,
+        string? descriptionHtml = null)
         => Create(new ChapterTexts
         {
             ChapterId = chapter.Id,
+            DescriptionHtml = descriptionHtml,
             ShortDescription = shortDescription ?? "A group"
         });
+
+    /// <summary>
+    /// The checklist blueprint, which production gets from the migration that creates the table. The
+    /// dismissable steps are the optional ones; the rest are required.
+    /// </summary>
+    internal IReadOnlyCollection<ChecklistItem> CreateChecklistItems()
+    {
+        var dismissable = new[]
+        {
+            ChecklistItemType.Questions,
+            ChecklistItemType.MemberProperties,
+            ChecklistItemType.Topics
+        };
+
+        var items = new List<ChecklistItem>();
+
+        foreach (var type in Enum.GetValues<ChecklistItemType>())
+        {
+            if (type == ChecklistItemType.None)
+            {
+                continue;
+            }
+
+            items.Add(Create(new ChecklistItem
+            {
+                Dismissable = Array.IndexOf(dismissable, type) >= 0,
+                DisplayOrder = (int)type,
+                Name = type.ToString(),
+                Type = type
+            }));
+        }
+
+        return items;
+    }
 
     internal Country CreateCountry(
         Currency? currency = null,

@@ -41,6 +41,14 @@ public interface IChapterAdminService
     Task<ServiceResult> DeleteChapterSubscription(IMemberChapterAdminServiceRequest request, Guid id);
 
     /// <summary>
+    /// Takes one step off the group's checklist without doing it. Only a step the blueprint marks
+    /// dismissable can go this way, and the dismissal is the group's rather than the admin's. Idempotent -
+    /// dismissing twice leaves the date it was first dismissed alone.
+    /// </summary>
+    Task<ServiceResult> DismissChecklistItem(
+        IMemberChapterAdminServiceRequest request, ChecklistItemType type);
+
+    /// <summary>
     /// Takes the moved page off the group's dashboard. Idempotent - dismissing an already dismissed
     /// prompt leaves the date it was first dismissed alone.
     /// </summary>

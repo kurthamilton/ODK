@@ -1,0 +1,185 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@model GroupChecklistViewModel
+@inject IOdkRoutes OdkRoutes
+@{
+    // The copy for every step, in one place, so a step reads the same wherever it is rendered. The route
+    // is the service's decision only as far as which steps this admin sees; where each one goes is the
+    // web layer's, which is why it is resolved here rather than carried on the view model.
+    string Title(ChecklistItemType type) => type switch
+    {
+        ChecklistItemType.CreateGroup => "Create your group",
+        ChecklistItemType.Picture => "Add a picture",
+        ChecklistItemType.Description => "Describe your group",
+        ChecklistItemType.MembershipSettings => "Review your membership settings",
+        ChecklistItemType.PrivacySettings => "Review your privacy settings",
+        ChecklistItemType.Questions => "Add some FAQ",
+        ChecklistItemType.MemberProperties => "Ask members about themselves",
+        ChecklistItemType.Topics => "Add topics",
+        ChecklistItemType.SubmitForApproval => "Submit for approval",
+        ChecklistItemType.Publish => "Publish",
+        ChecklistItemType.FirstEvent => "Add your first event",
+        _ => type.ToString()
+    };
+
+    string Description(ChecklistItemType type) => type switch
+    {
+        ChecklistItemType.CreateGroup => "Done - this is your group.",
+        ChecklistItemType.Picture => "Shown on your group page and wherever your group is listed.",
+        ChecklistItemType.MembershipSettings => "How people join, and whether you approve them yourself.",
+        ChecklistItemType.PrivacySettings => "Who can see your group, its events and its members.",
+        ChecklistItemType.MemberProperties => "Profile questions, answered when somebody joins.",
+        ChecklistItemType.Topics => "They help the right people find you when browsing.",
+        ChecklistItemType.SubmitForApproval => "We look over every new group before it goes live.",
+        ChecklistItemType.Publish => "Nobody outside the group can find it until you do.",
+        _ => string.Empty
+    };
+
+    GroupAdminRoute? Route(ChecklistItemType type) => type switch
+    {
+        ChecklistItemType.Picture => OdkRoutes.GroupAdmin.Image(Model.Chapter),
+        ChecklistItemType.Description => OdkRoutes.GroupAdmin.Texts(Model.Chapter),
+        ChecklistItemType.MembershipSettings => OdkRoutes.GroupAdmin.MembershipSettings(Model.Chapter),
+        ChecklistItemType.PrivacySettings => OdkRoutes.GroupAdmin.Privacy(Model.Chapter),
+        ChecklistItemType.Questions => OdkRoutes.GroupAdmin.Questions(Model.Chapter),
+        ChecklistItemType.MemberProperties => OdkRoutes.GroupAdmin.MemberProperties(Model.Chapter),
+        ChecklistItemType.Topics => OdkRoutes.GroupAdmin.Topics(Model.Chapter),
+        ChecklistItemType.FirstEvent => OdkRoutes.GroupAdmin.EventCreate(Model.Chapter),
+
+        /* Creating the group is behind us, publishing is an action rather than a page, and submitting for
+           approval has nowhere to go until the story that lets a group ask for it lands. */
+        _ => null
+    };
+}
+
+@* One step down the type scale for the whole checklist: it is a list of pointers beside the dashboard's
+   real content, and it reads as such. The size is on the container rather than on each row, so nothing
+   inside repeats it - .small is an em, and two of them multiply. *@
+<div class="d-flex flex-column gap-3 small">
+    <p class="text-muted mb-0">
+        <strong>@Model.CompletedCount of @Model.Items.Count</strong> done.
+    </p>
+
+    <div class="list-group">
+        @foreach (var item in Model.Items)
+        {
+            var resolved = item.IsResolved();
+            var route = Route(item.Type);
+
+            @* The title is the action: an outstanding step links to the page that settles it, so there is
+               no second thing to press. Its description is a popover, because twelve of them stacked down
+               the page said more about the checklist than about any of the steps. *@
+            <div class="list-group-item d-flex justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    @* Outline for a step still to do, filled for one that is behind you - the same shape
+                       either way, so a column of them reads as a list rather than as two lists. *@
+                    <span class="@(resolved ? "text-success" : "text-muted")">
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(
+                            resolved ? IconType.CheckCircle : IconType.CheckCircleOutline))
+                    </span>
+
+                    @if (route != null)
+                    {
+                        @* A resolved step keeps its link, which is the only way back to a step that was
+                           skipped - and the way to revisit one that was done.
+
+                           Disabled rather than hidden where the admin cannot reach the page: the checklist
+                           is the group's progress and not their to-do list, so the step still shows, as
+                           text. *@
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Class = resolved ? "text-decoration-line-through" : null,
+                            Route = route,
+                            Text = Title(item.Type),
+                            UnauthorizedBehaviour = AdminLinkUnauthorizedBehaviour.Disable
+                        })
+                    }
+                    else
+                    {
+                        <span class="@(resolved ? "text-decoration-line-through text-muted" : "fw-medium")">
+                            @Title(item.Type)
+                        </span>
+                    }
+
+                    @if (item.IsDismissed() && !item.IsCompleted())
+                    {
+                        <span class="text-muted">Skipped</span>
+                    }
+
+                    @if (!resolved)
+                    {
+                        @* Focusable so the description is reachable without a pointer, which an icon in a
+                           span otherwise is not. A popover rather than the _Tooltip component because the
+                           bubble carries the step's name above its description. *@
+                        <span tabindex="0" role="button" aria-label="About this step"
+                              data-bs-toggle="popover"
+                              data-bs-trigger="hover focus"
+                              data-bs-placement="right"
+                              data-bs-content="@Description(item.Type)">
+                            @await Html.PartialAsync("Components/_Icon",
+                                new IconViewModel(IconType.QuestionCircle) { Class = "icon--help" })
+                        </span>
+                    }
+                </div>
+
+                @if (!resolved && (item.Type == ChecklistItemType.Publish
+                    || item.Type == ChecklistItemType.SubmitForApproval
+                    || item.Dismissable))
+                {
+                    <div class="d-flex align-items-center gap-2 text-nowrap">
+                        @if (item.Type == ChecklistItemType.Publish)
+                        {
+                            @if (Model.CanPublish)
+                            {
+                                @* The one step that is not a page to visit, so it keeps a button. *@
+                                <form action="@OdkRoutes.GroupAdmin.Publish(Model.Chapter).Path" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-success btn-sm">Publish</button>
+                                </form>
+                            }
+                            else
+                            {
+                                @* Named rather than left blank: a step with no button and no reason reads
+                                   as broken. The steps above it say what to do about it. *@
+                                <span class="text-muted">Not ready yet</span>
+                            }
+                        }
+                        else if (item.Type == ChecklistItemType.SubmitForApproval)
+                        {
+                            @* Approval is granted rather than asked for, so there is nothing to press until
+                               the story that lets a group request it lands. Said, rather than left blank. *@
+                            <span class="text-muted">Waiting on us</span>
+                        }
+
+                        @if (item.Dismissable)
+                        {
+                            @* Posts rather than links, because it writes. The dismissal is the group's, so
+                               it takes the step off the checklist for every organiser. *@
+                            <form action="@OdkRoutes.GroupAdmin.ChecklistItemDismiss(Model.Chapter, item.Type).Path"
+                                  method="post">
+                                @Html.AntiForgeryToken()
+                                @* Asks first, because nothing here puts a skipped step back on the
+                                   checklist - the step keeps its link, but the tick beside it stays. *@
+                                @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                {
+                                    Message = $"\"{Title(item.Type)}\" comes off this group's checklist "
+                                              + "for every organiser. You can still open the page from the "
+                                              + "checklist afterwards.",
+                                    Title = "Skip this step"
+                                })
+                                <button data-bs-toggle="tooltip" data-bs-title="Skip this step"
+                                        class="btn-icon text-danger">
+                                    @await Html.PartialAsync("Components/_Icon",
+                                        new IconViewModel(IconType.Times))
+                                </button>
+                            </form>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

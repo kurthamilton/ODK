@@ -34,6 +34,17 @@ public class GroupAdminRoutes
     public GroupAdminRoute Conversation(Chapter chapter, Guid conversationId)
         => Conversations(chapter).Child($"/{conversationId}");
 
+    /// <summary>
+    /// Takes one step off the group's checklist. A controller endpoint rather than a page handler, for the
+    /// reason MembersImportEndpoint gives. The securable is the step's own, so dismissing a step needs the
+    /// access that doing it would have needed.
+    /// </summary>
+    public GroupAdminRoute ChecklistItemDismiss(Chapter chapter, ChecklistItemType type) => new()
+    {
+        Path = $"/groups/{chapter.Id}/checklist/{type}/dismiss",
+        Securable = type.GetSecurable() ?? ChapterAdminSecurable.Publish
+    };
+
     public GroupAdminRoute Conversations(Chapter chapter)
         => Group(chapter).Child("/conversations", ChapterAdminSecurable.Conversations);
 
@@ -447,6 +458,23 @@ public class GroupAdminRoutes
     public GroupAdminRoute Question(Chapter chapter, Guid questionId)
         => Questions(chapter).Child($"/{questionId}");
 
+    /// <summary>
+    /// The privacy settings, which are a panel on the settings page rather than a page of their own - so
+    /// the route lands on the panel rather than at the top of the page, as Image does.
+    /// </summary>
+    public GroupAdminRoute Privacy(Chapter chapter)
+        => Settings(chapter).Child("#privacy", ChapterAdminSecurable.PrivacySettings);
+
+    /// <summary>
+    /// Publishes the group. A controller endpoint rather than a page handler, for the reason
+    /// MembersImportEndpoint gives.
+    /// </summary>
+    public GroupAdminRoute Publish(Chapter chapter) => new()
+    {
+        Path = $"/groups/{chapter.Id}/publish",
+        Securable = ChapterAdminSecurable.Publish
+    };
+
     public GroupAdminRoute QuestionCreate(Chapter chapter)
         => Questions(chapter).Child(Platform == PlatformType.DrunkenKnitwits ? "/create" : "/new");
 
@@ -506,6 +534,16 @@ public class GroupAdminRoutes
 
     public GroupAdminRoute Texts(Chapter chapter)
         => Group(chapter).Child("/texts", ChapterAdminSecurable.Texts);
+
+    /// <summary>
+    /// The group's topics, a panel on the settings page rather than a page of their own - so the route
+    /// lands on the panel, as Image does.
+    /// </summary>
+    public GroupAdminRoute Topics(Chapter chapter) => Platform switch
+    {
+        PlatformType.DrunkenKnitwits => GroupAdminRoute.Default,
+        _ => Settings(chapter).Child("#topics", ChapterAdminSecurable.Topics, PlatformType.GroupSquirrel)
+    };
 
     public GroupAdminRoute Venue(Chapter chapter, Guid venueId) =>
         Venues(chapter).Child($"/{venueId}");

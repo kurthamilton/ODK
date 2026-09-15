@@ -6,6 +6,8 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IChapterTopicRepository : IWriteRepository<ChapterTopic>
 {
+    IDeferredQuery<bool> ChapterHasTopics(Guid chapterId);
+
     IDeferredQueryMultiple<ChapterTopic> GetByChapterId(Guid chapterId);
 
     IDeferredQueryMultiple<ChapterTopic> GetByChapterIds(IEnumerable<Guid> chapterIds);
