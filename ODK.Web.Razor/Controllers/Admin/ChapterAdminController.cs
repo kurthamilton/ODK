@@ -286,6 +286,16 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("groups/{chapterId:guid}/submit")]
+    public async Task<IActionResult> SubmitForApproval(Guid chapterId)
+    {
+        var request = MemberChapterAdminServiceRequest.Create(
+            ChapterAdminSecurable.SubmitForApproval, MemberChapterServiceRequest);
+        var result = await _chapterAdminService.SubmitChapterForApproval(request);
+        AddFeedback(result, "Group submitted for approval");
+        return RedirectToReferrer();
+    }
+
     [HttpPost("groups/{chapterId:guid}/publish")]
     public async Task<IActionResult> Publish(Guid chapterId)
     {

@@ -19,7 +19,7 @@ public static class ChecklistItemTypeExtensions
         ChecklistItemType.Questions => ChapterAdminSecurable.Questions,
         ChecklistItemType.MemberProperties => ChapterAdminSecurable.Properties,
         ChecklistItemType.Topics => ChapterAdminSecurable.Topics,
-        ChecklistItemType.SubmitForApproval => ChapterAdminSecurable.Publish,
+        ChecklistItemType.SubmitForApproval => ChapterAdminSecurable.SubmitForApproval,
         ChecklistItemType.Publish => ChapterAdminSecurable.Publish,
         ChecklistItemType.FirstEvent => ChapterAdminSecurable.Events,
 

@@ -38,6 +38,7 @@ public static class ChapterAdminSecurableExtensions
         ChapterAdminSecurable.Questions => ChapterAdminRole.Admin,
         ChapterAdminSecurable.SiteSubscription => ChapterAdminRole.Owner,
         ChapterAdminSecurable.SocialMedia => ChapterAdminRole.Admin,
+        ChapterAdminSecurable.SubmitForApproval => ChapterAdminRole.Owner,
         ChapterAdminSecurable.Subscriptions => ChapterAdminRole.Admin,
         ChapterAdminSecurable.Texts => ChapterAdminRole.Admin,
         ChapterAdminSecurable.Topics => ChapterAdminRole.Admin,

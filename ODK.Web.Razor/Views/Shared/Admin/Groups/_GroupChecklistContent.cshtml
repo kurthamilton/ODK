@@ -33,7 +33,6 @@
         ChecklistItemType.PrivacySettings => "Who can see your group, its events and its members.",
         ChecklistItemType.MemberProperties => "Profile questions, answered when somebody joins.",
         ChecklistItemType.Topics => "They help the right people find you when browsing.",
-        ChecklistItemType.SubmitForApproval => "We look over every new group before it goes live.",
         ChecklistItemType.Publish => "Nobody outside the group can find it until you do.",
         _ => string.Empty
     };
@@ -48,9 +47,6 @@
         ChecklistItemType.MemberProperties => OdkRoutes.GroupAdmin.MemberProperties(Model.Chapter),
         ChecklistItemType.Topics => OdkRoutes.GroupAdmin.Topics(Model.Chapter),
         ChecklistItemType.FirstEvent => OdkRoutes.GroupAdmin.EventCreate(Model.Chapter),
-
-        /* Creating the group is behind us, publishing is an action rather than a page, and submitting for
-           approval has nowhere to go until the story that lets a group ask for it lands. */
         _ => null
     };
 }
@@ -143,15 +139,31 @@
                             else
                             {
                                 @* Named rather than left blank: a step with no button and no reason reads
-                                   as broken. The steps above it say what to do about it. *@
-                                <span class="text-muted">Not ready yet</span>
+                                   as broken. A group that has asked and is waiting is told so, because
+                                   nothing it does next will move it. *@
+                                <span class="text-muted">
+                                    @(Model.AwaitingApproval ? "Waiting for approval" : "Not ready yet")
+                                </span>
                             }
                         }
                         else if (item.Type == ChecklistItemType.SubmitForApproval)
                         {
-                            @* Approval is granted rather than asked for, so there is nothing to press until
-                               the story that lets a group request it lands. Said, rather than left blank. *@
-                            <span class="text-muted">Waiting on us</span>
+                            @if (Model.CanSubmitForApproval)
+                            {
+                                @* A post rather than a page, like publishing. Owner-only, which the
+                                   securable on the route says and the service enforces. *@
+                                <form action="@OdkRoutes.GroupAdmin.SubmitForApproval(Model.Chapter).Path"
+                                      method="post">
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-primary btn-sm">Submit for approval</button>
+                                </form>
+                            }
+                            else
+                            {
+                                @* Named rather than left blank: the steps above it are what is holding it
+                                   up, and they are on the same screen saying so. *@
+                                <span class="text-muted">Finish the steps above first</span>
+                            }
                         }
 
                         @if (item.Dismissable)

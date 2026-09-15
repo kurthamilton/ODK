@@ -48,8 +48,9 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
             x => x.MemberRepository.GetChapterOwner(chapterId));
 
         /* Approving a group that is already approved is a legal no-op rather than a failure, so there is no
-           check for it here - the machine has an Approve edge out of every state and only the one out of Draft
-           does any work. */
+           check for it here - the machine has an Approve edge out of every state that has been submitted,
+           and only the one out of Submitted does any work. A draft has no edge at all, which is what makes
+           submission a gate rather than a suggestion. */
         var result = await _chapterPublicationWorkflow.Fire(
             ChapterPublicationTrigger.Approve,
             new ChapterPublicationContext
@@ -164,6 +165,7 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
             .ToDictionary(x => x.Key, x => x.ToArray());
 
         var approved = new List<SiteAdminChaptersRowViewModel>();
+        var drafts = new List<SiteAdminChaptersRowViewModel>();
         var pending = new List<SiteAdminChaptersRowViewModel>();
 
         foreach (var chapter in chapters)
@@ -187,9 +189,13 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
             {
                 approved.Add(rowViewModel);
             }
-            else
+            else if (chapter.SubmittedForApproval())
             {
                 pending.Add(rowViewModel);
+            }
+            else
+            {
+                drafts.Add(rowViewModel);
             }
         }
 
@@ -198,8 +204,12 @@ public class ChapterSiteAdminService : OdkAdminServiceBase, IChapterSiteAdminSer
             Approved = approved
                 .OrderBy(x => x.Chapter.Name)
                 .ToArray(),
-            Pending = pending
+            Drafts = drafts
                 .OrderBy(x => x.Chapter.CreatedUtc)
+                .ToArray(),
+            // Oldest ask first: the queue is worked through in the order groups joined it.
+            Pending = pending
+                .OrderBy(x => x.Chapter.SubmittedForApprovalUtc)
                 .ToArray(),
             TimeZone = request.CurrentMember.TimeZone
         };

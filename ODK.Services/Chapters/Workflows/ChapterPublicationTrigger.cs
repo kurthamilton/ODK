@@ -9,5 +9,8 @@ public enum ChapterPublicationTrigger
     Approve = 1,
 
     /// <summary>The owner publishes it.</summary>
-    Publish = 2
+    Publish = 2,
+
+    /// <summary>The owner asks a site admin to look at it.</summary>
+    Submit = 3
 }

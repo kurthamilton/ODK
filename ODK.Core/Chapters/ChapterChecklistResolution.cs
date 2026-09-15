@@ -19,4 +19,30 @@ public class ChapterChecklistResolution
     /// Whether every step is resolved, which is what takes the checklist off the dashboard for good.
     /// </summary>
     public bool IsFinished() => Items.All(x => x.IsResolved());
+
+    /// <summary>
+    /// Whether everything the checklist puts before <paramref name="type"/> is behind the group. The
+    /// order is the rule: a step above another is one the checklist means to be dealt with first, and an
+    /// optional one counts as dealt with once it is skipped.
+    /// </summary>
+    /// <remarks>
+    /// False for a step the group does not have, which is the safe answer - a step that is not on this
+    /// group's checklist is not one it can be waiting to reach.
+    /// </remarks>
+    public bool PrecedingStepsResolved(ChecklistItemType type)
+    {
+        var resolved = new List<ChecklistItemState>();
+
+        foreach (var item in Items)
+        {
+            if (item.Type == type)
+            {
+                return resolved.All(x => x.IsResolved());
+            }
+
+            resolved.Add(item);
+        }
+
+        return false;
+    }
 }

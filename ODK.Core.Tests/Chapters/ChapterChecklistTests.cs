@@ -65,13 +65,14 @@ public static class ChapterChecklistTests
     {
         // Arrange - the group was created, approved and published long before anything read a checklist.
         var createdUtc = DateTime.UtcNow.AddDays(-90);
-        var approvedUtc = DateTime.UtcNow.AddDays(-60);
+        var submittedUtc = DateTime.UtcNow.AddDays(-75);
         var publishedUtc = DateTime.UtcNow.AddDays(-30);
         var firstEventUtc = DateTime.UtcNow.AddDays(-10);
 
         var chapter = CreateChapter();
         chapter.CreatedUtc = createdUtc;
-        chapter.ApprovedUtc = approvedUtc;
+        chapter.SubmittedForApprovalUtc = submittedUtc;
+        chapter.ApprovedUtc = DateTime.UtcNow.AddDays(-60);
         chapter.PublishedUtc = publishedUtc;
 
         // Act
@@ -84,7 +85,8 @@ public static class ChapterChecklistTests
 
         // Assert
         Step(result, ChecklistItemType.CreateGroup).CompletedUtc.Should().Be(createdUtc);
-        Step(result, ChecklistItemType.SubmitForApproval).CompletedUtc.Should().Be(approvedUtc);
+        // The step is the owner asking, so it is dated by the ask rather than by the answer.
+        Step(result, ChecklistItemType.SubmitForApproval).CompletedUtc.Should().Be(submittedUtc);
         Step(result, ChecklistItemType.Publish).CompletedUtc.Should().Be(publishedUtc);
         Step(result, ChecklistItemType.FirstEvent).CompletedUtc.Should().Be(firstEventUtc);
     }
@@ -170,6 +172,109 @@ public static class ChapterChecklistTests
             .ContainInOrder(ChecklistItemType.CreateGroup, ChecklistItemType.Publish, ChecklistItemType.FirstEvent);
     }
 
+    [Test]
+    public static void PrecedingStepsResolved_FirstStep_IsTrue()
+    {
+        // Arrange - nothing above it, so there is nothing to be waiting on.
+        var chapter = CreateChapter();
+
+        var result = ChapterChecklist.Resolve(
+            chapter, Blueprint(), [], CreateFacts(), DateTime.UtcNow);
+
+        // Act / Assert
+        result.PrecedingStepsResolved(ChecklistItemType.CreateGroup).Should().BeTrue();
+    }
+
+    [Test]
+    public static void PrecedingStepsResolved_EverythingAboveIsDone_IsTrue()
+    {
+        // Arrange - every step above submission behind the group, the two that only a page view can
+        // settle among them.
+        var chapter = CreateChapter();
+
+        var result = ChapterChecklist.Resolve(
+            chapter, Blueprint(), Reviewed(chapter), EverythingDone(), DateTime.UtcNow);
+
+        // Act / Assert
+        result.PrecedingStepsResolved(ChecklistItemType.SubmitForApproval).Should().BeTrue();
+    }
+
+    [Test]
+    public static void PrecedingStepsResolved_SomethingAboveIsOutstanding_IsFalse()
+    {
+        // Arrange - the same, bar the picture.
+        var chapter = CreateChapter();
+
+        var facts = EverythingDone(hasImage: false);
+
+        var result = ChapterChecklist.Resolve(
+            chapter, Blueprint(), Reviewed(chapter), facts, DateTime.UtcNow);
+
+        // Act / Assert
+        result.PrecedingStepsResolved(ChecklistItemType.SubmitForApproval).Should().BeFalse();
+    }
+
+    [Test]
+    public static void PrecedingStepsResolved_StepAboveWasSkipped_IsTrue()
+    {
+        /* Arrange - topics never added but skipped instead, which is what lets the order stand in for a
+           list of which steps are required: an optional one is dealt with by being declined. */
+        var chapter = CreateChapter();
+
+        var recorded = Reviewed(chapter)
+            .Append(new ChapterChecklistItem
+            {
+                ChapterId = chapter.Id,
+                ChecklistItemType = ChecklistItemType.Topics,
+                DismissedUtc = DateTime.UtcNow
+            })
+            .ToArray();
+
+        var facts = EverythingDone(hasTopics: false);
+
+        var result = ChapterChecklist.Resolve(chapter, Blueprint(), recorded, facts, DateTime.UtcNow);
+
+        // Act / Assert
+        result.PrecedingStepsResolved(ChecklistItemType.SubmitForApproval).Should().BeTrue();
+    }
+
+    [Test]
+    public static void PrecedingStepsResolved_StepTheGroupDoesNotHave_IsFalse()
+    {
+        // Arrange - a step this group's checklist does not include is not one it can be waiting to reach.
+        var chapter = CreateChapter();
+
+        var blueprint = Blueprint()
+            .Where(x => x.Type != ChecklistItemType.SubmitForApproval)
+            .ToArray();
+
+        var result = ChapterChecklist.Resolve(
+            chapter, blueprint, Reviewed(chapter), EverythingDone(), DateTime.UtcNow);
+
+        // Act / Assert
+        result.PrecedingStepsResolved(ChecklistItemType.SubmitForApproval).Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Rows for the two steps nothing can derive - membership and privacy settings are only ever settled
+    /// by somebody opening the page.
+    /// </summary>
+    private static ChapterChecklistItem[] Reviewed(Chapter chapter) =>
+    [
+        new ChapterChecklistItem
+        {
+            ChapterId = chapter.Id,
+            ChecklistItemType = ChecklistItemType.MembershipSettings,
+            CompletedUtc = DateTime.UtcNow
+        },
+        new ChapterChecklistItem
+        {
+            ChapterId = chapter.Id,
+            ChecklistItemType = ChecklistItemType.PrivacySettings,
+            CompletedUtc = DateTime.UtcNow
+        }
+    ];
+
     private static IReadOnlyCollection<ChecklistItem> Blueprint()
         => Enum.GetValues<ChecklistItemType>()
             .Where(x => x != ChecklistItemType.None)
@@ -193,16 +298,35 @@ public static class ChapterChecklistTests
 
     private static ChapterChecklistFacts CreateFacts(
         bool hasImage = false,
+        bool hasDescription = false,
+        bool hasMemberProperties = false,
+        bool hasQuestions = false,
+        bool hasShortDescription = false,
+        bool hasTopics = false,
         DateTime? firstEventCreatedUtc = null) => new()
     {
         FirstEventCreatedUtc = firstEventCreatedUtc,
-        HasDescription = false,
+        HasDescription = hasDescription,
         HasImage = hasImage,
-        HasMemberProperties = false,
-        HasQuestions = false,
-        HasShortDescription = false,
-        HasTopics = false
+        HasMemberProperties = hasMemberProperties,
+        HasQuestions = hasQuestions,
+        HasShortDescription = hasShortDescription,
+        HasTopics = hasTopics
     };
+
+    /// <summary>
+    /// A group that has done everything the checklist can detect, so a test about one missing step says
+    /// which by turning that one off.
+    /// </summary>
+    private static ChapterChecklistFacts EverythingDone(bool hasImage = true, bool hasTopics = true)
+        => CreateFacts(
+            hasImage: hasImage,
+            hasDescription: true,
+            hasMemberProperties: true,
+            hasQuestions: true,
+            hasShortDescription: true,
+            hasTopics: hasTopics,
+            firstEventCreatedUtc: DateTime.UtcNow);
 
     private static ChecklistItemState Step(ChapterChecklistResolution result, ChecklistItemType type)
         => result.Items.Single(x => x.Type == type);

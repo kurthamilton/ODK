@@ -27,12 +27,14 @@ namespace ODK.Services.Tests.Chapters;
 public static class ChapterSiteAdminServiceTests
 {
     [Test]
-    public static async Task ApproveChapter_UnapprovedChapter_ApprovesItAndTellsTheOwner()
+    public static async Task ApproveChapter_SubmittedChapter_ApprovesItAndTellsTheOwner()
     {
         // Arrange
         using var context = CreateMockOdkContext();
         var owner = context.CreateMember();
-        var chapter = context.CreateChapter(owner: owner);
+        var chapter = context.CreateChapter(
+            owner: owner,
+            afterCreate: x => x.SubmittedForApprovalUtc = DateTime.UtcNow.AddDays(-1));
 
         var emailService = new Mock<IMemberEmailService>();
         var service = CreateService(context, emailService.Object);
@@ -50,11 +52,35 @@ public static class ChapterSiteAdminServiceTests
     }
 
     [Test]
+    public static async Task ApproveChapter_DraftChapter_RefusesAndTellsNobody()
+    {
+        /* Arrange - a group nobody has offered. Approving it would take the decision about whether it is
+           finished away from its owner, which is the whole of what submission is for. */
+        using var context = CreateMockOdkContext();
+        var owner = context.CreateMember();
+        var chapter = context.CreateChapter(owner: owner);
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateService(context, emailService.Object);
+
+        // Act
+        var result = await service.ApproveChapter(SiteAdminRequest(context), chapter.Id);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        context.Set<Chapter>().Single(x => x.Id == chapter.Id).ApprovedUtc.Should().BeNull();
+
+        emailService.Verify(
+            x => x.SendGroupApprovedEmail(It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>()),
+            Times.Never);
+    }
+
+    [Test]
     public static async Task ApproveChapter_AlreadyApproved_SucceedsWithoutTellingTheOwnerAgain()
     {
         /* Arrange - approving twice is not a mistake, so it reports success. The machine expresses that as an
-           Approve edge out of every state where only the one out of Draft does any work, which is why nothing
-           here has to check first. */
+           Approve edge out of every submitted state where only the one out of Submitted does any work, which
+           is why nothing here has to check first. */
         using var context = CreateMockOdkContext();
         var owner = context.CreateMember();
         var approvedUtc = DateTime.UtcNow.AddDays(-7);

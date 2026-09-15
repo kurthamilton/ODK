@@ -1378,7 +1378,8 @@ public static class ChapterAdminServiceTests
 
         var chapter = context.CreateChapter(
             approvedUtc: DateTime.UtcNow,
-            owner: currentMember);
+            owner: currentMember,
+            afterCreate: x => x.SubmittedForApprovalUtc = DateTime.UtcNow);
 
         context.CreateChapterTexts(chapter);
 
@@ -1510,13 +1511,14 @@ public static class ChapterAdminServiceTests
 
         context.CreateChecklistItems();
 
-        var approvedUtc = DateTime.UtcNow.AddDays(-30);
+        var submittedUtc = DateTime.UtcNow.AddDays(-30);
 
         var currentMember = context.CreateMember();
 
         var chapter = context.CreateChapter(
-            approvedUtc: approvedUtc,
-            owner: currentMember);
+            approvedUtc: DateTime.UtcNow.AddDays(-20),
+            owner: currentMember,
+            afterCreate: x => x.SubmittedForApprovalUtc = submittedUtc);
 
         var service = CreateChapterAdminService(context);
 
@@ -1528,7 +1530,7 @@ public static class ChapterAdminServiceTests
         var result = await service.GetGroupDashboardViewModel(request);
 
         // Assert - the step carries the date it happened, not the date it was noticed.
-        ChecklistStep(result, ChecklistItemType.SubmitForApproval).CompletedUtc.Should().Be(approvedUtc);
+        ChecklistStep(result, ChecklistItemType.SubmitForApproval).CompletedUtc.Should().Be(submittedUtc);
         ChecklistStep(result, ChecklistItemType.CreateGroup).CompletedUtc.Should().Be(chapter.CreatedUtc);
     }
 
@@ -3042,6 +3044,190 @@ public static class ChapterAdminServiceTests
         result.Success.Should().BeFalse();
         result.Message.Should().Be("This group cannot be published");
         chapter.IsPublished().Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task SubmitChapterForApproval_StepsAboveAreOutstanding_RefusesWithoutRecordingAnything()
+    {
+        // Arrange - a group that has done nothing beyond existing.
+        using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.SubmitForApproval);
+
+        // Act
+        var result = await service.SubmitChapterForApproval(request);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        chapter.SubmittedForApprovalUtc.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task SubmitChapterForApproval_StepsAboveAreDone_RecordsItAndTellsSiteAdmins()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        context.CreateMember(siteAdmin: true);
+
+        var chapter = ChapterReadyToSubmit(context, currentMember);
+
+        var emailService = new Mock<IMemberEmailService>();
+
+        var service = CreateChapterAdminService(context, memberEmailService: emailService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.SubmitForApproval);
+
+        // Act
+        var result = await service.SubmitChapterForApproval(request);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        chapter.SubmittedForApprovalUtc.Should().NotBeNull();
+
+        emailService.Verify(
+            x => x.SendGroupSubmittedEmail(
+                It.IsAny<IServiceRequest>(),
+                It.IsAny<Chapter>(),
+                It.IsAny<IEnumerable<Member>>()),
+            Times.Once);
+    }
+
+    [Test]
+    public static async Task SubmitChapterForApproval_AlreadySubmitted_SucceedsWithoutTellingAnyoneAgain()
+    {
+        // Arrange - submitting twice is not a mistake, so it reports success and does nothing.
+        using var context = CreateMockOdkContext();
+
+        var submittedUtc = DateTime.UtcNow.AddDays(-3);
+
+        var currentMember = context.CreateMember();
+
+        var chapter = ChapterReadyToSubmit(context, currentMember);
+        chapter.SubmittedForApprovalUtc = submittedUtc;
+
+        var emailService = new Mock<IMemberEmailService>();
+
+        var service = CreateChapterAdminService(context, memberEmailService: emailService.Object);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.SubmitForApproval);
+
+        // Act
+        var result = await service.SubmitChapterForApproval(request);
+
+        // Assert - and the date it first asked is left alone.
+        result.Success.Should().BeTrue();
+        chapter.SubmittedForApprovalUtc.Should().Be(submittedUtc);
+
+        emailService.Verify(
+            x => x.SendGroupSubmittedEmail(
+                It.IsAny<IServiceRequest>(),
+                It.IsAny<Chapter>(),
+                It.IsAny<IEnumerable<Member>>()),
+            Times.Never);
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_StepsAboveSubmissionAreDone_OffersToSubmit()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = ChapterReadyToSubmit(context, currentMember);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.Checklist.Should().NotBeNull();
+        result.Checklist!.CanSubmitForApproval.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_StepsAboveSubmissionAreOutstanding_DoesNotOfferToSubmit()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.Checklist.Should().NotBeNull();
+        result.Checklist!.CanSubmitForApproval.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// A group with every step above submission behind it: the ones a fact settles, and the two that only
+    /// a page view can. Membership settings are absent from its checklist, the owner having no
+    /// subscription, so nothing here has to settle them.
+    /// </summary>
+    private static Chapter ChapterReadyToSubmit(MockOdkContext context, Member owner)
+    {
+        var items = context.CreateChecklistItems();
+
+        var chapter = context.CreateChapter(owner: owner);
+
+        context.CreateChapterImage(chapter);
+        context.CreateChapterTexts(chapter, descriptionHtml: "<p>What we do</p>");
+
+        foreach (var type in new[]
+        {
+            ChecklistItemType.PrivacySettings,
+            ChecklistItemType.Questions,
+            ChecklistItemType.MemberProperties,
+            ChecklistItemType.Topics
+        })
+        {
+            context.Create(new ChapterChecklistItem
+            {
+                ChapterId = chapter.Id,
+                ChecklistItemType = type,
+                CompletedUtc = DateTime.UtcNow
+            });
+        }
+
+        items.Should().Contain(x => x.Type == ChecklistItemType.SubmitForApproval);
+
+        return chapter;
     }
 
     /// <summary>

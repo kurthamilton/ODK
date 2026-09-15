@@ -32,6 +32,12 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
 
     public string? RedirectUrl { get; set; }
 
+    /// <summary>
+    /// When the owner asked a site admin to look at the group. Approval is only legal once it is set, so
+    /// this is the group saying it is finished rather than a site admin deciding it looks finished.
+    /// </summary>
+    public DateTime? SubmittedForApprovalUtc { get; set; }
+
     public string ShortName => GetShortName(Platform, Name);
 
     public required string Slug { get; set; }
@@ -107,6 +113,8 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
     public bool IsOpenForRegistration() => Approved() && IsPublished();
 
     public bool IsPublished() => PublishedUtc != null;
+
+    public bool SubmittedForApproval() => SubmittedForApprovalUtc != null;
 
     public DateTime ToChapterTime(DateTime utc) => TimeZoneInfo.ConvertTimeFromUtc(utc, TimeZone);
 

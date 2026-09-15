@@ -37,6 +37,9 @@ public class ChapterMap : IEntityTypeConfiguration<Chapter>
         builder.Property(x => x.Slug)
             .HasMaxLength(255);
 
+        builder.Property(x => x.SubmittedForApprovalUtc)
+            .HasConversion<NullableUtcDateTimeConverter>();
+
         builder.Property(x => x.ThemeBackground)
             .HasMaxLength(7);
 

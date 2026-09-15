@@ -520,6 +520,16 @@ public class GroupAdminRoutes
     public GroupAdminRoute SiteAdminSubscriptions(Chapter chapter)
         => SiteAdmin(chapter).Child("/subscriptions");
 
+    /// <summary>
+    /// The owner offering the group for approval. A controller endpoint rather than a page handler, for the
+    /// reason MembersImportEndpoint gives.
+    /// </summary>
+    public GroupAdminRoute SubmitForApproval(Chapter chapter) => new()
+    {
+        Path = $"/groups/{chapter.Id}/submit",
+        Securable = ChapterAdminSecurable.SubmitForApproval
+    };
+
     public GroupAdminRoute Subscription(Chapter chapter)
         => Group(chapter).Child("/subscription", ChapterAdminSecurable.SiteSubscription, PlatformType.DrunkenKnitwits);
 

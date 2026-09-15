@@ -84,7 +84,7 @@ public static class ChapterChecklist
             ChecklistItemType.Questions => facts.HasQuestions ? utcNow : null,
             ChecklistItemType.MemberProperties => facts.HasMemberProperties ? utcNow : null,
             ChecklistItemType.Topics => facts.HasTopics ? utcNow : null,
-            ChecklistItemType.SubmitForApproval => chapter.ApprovedUtc,
+            ChecklistItemType.SubmitForApproval => chapter.SubmittedForApprovalUtc,
             ChecklistItemType.Publish => chapter.PublishedUtc,
             ChecklistItemType.FirstEvent => facts.FirstEventCreatedUtc,
 

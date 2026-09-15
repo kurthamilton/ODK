@@ -35,6 +35,7 @@ public enum ChapterAdminSecurable
     Questions,
     SiteSubscription,
     SocialMedia,
+    SubmitForApproval,
     Subscriptions,
     Texts,
     Topics,
