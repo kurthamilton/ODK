@@ -21,10 +21,10 @@ public class GroupMovedPageViewModel
     public required ChapterImageVersionDto? Image { get; init; }
 
     /// <summary>
-    /// Whether the visitor is already a member of the group, which is the difference between "join" and
-    /// "go to the group".
+    /// The token an accept-invite link carries, present only where <see cref="Visitor"/> is
+    /// <see cref="GroupMovedVisitorState.Invited"/>.
     /// </summary>
-    public required bool IsMember { get; init; }
+    public string? InviteToken { get; init; }
 
     public required ChapterMigration Migration { get; init; }
 
@@ -41,4 +41,7 @@ public class GroupMovedPageViewModel
     /// the way the group menu does.
     /// </summary>
     public bool ShowContact => ContactPage?.Hidden != true;
+
+    /// <summary>Who is looking, which decides what the page offers them.</summary>
+    public required GroupMovedVisitorState Visitor { get; init; }
 }

@@ -1,15 +1,27 @@
 ﻿using ODK.Core.Members;
 using ODK.Data.Core;
+using ODK.Services.Tasks;
 
 namespace ODK.Services.Members;
 
 public class MemberInviteService : IMemberInviteService
 {
+    private readonly IBackgroundTaskService _backgroundTaskService;
+    private readonly IMemberEmailService _memberEmailService;
+    private readonly IServiceRequestFactory _serviceRequestFactory;
     private readonly MemberInviteServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
-    public MemberInviteService(IUnitOfWork unitOfWork, MemberInviteServiceSettings settings)
+    public MemberInviteService(
+        IUnitOfWork unitOfWork,
+        IMemberEmailService memberEmailService,
+        IBackgroundTaskService backgroundTaskService,
+        IServiceRequestFactory serviceRequestFactory,
+        MemberInviteServiceSettings settings)
     {
+        _backgroundTaskService = backgroundTaskService;
+        _memberEmailService = memberEmailService;
+        _serviceRequestFactory = serviceRequestFactory;
         _settings = settings;
         _unitOfWork = unitOfWork;
     }
@@ -91,6 +103,71 @@ public class MemberInviteService : IMemberInviteService
 
         return ServiceResult.Successful();
     }
+
+    public async Task<ServiceResult> RequestInviteResend(IChapterServiceRequest request, string emailAddress)
+    {
+        var chapter = request.Chapter;
+
+        /* One result for every outcome, and the caller renders one wording. Anyone can put an address into
+           the form this comes from, so saying whether there was an invite would say whether that person
+           was in this group - which for a group that keeps its membership private is the fact it is
+           keeping. The send is queued rather than awaited, so a hit and a miss take the same time. */
+        var nothingToReport = ServiceResult.Successful();
+
+        var member = await _unitOfWork.MemberRepository
+            .GetByEmailAddress(emailAddress)
+            .Run();
+        if (member == null)
+        {
+            return nothingToReport;
+        }
+
+        var invite = await _unitOfWork.MemberChapterInviteRepository
+            .GetByMemberId(member.Id, chapter.Id)
+            .Run();
+
+        /* Only an invite the group has already emailed. One it is still holding is released by publishing
+           the group, and letting a stranger's guess release it would take that decision away from the
+           organisers. */
+        if (invite?.IsResendable(_settings.ResendCooldownHours, DateTime.UtcNow) != true)
+        {
+            return nothingToReport;
+        }
+
+        invite.SentUtc = DateTime.UtcNow;
+        _unitOfWork.MemberChapterInviteRepository.Update(invite);
+
+        await _unitOfWork.SaveChanges();
+
+        _backgroundTaskService.Enqueue(
+            () => SendInviteEmailJob(JobRequest.Create(request), chapter.Id, member.Id),
+            BackgroundTaskQueueType.Emails);
+
+        return nothingToReport;
+    }
+
+    public async Task SendInviteEmail(IServiceRequest request, Guid chapterId, Guid memberId)
+    {
+        var (member, chapter, invite) = await _unitOfWork.Run(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.ChapterRepository.GetById(request.Platform, chapterId),
+            x => x.MemberChapterInviteRepository.GetByMemberId(memberId, chapterId));
+
+        // Consumed once they join, and the link is worthless without it, so there is nothing to send.
+        if (invite == null)
+        {
+            return;
+        }
+
+        var chapterRequest = ChapterServiceRequest.Create(chapter, request);
+        await _memberEmailService.SendMemberImportInviteEmail(chapterRequest, member, invite.Token);
+    }
+
+    /* Public for Hangfire, which needs a method to bind to, and called by nothing else: it turns the job's
+       ids back into a request and hands off to the work. This signature is a wire format - see JobRequest -
+       so a change to it is a change every queued job of that kind has to survive. */
+    public async Task SendInviteEmailJob(JobRequest request, Guid chapterId, Guid memberId)
+        => await SendInviteEmail(await _serviceRequestFactory.Create(request), chapterId, memberId);
 
     /// <summary>
     /// Deletes <paramref name="discarded"/>, then any of <paramref name="members"/> the discard leaves with

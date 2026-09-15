@@ -16,4 +16,17 @@ public interface IMemberInviteService
     Task<int> PurgeExpiredInvites();
 
     Task<ServiceResult> RefuseInvite(IChapterServiceRequest request, string token);
+
+    /// <summary>
+    /// Emails an outstanding invite again to whoever asks for it by address, from a page that does not
+    /// know who they are. Succeeds identically whether or not there was anything to send - the caller is
+    /// anonymous, so telling it apart would tell anyone who was in this group.
+    /// </summary>
+    Task<ServiceResult> RequestInviteResend(IChapterServiceRequest request, string emailAddress);
+
+    /// <summary>
+    /// Emails one invite. The group's admin service queues this for a batch; it lives here because what an
+    /// invite email is made of is the same question however the send was asked for.
+    /// </summary>
+    Task SendInviteEmail(IServiceRequest request, Guid chapterId, Guid memberId);
 }

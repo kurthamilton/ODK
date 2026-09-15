@@ -479,6 +479,7 @@ public static class DependencyRegistrar
 
         services.AddSingleton(new MemberInviteServiceSettings
         {
+            ResendCooldownHours = appSettings.Members.InviteResendCooldownHours,
             RetentionDays = appSettings.Privacy.Invites.RetentionDays
         });
     }

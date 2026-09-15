@@ -874,9 +874,11 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     /* Public for Hangfire, which needs a method to bind to, and called by nothing else: it turns the job's
        ids back into a request and hands off to the work. This signature is a wire format - see JobRequest -
-       so a change to it is a change every queued job of that kind has to survive. */
+       so a change to it is a change every queued job of that kind has to survive, which is why it stays
+       here rather than moving to the invite service along with the sending itself. */
     public async Task SendImportInviteEmailJob(JobRequest request, Guid chapterId, Guid memberId)
-        => await SendImportInviteEmail(await _serviceRequestFactory.Create(request), chapterId, memberId);
+        => await _memberInviteService.SendInviteEmail(
+            await _serviceRequestFactory.Create(request), chapterId, memberId);
 
     public async Task<ServiceResult> RemoveMemberFromChapter(
         IMemberChapterAdminServiceRequest request,
@@ -1309,23 +1311,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             invite.SentUtc = sentUtc;
             _unitOfWork.MemberChapterInviteRepository.Update(invite);
         }
-    }
-
-    private async Task SendImportInviteEmail(IServiceRequest request, Guid chapterId, Guid memberId)
-    {
-        var (member, chapter, invite) = await _unitOfWork.Run(
-            x => x.MemberRepository.GetById(memberId),
-            x => x.ChapterRepository.GetById(request.Platform, chapterId),
-            x => x.MemberChapterInviteRepository.GetByMemberId(memberId, chapterId));
-
-        // Consumed once they join, and the link is worthless without it, so there is nothing to send.
-        if (invite == null)
-        {
-            return;
-        }
-
-        var chapterRequest = ChapterServiceRequest.Create(chapter, request);
-        await _memberEmailService.SendMemberImportInviteEmail(chapterRequest, member, invite.Token);
     }
 
     /// <summary>
