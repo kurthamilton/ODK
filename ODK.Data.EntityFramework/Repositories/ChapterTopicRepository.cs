@@ -15,13 +15,20 @@ public class ChapterTopicRepository : WriteRepositoryBase<ChapterTopic>, IChapte
     {
     }
 
-    public IDeferredQueryMultiple<ChapterTopic> GetByChapterId(Guid chapterId) => Set()
-        .Where(x => x.ChapterId == chapterId)
-        .DeferredMultiple();
+    public IDeferredQuery<bool> ChapterHasTopics(Guid chapterId)
+        => Set()
+            .Where(x => x.ChapterId == chapterId)
+            .DeferredAny();
 
-    public IDeferredQueryMultiple<ChapterTopic> GetByChapterIds(IEnumerable<Guid> chapterIds) => Set()
-        .Where(x => chapterIds.Contains(x.ChapterId))
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<ChapterTopic> GetByChapterId(Guid chapterId)
+        => Set()
+            .Where(x => x.ChapterId == chapterId)
+            .DeferredMultiple();
+
+    public IDeferredQueryMultiple<ChapterTopic> GetByChapterIds(IEnumerable<Guid> chapterIds)
+        => Set()
+            .Where(x => chapterIds.Contains(x.ChapterId))
+            .DeferredMultiple();
 
     public IDeferredQueryMultiple<ChapterTopicDto> GetDtosByChapterIds(IEnumerable<Guid> chapterIds)
     {
@@ -77,7 +84,8 @@ public class ChapterTopicRepository : WriteRepositoryBase<ChapterTopic>, IChapte
         return changes;
     }
 
-    protected override IQueryable<ChapterTopic> Set() => base.Set()
-        .Include(x => x.Topic)
-        .ThenInclude(x => x.TopicGroup);
+    protected override IQueryable<ChapterTopic> Set()
+        => base.Set()
+            .Include(x => x.Topic)
+            .ThenInclude(x => x.TopicGroup);
 }

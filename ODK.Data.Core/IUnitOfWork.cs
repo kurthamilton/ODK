@@ -6,6 +6,7 @@ namespace ODK.Data.Core;
 public interface IUnitOfWork
 {
     IChapterAdminMemberRepository ChapterAdminMemberRepository { get; }
+    IChapterChecklistItemRepository ChapterChecklistItemRepository { get; }
     IChapterHeaderImageRepository ChapterHeaderImageRepository { get; }
     IChapterContactMessageReplyRepository ChapterContactMessageReplyRepository { get; }
     IChapterContactMessageRepository ChapterContactMessageRepository { get; }
@@ -32,6 +33,7 @@ public interface IUnitOfWork
     IChapterSubscriptionRepository ChapterSubscriptionRepository { get; }
     IChapterTextsRepository ChapterTextsRepository { get; }
     IChapterTopicRepository ChapterTopicRepository { get; }
+    IChecklistItemRepository ChecklistItemRepository { get; }
     ICountryRepository CountryRepository { get; }
     ICurrencyRepository CurrencyRepository { get; }
     IEmailRepository EmailRepository { get; }

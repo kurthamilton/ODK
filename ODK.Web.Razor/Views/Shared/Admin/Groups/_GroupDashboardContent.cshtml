@@ -13,19 +13,21 @@
 }
 
 <div class="section-stack">
-    @* First, and only while the group is waiting to be published: publishing is what an approved group
-       nobody can see yet is for, and the section owns both faces of it - the action and whatever is
-       standing in the way of it. *@
-    @if (Model.AwaitingPublication)
+    @* First, and only until every step is behind the group: setting a group up is a sequence with an end,
+       and it is what an organiser is here to finish. Publication is one of its steps rather than a subject
+       of its own, so nothing else on the dashboard mentions it. *@
+    @if (Model.Checklist != null)
     {
+        GroupChecklistViewModel checklist = Model.Checklist;
+
         @await Html.PartialAsync("Components/_Panel", new PanelViewModel
         {
             Heading = new HeadingViewModel
             {
-                Title = "Publish this group",
+                Title = "Set up your group",
                 Type = headingType
             },
-            BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Groups/_GroupDashboardPublish", Model)</div>
+            BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Groups/_GroupChecklistContent", checklist)</div>
         })
     }
 

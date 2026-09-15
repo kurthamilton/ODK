@@ -24,6 +24,7 @@ using ODK.Resources.Resources;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
+using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Exceptions;
 using ODK.Services.Emails;
 using ODK.Services.Geolocation;
@@ -1339,10 +1340,12 @@ public static class ChapterAdminServiceTests
     }
 
     [Test]
-    public static async Task GetGroupDashboardViewModel_WhenGroupHasNoPicture_RequiresOne()
+    public static async Task GetGroupDashboardViewModel_WhenGroupHasNoPicture_LeavesTheStepOutstanding()
     {
         // Arrange
         using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
 
         var currentMember = context.CreateMember();
 
@@ -1357,18 +1360,19 @@ public static class ChapterAdminServiceTests
         // Act
         var result = await service.GetGroupDashboardViewModel(request);
 
-        // Assert - the group is not approved, so the picture is outstanding on its own merit.
-        result.NeedsImage.Should().BeTrue();
-        result.NeedsImageToPublish.Should().BeFalse();
-        result.CanPublish.Should().BeFalse();
-        result.HasRequiredActions.Should().BeTrue();
+        // Assert - the picture is a checklist step, and nothing is waiting on the admin outside it.
+        result.Checklist.Should().NotBeNull();
+        ChecklistStep(result, ChecklistItemType.Picture).IsResolved().Should().BeFalse();
+        result.HasRequiredActions.Should().BeFalse();
     }
 
     [Test]
-    public static async Task GetGroupDashboardViewModel_WhenApprovedGroupHasNoPicture_SaysItBlocksPublication()
+    public static async Task GetGroupDashboardViewModel_WhenApprovedGroupHasNoPicture_CannotPublishYet()
     {
         // Arrange
         using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
 
         var currentMember = context.CreateMember();
 
@@ -1387,15 +1391,12 @@ public static class ChapterAdminServiceTests
         // Act
         var result = await service.GetGroupDashboardViewModel(request);
 
-        // Assert - waiting to be published, with the picture standing in the way.
-        result.NeedsImage.Should().BeTrue();
-        result.NeedsImageToPublish.Should().BeTrue();
-        result.CanPublish.Should().BeFalse();
-        result.AwaitingPublication.Should().BeTrue();
-
-        // The blocker is reported by the publish section, so it isn't also an action needing attention.
-        result.NeedsImageAsAction.Should().BeFalse();
-        result.HasRequiredActions.Should().BeFalse();
+        // Assert - approval is behind it, publication is not, and the picture is why.
+        result.Checklist.Should().NotBeNull();
+        result.Checklist!.CanPublish.Should().BeFalse();
+        ChecklistStep(result, ChecklistItemType.SubmitForApproval).IsCompleted().Should().BeTrue();
+        ChecklistStep(result, ChecklistItemType.Publish).IsResolved().Should().BeFalse();
+        ChecklistStep(result, ChecklistItemType.Picture).IsResolved().Should().BeFalse();
     }
 
     [Test]
@@ -1403,6 +1404,8 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
 
         var currentMember = context.CreateMember();
 
@@ -1420,10 +1423,10 @@ public static class ChapterAdminServiceTests
         // Act
         var result = await service.GetGroupDashboardViewModel(request);
 
-        // Assert - publishing has already happened, so the picture is outstanding without blocking it.
-        result.NeedsImage.Should().BeTrue();
-        result.NeedsImageToPublish.Should().BeFalse();
-        result.AwaitingPublication.Should().BeFalse();
+        // Assert - publishing is behind it, so the checklist outlives publication for the rest.
+        result.Checklist.Should().NotBeNull();
+        ChecklistStep(result, ChecklistItemType.Publish).IsCompleted().Should().BeTrue();
+        ChecklistStep(result, ChecklistItemType.Picture).IsResolved().Should().BeFalse();
     }
 
     [Test]
@@ -1431,6 +1434,8 @@ public static class ChapterAdminServiceTests
     {
         // Arrange
         using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
 
         var currentMember = context.CreateMember();
 
@@ -1452,13 +1457,287 @@ public static class ChapterAdminServiceTests
         var result = await service.GetGroupDashboardViewModel(request);
 
         // Assert
-        result.CanPublish.Should().BeTrue();
-        result.NeedsImage.Should().BeFalse();
-        result.NeedsImageToPublish.Should().BeFalse();
-        result.AwaitingPublication.Should().BeTrue();
+        result.Checklist.Should().NotBeNull();
+        result.Checklist!.CanPublish.Should().BeTrue();
+        ChecklistStep(result, ChecklistItemType.Picture).IsCompleted().Should().BeTrue();
 
-        // Publishing is the publish section's business, not an action needing attention.
+        // Publishing is the checklist's business, not an action needing attention.
         result.HasRequiredActions.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenAStepCompletes_RecordsItOnce()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        context.CreateChapterImage(chapter);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act - loaded twice, so a second load has the chance to write the row again.
+        await service.GetGroupDashboardViewModel(request);
+        var recordedAfterFirst = context.Set<ChapterChecklistItem>()
+            .Where(x => x.ChapterId == chapter.Id && x.ChecklistItemType == ChecklistItemType.Picture)
+            .Select(x => x.CompletedUtc)
+            .Single();
+
+        await service.GetGroupDashboardViewModel(request);
+
+        // Assert - one row, and the timestamp is the first sighting rather than the latest.
+        var recorded = context.Set<ChapterChecklistItem>()
+            .Where(x => x.ChapterId == chapter.Id && x.ChecklistItemType == ChecklistItemType.Picture)
+            .ToArray();
+        recorded.Length.Should().Be(1);
+        recorded[0].CompletedUtc.Should().Be(recordedAfterFirst);
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenAStepIsDated_UsesItsOwnTimestamp()
+    {
+        // Arrange - the group was created and approved long before anyone looked at a checklist.
+        using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
+
+        var approvedUtc = DateTime.UtcNow.AddDays(-30);
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            approvedUtc: approvedUtc,
+            owner: currentMember);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert - the step carries the date it happened, not the date it was noticed.
+        ChecklistStep(result, ChecklistItemType.SubmitForApproval).CompletedUtc.Should().Be(approvedUtc);
+        ChecklistStep(result, ChecklistItemType.CreateGroup).CompletedUtc.Should().Be(chapter.CreatedUtc);
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenEveryStepIsResolved_DropsTheChecklist()
+    {
+        // Arrange - every step already recorded, which is what a finished setup looks like.
+        using var context = CreateMockOdkContext();
+
+        var items = context.CreateChecklistItems();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        foreach (var item in items)
+        {
+            context.Create(new ChapterChecklistItem
+            {
+                ChapterId = chapter.Id,
+                ChecklistItemType = item.Type,
+                CompletedUtc = DateTime.UtcNow
+            });
+        }
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.Checklist.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task DismissChecklistItem_WhenStepIsDismissable_TakesItOffTheChecklist()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.DismissChecklistItem(request, ChecklistItemType.Topics);
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        var recorded = context.Set<ChapterChecklistItem>()
+            .Single(x => x.ChapterId == chapter.Id && x.ChecklistItemType == ChecklistItemType.Topics);
+        recorded.DismissedUtc.Should().NotBeNull();
+        recorded.CompletedUtc.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task DismissChecklistItem_WhenStepIsRequired_Fails()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.DismissChecklistItem(request, ChecklistItemType.Picture);
+
+        // Assert - and nothing is recorded, so the step stays exactly as it was.
+        result.Success.Should().BeFalse();
+        context.Set<ChapterChecklistItem>()
+            .Any(x => x.ChapterId == chapter.Id)
+            .Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetMembershipSettingsViewModel_WhenFirstOpened_RecordsTheStep()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription(
+                features: [SiteFeatureType.MemberSubscriptions]));
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        await service.GetMembershipSettingsViewModel(request);
+
+        // Assert - the settings have defaults that are right for most groups, so looking is the evidence.
+        context.Set<ChapterChecklistItem>()
+            .Single(x => x.ChapterId == chapter.Id
+                && x.ChecklistItemType == ChecklistItemType.MembershipSettings)
+            .CompletedUtc.Should().NotBeNull();
+    }
+
+    [Test]
+    public static async Task GetMembershipSettingsViewModel_WhenTheOwnerCannotUseThem_RecordsNothing()
+    {
+        // Arrange - without the feature the page shows what the plan would buy, so there is nothing on it
+        // to have reviewed.
+        using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        await service.GetMembershipSettingsViewModel(request);
+
+        // Assert
+        context.Set<ChapterChecklistItem>()
+            .Any(x => x.ChapterId == chapter.Id)
+            .Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenTheOwnerCannotUseMembershipSettings_DropsTheStep()
+    {
+        // Arrange - a step behind a feature the owner does not pay for is absent rather than outstanding.
+        using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert - and it is not merely hidden: a step left in and never completable would hold the
+        // checklist open for good, so it is out of the count as well.
+        result.Checklist.Should().NotBeNull();
+        result.Checklist!.Items.Should().NotContain(x => x.Type == ChecklistItemType.MembershipSettings);
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenTheOwnerCanUseMembershipSettings_KeepsTheStep()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            owner: currentMember,
+            siteSubscription: context.CreateSiteSubscription(
+                features: [SiteFeatureType.MemberSubscriptions]));
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.Checklist.Should().NotBeNull();
+        result.Checklist!.Items.Should().Contain(x => x.Type == ChecklistItemType.MembershipSettings);
     }
 
     [Test]
@@ -1596,10 +1875,12 @@ public static class ChapterAdminServiceTests
     }
 
     [Test]
-    public static async Task GetGroupDashboardViewModel_WhenGroupHasNoShortDescription_RequiresOne()
+    public static async Task GetGroupDashboardViewModel_WhenGroupHasNoShortDescription_LeavesTheStepOutstanding()
     {
         // Arrange
         using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
 
         var currentMember = context.CreateMember();
 
@@ -1615,15 +1896,17 @@ public static class ChapterAdminServiceTests
         var result = await service.GetGroupDashboardViewModel(request);
 
         // Assert
-        result.NeedsShortDescription.Should().BeTrue();
-        result.HasRequiredActions.Should().BeTrue();
+        ChecklistStep(result, ChecklistItemType.Description).IsResolved().Should().BeFalse();
+        result.HasRequiredActions.Should().BeFalse();
     }
 
     [Test]
-    public static async Task GetGroupDashboardViewModel_WhenGroupShortDescriptionIsBlank_RequiresOne()
+    public static async Task GetGroupDashboardViewModel_WhenGroupShortDescriptionIsBlank_LeavesTheStepOutstanding()
     {
         // Arrange - a texts row exists but says nothing, which is the same gap as having no row at all.
         using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
 
         var currentMember = context.CreateMember();
 
@@ -1641,14 +1924,16 @@ public static class ChapterAdminServiceTests
         var result = await service.GetGroupDashboardViewModel(request);
 
         // Assert
-        result.NeedsShortDescription.Should().BeTrue();
+        ChecklistStep(result, ChecklistItemType.Description).IsResolved().Should().BeFalse();
     }
 
     [Test]
-    public static async Task GetGroupDashboardViewModel_WhenGroupHasAShortDescription_DoesNotRequireOne()
+    public static async Task GetGroupDashboardViewModel_WhenGroupHasOnlyAShortDescription_LeavesTheStepOutstanding()
     {
-        // Arrange
+        // Arrange - the form requires both, so a group with one of them has not finished describing itself.
         using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
 
         var currentMember = context.CreateMember();
 
@@ -1666,7 +1951,34 @@ public static class ChapterAdminServiceTests
         var result = await service.GetGroupDashboardViewModel(request);
 
         // Assert
-        result.NeedsShortDescription.Should().BeFalse();
+        ChecklistStep(result, ChecklistItemType.Description).IsResolved().Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenGroupHasBothDescriptions_CompletesTheStep()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        context.CreateChecklistItems();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(owner: currentMember);
+
+        context.CreateChapterTexts(chapter, descriptionHtml: "<p>What we do</p>");
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert - one step off two fields, because the form asks for both before it will save.
+        ChecklistStep(result, ChecklistItemType.Description).IsCompleted().Should().BeTrue();
     }
 
     [Test]
@@ -2346,7 +2658,7 @@ public static class ChapterAdminServiceTests
             platform: PlatformType.DrunkenKnitwits,
             securable: ChapterAdminSecurable.Texts);
 
-        var model = CreateChapterTextsUpdateModel(shortDescription: null);
+        var model = CreateChapterTextsUpdateModel(shortDescription: string.Empty);
 
         // Act
         var result = await service.UpdateChapterTexts(request, model);
@@ -2358,9 +2670,9 @@ public static class ChapterAdminServiceTests
     }
 
     [Test]
-    public static async Task UpdateChapterTexts_PlatformWithShortDescriptionPostsAnEmptyOne_ClearsIt()
+    public static async Task UpdateChapterTexts_PlatformWithShortDescriptionPostsAnEmptyOne_NamesTheField()
     {
-        // Arrange - where the box is offered, emptying it is the member saying so.
+        // Arrange - where the box is offered it is required, so emptying it is not a way to clear it.
         using var context = CreateMockOdkContext();
 
         var currentMember = context.CreateMember();
@@ -2378,15 +2690,48 @@ public static class ChapterAdminServiceTests
             platform: PlatformType.GroupSquirrel,
             securable: ChapterAdminSecurable.Texts);
 
-        var model = CreateChapterTextsUpdateModel(shortDescription: null);
+        var model = CreateChapterTextsUpdateModel(shortDescription: string.Empty);
+
+        // Act
+        var result = await service.UpdateChapterTexts(request, model);
+
+        // Assert - and the stored one is left as it was, since nothing was written.
+        result.Messages.Should().Equal($"{ChapterTextLabels.ShortDescription} is required");
+
+        texts.ShortDescription.Should().Be("A group worth joining");
+    }
+
+    [Test]
+    public static async Task UpdateChapterTexts_PlatformWithoutShortDescriptionPostsAnEmptyOne_Succeeds()
+    {
+        /* Arrange - the ghost field. Drunken Knitwits never renders the box, so every one of its posts
+           carries nothing for it; a requirement that did not ask which platform was posting would fail
+           every save on that platform against a field nobody was shown. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+
+        var chapter = context.CreateChapter(
+            adminMembers: [currentMember],
+            platform: PlatformType.DrunkenKnitwits);
+
+        context.Create(CreateChapterTexts(chapter: chapter, shortDescription: null));
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            platform: PlatformType.DrunkenKnitwits,
+            securable: ChapterAdminSecurable.Texts);
+
+        var model = CreateChapterTextsUpdateModel(shortDescription: string.Empty);
 
         // Act
         var result = await service.UpdateChapterTexts(request, model);
 
         // Assert
         result.Success.Should().BeTrue();
-
-        texts.ShortDescription.Should().BeNull();
     }
 
     [Test]
@@ -2697,6 +3042,17 @@ public static class ChapterAdminServiceTests
         result.Success.Should().BeFalse();
         result.Message.Should().Be("This group cannot be published");
         chapter.IsPublished().Should().BeFalse();
+    }
+
+    /// <summary>
+    /// One step of the dashboard's checklist, which the test is asserting exists as much as anything else
+    /// - a step filtered out by a securable would otherwise read as an unresolved one.
+    /// </summary>
+    private static ChecklistItemState ChecklistStep(
+        GroupDashboardViewModel viewModel, ChecklistItemType type)
+    {
+        viewModel.Checklist.Should().NotBeNull();
+        return viewModel.Checklist!.Items.Single(x => x.Type == type);
     }
 
     private static MockOdkContext CreateMockOdkContext()
@@ -3125,7 +3481,7 @@ public static class ChapterAdminServiceTests
         {
             DescriptionHtml = descriptionHtml ?? "Test description",
             RegisterTextHtml = registerTextHtml ?? "Register here",
-            ShortDescription = shortDescription,
+            ShortDescription = shortDescription ?? "A group worth joining",
             WelcomeTextHtml = welcomeTextHtml ?? "Welcome to the test chapter"
         };
 

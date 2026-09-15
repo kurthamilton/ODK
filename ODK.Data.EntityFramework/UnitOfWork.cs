@@ -11,6 +11,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly IEntityIdGenerator _idGenerator;
 
     private readonly Lazy<IChapterAdminMemberRepository> _chapterAdminMemberRepository;
+    private readonly Lazy<IChapterChecklistItemRepository> _chapterChecklistItemRepository;
     private readonly Lazy<IChapterHeaderImageRepository> _chapterHeaderImageRepository;
     private readonly Lazy<IChapterContactMessageReplyRepository> _chapterContactMessageReplyRepository;
     private readonly Lazy<IChapterContactMessageRepository> _chapterContactMessageRepository;
@@ -37,6 +38,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IChapterSubscriptionRepository> _chapterSubscriptionRepository;
     private readonly Lazy<IChapterTextsRepository> _chapterTextsRepository;
     private readonly Lazy<IChapterTopicRepository> _chapterTopicRepository;
+    private readonly Lazy<IChecklistItemRepository> _checklistItemRepository;
     private readonly Lazy<ICountryRepository> _countryRepository;
     private readonly Lazy<ICurrencyRepository> _currencyRepository;
     private readonly Lazy<IEmailRepository> _emailRepository;
@@ -112,6 +114,7 @@ public class UnitOfWork : IUnitOfWork
         _idGenerator = idGenerator;
 
         _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context));
+        _chapterChecklistItemRepository = new(() => new ChapterChecklistItemRepository(_context));
         _chapterHeaderImageRepository = new(() => new ChapterHeaderImageRepository(_context));
         _chapterContactMessageReplyRepository = new(() => new ChapterContactMessageReplyRepository(_context));
         _chapterContactMessageRepository = new(() => new ChapterContactMessageRepository(_context));
@@ -138,6 +141,7 @@ public class UnitOfWork : IUnitOfWork
         _chapterSubscriptionRepository = new(() => new ChapterSubscriptionRepository(_context));
         _chapterTextsRepository = new(() => new ChapterTextsRepository(_context));
         _chapterTopicRepository = new(() => new ChapterTopicRepository(_context));
+        _checklistItemRepository = new(() => new ChecklistItemRepository(_context));
         _countryRepository = new(() => new CountryRepository(_context));
         _currencyRepository = new(() => new CurrencyRepository(_context));
         _emailRepository = new(() => new EmailRepository(_context));
@@ -209,6 +213,7 @@ public class UnitOfWork : IUnitOfWork
     }
 
     public IChapterAdminMemberRepository ChapterAdminMemberRepository => _chapterAdminMemberRepository.Value;
+    public IChapterChecklistItemRepository ChapterChecklistItemRepository => _chapterChecklistItemRepository.Value;
     public IChapterHeaderImageRepository ChapterHeaderImageRepository => _chapterHeaderImageRepository.Value;
     public IChapterContactMessageReplyRepository ChapterContactMessageReplyRepository => _chapterContactMessageReplyRepository.Value;
     public IChapterContactMessageRepository ChapterContactMessageRepository => _chapterContactMessageRepository.Value;
@@ -235,6 +240,7 @@ public class UnitOfWork : IUnitOfWork
     public IChapterSubscriptionRepository ChapterSubscriptionRepository => _chapterSubscriptionRepository.Value;
     public IChapterTextsRepository ChapterTextsRepository => _chapterTextsRepository.Value;
     public IChapterTopicRepository ChapterTopicRepository => _chapterTopicRepository.Value;
+    public IChecklistItemRepository ChecklistItemRepository => _checklistItemRepository.Value;
     public ICountryRepository CountryRepository => _countryRepository.Value;
     public ICurrencyRepository CurrencyRepository => _currencyRepository.Value;
     public IEmailRepository EmailRepository => _emailRepository.Value;

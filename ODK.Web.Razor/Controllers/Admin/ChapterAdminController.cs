@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Emails;
 using ODK.Core.Images;
@@ -436,6 +437,19 @@ public class ChapterAdminController : AdminControllerBase
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.Properties, MemberChapterServiceRequest);
         await _chapterAdminService.UpdateChapterPropertyDisplayOrder(request, id, -1);
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("groups/{chapterId:guid}/checklist/{type}/dismiss")]
+    public async Task<IActionResult> DismissChecklistItem(Guid chapterId, ChecklistItemType type)
+    {
+        // The step's own securable: taking a step off the checklist needs the access doing it would need.
+        var request = MemberChapterAdminServiceRequest.Create(
+            type.GetSecurable() ?? ChapterAdminSecurable.Publish, MemberChapterServiceRequest);
+        var result = await _chapterAdminService.DismissChecklistItem(request, type);
+
+        AddFeedback(result, "Checklist step dismissed");
+
         return RedirectToReferrer();
     }
 

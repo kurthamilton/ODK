@@ -44,6 +44,12 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
         => ApplyFilter(Query().ForChapter(chapterId), venueSlug, fromUtc, toUtcExclusive)
             .Count();
 
+    public IDeferredQuerySingleOrDefault<Event> GetFirstCreatedByChapterId(Guid chapterId)
+        => Query()
+            .ForChapter(chapterId)
+            .OrderBy(x => x.CreatedUtc)
+            .GetSingleOrDefault();
+
     public IDeferredQuery<int> GetPastEventCountByChapterId(Guid chapterId)
         => Query()
             .ForChapter(chapterId)

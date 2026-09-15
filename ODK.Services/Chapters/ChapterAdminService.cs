@@ -730,6 +730,42 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
+    public async Task<ServiceResult> DismissChecklistItem(
+        IMemberChapterAdminServiceRequest request, ChecklistItemType type)
+    {
+        var chapter = request.Chapter;
+
+        var (checklistItem, existing) = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.ChecklistItemRepository.GetByType(type),
+            x => x.ChapterChecklistItemRepository.GetByChapterId(chapter.Id, type));
+
+        if (!checklistItem.Dismissable)
+        {
+            return ServiceResult.Failure("This step cannot be dismissed");
+        }
+
+        if (existing == null)
+        {
+            _unitOfWork.ChapterChecklistItemRepository.Add(new ChapterChecklistItem
+            {
+                ChapterId = chapter.Id,
+                ChecklistItemType = type,
+                DismissedUtc = DateTime.UtcNow
+            });
+        }
+        else
+        {
+            // Left alone where it is already set, so dismissing twice does not move the date.
+            existing.DismissedUtc ??= DateTime.UtcNow;
+            _unitOfWork.ChapterChecklistItemRepository.Update(existing);
+        }
+
+        await _unitOfWork.SaveChanges();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> DismissMovedPagePrompt(IMemberChapterAdminServiceRequest request)
     {
         var chapter = request.Chapter;
@@ -819,19 +855,21 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         // admin couldn't act on. Skipped sections use DefaultDeferredQuery so an unpermitted one costs no
         // query at all, and the rest still batch into a single round-trip.
         var canSeeApprovals = adminMember.HasAccessTo(ChapterAdminSecurable.MemberApprovals, currentMember);
-        var canSeeImage = adminMember.HasAccessTo(ChapterAdminSecurable.Branding, currentMember);
         var canSeeMembers = adminMember.HasAccessTo(ChapterAdminSecurable.Members, currentMember);
         var canSeeMessages = adminMember.HasAccessTo(ChapterAdminSecurable.ContactMessages, currentMember);
         var canSeeEvents = adminMember.HasAccessTo(ChapterAdminSecurable.Events, currentMember);
         var canSeeImports = adminMember.HasAccessTo(ChapterAdminSecurable.MemberImport, currentMember);
         var canSeeMovedPage = adminMember.HasAccessTo(ChapterAdminSecurable.MovedPage, currentMember);
-        var canSeeTexts = adminMember.HasAccessTo(ChapterAdminSecurable.Texts, currentMember);
 
         // Approved and unpublished, so publishing is the outstanding action. Whether it can happen yet
         // depends on the picture.
         var awaitingPublication = chapter.CanBePublished(hasImage: true)
             && adminMember.HasAccessTo(ChapterAdminSecurable.Publish, currentMember);
 
+        /* The checklist's queries are gated on nothing, unlike every section below them. What a group has
+           done is the group's, so it has to be recorded whoever happens to be looking - an admin without
+           the branding securable must not be the reason the picture step goes unrecorded. Which of the
+           steps that admin is then shown is filtered afterwards. */
         var (
             awaitingApproval,
             unrepliedMessages,
@@ -843,7 +881,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             otherMembers,
             invites,
             migration,
-            texts
+            texts,
+            checklistItems,
+            recordedChecklistItems,
+            hasQuestions,
+            hasMemberProperties,
+            hasTopics,
+            firstEvent,
+            ownerSubscriptionFeatures
         ) = await _unitOfWork.Run(
             x => canSeeApprovals
                 ? x.MemberChapterRepository.Query(platform).ForChapter(chapter.Id).Approved(false).Count()
@@ -862,9 +907,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                     .Take(_settings.DashboardUpcomingEventCount)
                     .GetAll()
                 : new DefaultDeferredQueryMultiple<EventSummaryDto>(),
-            x => canSeeImage || awaitingPublication
-                ? x.ChapterImageRepository.GetVersionDtoByChapterId(chapter.Id)
-                : DefaultDeferredQuerySingleOrDefault.For<ChapterImageVersionDto>(),
+            x => x.ChapterImageRepository.GetVersionDtoByChapterId(chapter.Id),
             x => canSeeMembers
                 ? x.MemberRepository.GetLatestJoinedByChapterId(chapter.Id, _settings.DashboardNewestMemberCount)
                 : new DefaultDeferredQueryMultiple<MemberChapterWithAvatarDto>(),
@@ -886,22 +929,46 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => canSeeMovedPage
                 ? x.ChapterMigrationRepository.GetByChapterId(chapter.Id)
                 : DefaultDeferredQuerySingleOrDefault.For<ChapterMigration>(),
-            x => canSeeTexts
-                ? x.ChapterTextsRepository.GetByChapterId(chapter.Id)
-                : DefaultDeferredQuerySingleOrDefault.For<ChapterTexts>());
+            x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
+            x => x.ChecklistItemRepository.GetAll(),
+            x => x.ChapterChecklistItemRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
+            x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
+            x => x.ChapterTopicRepository.ChapterHasTopics(chapter.Id),
+            x => x.EventRepository.GetFirstCreatedByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRecordRepository
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
+                .SiteSubscription()
+                .Features()
+                .GetAll());
 
         var hasImage = image != null;
+
+        var checklist = await GetGroupChecklistViewModel(
+            chapter,
+            adminMember,
+            currentMember,
+            checklistItems.Where(x => ChecklistStepApplies(x.Type, ownerSubscriptionFeatures)).ToArray(),
+            recordedChecklistItems,
+            new ChapterChecklistFacts
+            {
+                FirstEventCreatedUtc = firstEvent?.CreatedUtc,
+                HasDescription = !string.IsNullOrWhiteSpace(texts?.DescriptionHtml),
+                HasImage = hasImage,
+                HasMemberProperties = hasMemberProperties,
+                HasQuestions = hasQuestions,
+                HasShortDescription = !string.IsNullOrWhiteSpace(texts?.ShortDescription),
+                HasTopics = hasTopics
+            },
+            canPublish: awaitingPublication && hasImage);
 
         return new GroupDashboardViewModel
         {
             Chapter = chapter,
-            CanPublish = awaitingPublication && hasImage,
             CanSendHeldInvites = canSeeImports && heldInvites > 0 && chapter.IsPublished(),
+            Checklist = checklist,
             HeldInvites = heldInvites,
             MembersAwaitingApproval = canSeeApprovals ? awaitingApproval : null,
-            NeedsImage = canSeeImage && !hasImage,
-            NeedsImageToPublish = awaitingPublication && !hasImage,
-            NeedsShortDescription = canSeeTexts && string.IsNullOrWhiteSpace(texts?.ShortDescription),
             NewestMembers = canSeeMembers ? newestMembers : null,
             PromptMemberImport =
                 canSeeImports && otherMembers == 0 && waitingToBeInvited == 0 && invites == 0,
@@ -1342,7 +1409,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             chapterPages,
             chapterTopics,
             topicGroups,
-            topics
+            topics,
+            recordedChecklistItems
         ) = await _unitOfWork.Run(
             x => canSeeBranding || canSeeSocialMedia
                 ? x.MemberSiteSubscriptionRecordRepository
@@ -1378,7 +1446,19 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 : new DefaultDeferredQueryMultiple<TopicGroup>(),
             x => canSeeTopics
                 ? x.TopicRepository.GetAll()
-                : new DefaultDeferredQueryMultiple<Topic>());
+                : new DefaultDeferredQueryMultiple<Topic>(),
+            x => canSeePrivacy
+                ? x.ChapterChecklistItemRepository.GetByChapterId(chapter.Id)
+                : new DefaultDeferredQueryMultiple<ChapterChecklistItem>());
+
+        /* Privacy is a panel on this page rather than a page of its own, so opening the page is the only
+           evidence there is that an organiser considered it - the settings have defaults that are right
+           for most groups, which leaves nothing for the checklist to detect. */
+        if (canSeePrivacy)
+        {
+            await RecordChecklistStepViewed(
+                chapter.Id, ChecklistItemType.PrivacySettings, recordedChecklistItems);
+        }
 
         return new ChapterSettingsAdminPageViewModel
         {
@@ -1483,14 +1563,28 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var chapter = request.Chapter;
 
-        var (ownerSubscriptionFeatures, membershipSettings) = await GetChapterAdminRestrictedContent(
+        var (
+            ownerSubscriptionFeatures,
+            membershipSettings,
+            recordedChecklistItems
+        ) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .SiteSubscription()
                 .Features()
                 .GetAll(),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterChecklistItemRepository.GetByChapterId(chapter.Id));
+
+        /* Only where the group can act on them. Without the feature the page shows what the plan would
+           buy rather than the settings, so opening it is not a review of anything. */
+        if (_authorizationService.ChapterHasAccess(
+            ownerSubscriptionFeatures, SiteFeatureType.MemberSubscriptions))
+        {
+            await RecordChecklistStepViewed(
+                chapter.Id, ChecklistItemType.MembershipSettings, recordedChecklistItems);
+        }
 
         return new MembershipSettingsAdminPageViewModel
         {
@@ -2514,23 +2608,36 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         texts ??= new ChapterTexts();
 
+        /* A platform that does not show the short description does not offer the box either, so its post
+           carries nothing for it. Everything below reads this rather than the value: the requirement, and
+           further down whether a save may write it. */
+        var showsShortDescription = ChapterTexts.ShowsShortDescription(request.Platform);
+
         /* Every field is checked before returning, and each message names the field it came from, so a form
            with two problems says which two boxes to go and fix. Field order matches the form's, so the
-           messages read down the page.
+           messages read down the page. */
+        var messages = new List<string>();
 
-           Short description is plain text, so nothing here checks it for markup - a stray angle bracket in
-           it is not a tag. */
-        var messages = ValidateChapterText(
-                ChapterTextLabels.Description, model.DescriptionHtml, texts.DescriptionHtml)
-            .Concat(ValidateChapterText(
-                ChapterTextLabels.RegisterText, model.RegisterTextHtml, texts.RegisterTextHtml,
-                required: true))
-            .Concat(ValidateChapterText(
-                ChapterTextLabels.WelcomeText, model.WelcomeTextHtml, texts.WelcomeTextHtml,
-                required: true))
-            .ToArray();
+        /* Required, but only where it is asked for - requiring it everywhere would fail every save on a
+           platform whose form never carried the box. It is plain text, so its presence is all there is to
+           check: a stray angle bracket in it is not a tag, which is why it does not go through
+           ValidateChapterText with the rest. */
+        if (showsShortDescription && string.IsNullOrWhiteSpace(model.ShortDescription))
+        {
+            messages.Add($"{ChapterTextLabels.ShortDescription} is required");
+        }
 
-        if (messages.Length > 0)
+        messages.AddRange(ValidateChapterText(
+            ChapterTextLabels.Description, model.DescriptionHtml, texts.DescriptionHtml,
+            required: true));
+        messages.AddRange(ValidateChapterText(
+            ChapterTextLabels.RegisterText, model.RegisterTextHtml, texts.RegisterTextHtml,
+            required: true));
+        messages.AddRange(ValidateChapterText(
+            ChapterTextLabels.WelcomeText, model.WelcomeTextHtml, texts.WelcomeTextHtml,
+            required: true));
+
+        if (messages.Count > 0)
         {
             return ServiceResult.Failure(messages);
         }
@@ -2539,11 +2646,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         texts.RegisterTextHtml = model.RegisterTextHtml;
         texts.WelcomeTextHtml = model.WelcomeTextHtml;
 
-        /* A platform that does not show the short description does not offer the box either, so its post
-           carries nothing for it - and a form that never asked must leave what the group already has
-           alone. Where the box is offered an emptied one clears it, which is why this is the platform
-           rather than the value. */
-        if (ChapterTexts.ShowsShortDescription(request.Platform))
+        // A form that never asked must leave what the group already has alone.
+        if (showsShortDescription)
         {
             texts.ShortDescription = model.ShortDescription;
         }
@@ -2648,6 +2752,101 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         return allPages;
+    }
+
+    /// <summary>
+    /// Resolves the group's checklist and records anything that has completed since it was last looked at.
+    /// Null once every step is resolved, and for an admin who can reach none of them.
+    /// </summary>
+    /// <summary>
+    /// Whether a checklist step is one this group has at all. A step behind a site feature the group's
+    /// owner does not pay for is not outstanding, it is absent - the page behind it shows what the plan
+    /// would buy rather than anything to fill in.
+    /// </summary>
+    /// <remarks>
+    /// Applied to the blueprint before the checklist is resolved, unlike the securable filter further
+    /// down, which is about the admin reading it. A step left in and never completable would hold the
+    /// checklist open for good; a step taken out is not counted, not shown and never recorded.
+    /// </remarks>
+    private bool ChecklistStepApplies(
+        ChecklistItemType type,
+        IReadOnlyCollection<SiteSubscriptionFeature> ownerSubscriptionFeatures)
+        => type switch
+        {
+            ChecklistItemType.MembershipSettings => _authorizationService.ChapterHasAccess(
+                ownerSubscriptionFeatures, SiteFeatureType.MemberSubscriptions),
+            _ => true
+        };
+
+    private async Task<GroupChecklistViewModel?> GetGroupChecklistViewModel(
+        Chapter chapter,
+        ChapterAdminMember? adminMember,
+        Member currentMember,
+        IReadOnlyCollection<ChecklistItem> items,
+        IReadOnlyCollection<ChapterChecklistItem> recorded,
+        ChapterChecklistFacts facts,
+        bool canPublish)
+    {
+        var resolution = ChapterChecklist.Resolve(chapter, items, recorded, facts, DateTime.UtcNow);
+
+        /* A read that writes, on the loads that observe a step completing and on no others. The steps
+           worth a timestamp of their own are done somewhere else entirely - a picture uploaded on the
+           settings page, an event created on the events page - and threading a checklist write through
+           every one of them puts the next step's recording in the hands of whoever writes it. */
+        if (resolution.Unrecorded.Count > 0)
+        {
+            _unitOfWork.ChapterChecklistItemRepository.AddMany(resolution.Unrecorded);
+            await _unitOfWork.SaveChanges();
+        }
+
+        if (resolution.IsFinished())
+        {
+            return null;
+        }
+
+        var permitted = resolution.Items
+            .Where(x =>
+            {
+                var securable = x.Type.GetSecurable();
+                return securable == null || adminMember.HasAccessTo(securable.Value, currentMember);
+            })
+            .ToArray();
+
+        if (permitted.Length == 0)
+        {
+            return null;
+        }
+
+        return new GroupChecklistViewModel
+        {
+            CanPublish = canPublish,
+            Chapter = chapter,
+            Items = permitted
+        };
+    }
+
+    /// <summary>
+    /// Records a checklist step whose only evidence is that somebody opened the page it lives on. Does
+    /// nothing where the group already has a row, so the timestamp is the first look rather than the last.
+    /// </summary>
+    private async Task RecordChecklistStepViewed(
+        Guid chapterId,
+        ChecklistItemType type,
+        IReadOnlyCollection<ChapterChecklistItem> recorded)
+    {
+        if (recorded.Any(x => x.ChecklistItemType == type))
+        {
+            return;
+        }
+
+        _unitOfWork.ChapterChecklistItemRepository.Add(new ChapterChecklistItem
+        {
+            ChapterId = chapterId,
+            ChecklistItemType = type,
+            CompletedUtc = DateTime.UtcNow
+        });
+
+        await _unitOfWork.SaveChanges();
     }
 
     private ServiceResult UpdateChapterImage(ChapterImage image, byte[] imageData)
