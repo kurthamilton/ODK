@@ -194,6 +194,14 @@ public static class EmailTemplateParametersTests
             return new MemberTopicsParameters(Topics());
         }
 
+        if (parametersType == typeof(GroupSubmittedAdminParameters))
+        {
+            return new GroupSubmittedAdminParameters(Chapter())
+            {
+                GroupsUrl = "value"
+            };
+        }
+
         if (parametersType == typeof(NewGroupAdminParameters))
         {
             return new NewGroupAdminParameters(Chapter())

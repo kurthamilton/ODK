@@ -572,6 +572,31 @@ public class MemberEmailService : IMemberEmailService
         }
     }
 
+    public async Task SendGroupSubmittedEmail(
+        IServiceRequest request,
+        Chapter chapter,
+        IEnumerable<Member> siteAdmins)
+    {
+        var urlProvider = _urlProviderFactory.Create(request, chapter: null);
+
+        var parameters = new GroupSubmittedAdminParameters(chapter)
+        {
+            GroupsUrl = urlProvider.SiteAdminGroups()
+        };
+
+        var to = siteAdmins
+            .Select(x => x.ToEmailAddressee())
+            .ToArray();
+
+        // Sent as the site, for the reason SendNewGroupEmail gives.
+        await _emailService.SendEmail(
+            request,
+            chapter: null,
+            to,
+            EmailType.GroupSubmittedAdmin,
+            parameters);
+    }
+
     public async Task SendNewGroupEmail(
         IServiceRequest request,
         Chapter chapter,

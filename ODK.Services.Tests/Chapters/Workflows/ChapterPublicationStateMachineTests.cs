@@ -107,7 +107,7 @@ public static class ChapterPublicationStateMachineTests
         // Act
         var idempotent = definition.Transitions
             .Where(x => x.Trigger == ChapterPublicationTrigger.Approve &&
-                        x.From != ChapterPublicationState.Draft)
+                        x.From != ChapterPublicationState.Submitted)
             .ToArray();
 
         // Assert

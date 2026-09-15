@@ -112,6 +112,12 @@ public interface IChapterAdminService
 
     Task<ServiceResult> PublishChapter(IMemberChapterAdminServiceRequest request);
 
+    /// <summary>
+    /// The owner asking a site admin to look at the group, which is what makes it approvable. Legal only
+    /// from a draft whose earlier checklist steps are all finished or skipped.
+    /// </summary>
+    Task<ServiceResult> SubmitChapterForApproval(IMemberChapterAdminServiceRequest request);
+
     Task<ServiceResult> ReplyToConversation(
         IMemberChapterAdminServiceRequest request,
         Guid conversationId,

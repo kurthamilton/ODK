@@ -27,6 +27,7 @@
     <File Path="docs/workflows/README.md" />
   </Folder>
   <Folder Name="/Solution Items/dotnet/">
+    <File Path="Scripts/dotnet/ef-update.bat" />
     <File Path="Scripts/dotnet/tool-restore.bat" />
   </Folder>
   <Folder Name="/Solution Items/e2e/">

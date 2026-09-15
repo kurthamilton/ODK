@@ -18,7 +18,8 @@
         MenuItems = new[]
         {
             new MenuItem { Text = "Approved", Link = "#approved-tab-pane" },
-            new MenuItem { Text = "Pending", Link = "#pending-tab-pane" }
+            new MenuItem { Text = "Pending", Link = "#pending-tab-pane" },
+            new MenuItem { Text = "Drafts", Link = "#drafts-tab-pane" }
         }
     };
 }
@@ -71,7 +72,7 @@
         </div>
     </div>
 
-    @*Pending*@
+    @*Pending - groups whose owners have asked to be looked at, oldest ask first.*@
     <div class="tab-pane fade" id="pending-tab-pane" role="tabpanel" tabindex="0">
         <div class="table-responsive">
             <table class="table table--striped">
@@ -79,6 +80,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Created</th>
+                        <th>Submitted</th>
                         <th></th>
                         <th></th>
                     </tr>
@@ -91,6 +93,7 @@
                         <tr>
                             <td>@chapter.FullName</td>
                             <td>@chapter.CreatedUtc.ToFriendlyDateString(dateTimeOptions)</td>
+                            <td>@chapter.SubmittedForApprovalUtc?.ToFriendlyDateString(dateTimeOptions)</td>
                             <td>
                                 @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
                                 {
@@ -116,6 +119,55 @@
                                         </button>
                                     </form>
                                 </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @*Drafts - still being set up, and not approvable until their owners say they are ready.*@
+    <div class="tab-pane fade" id="drafts-tab-pane" role="tabpanel" tabindex="0">
+        <div class="table-responsive">
+            <table class="table table--striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Created</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Drafts)
+                    {
+                        var chapter = row.Chapter;
+
+                        <tr>
+                            <td>@chapter.FullName</td>
+                            <td>@chapter.CreatedUtc.ToFriendlyDateString(dateTimeOptions)</td>
+                            <td>
+                                @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                                {
+                                    Route = OdkRoutes.GroupAdmin.GroupAdminLink(chapter),
+                                    Text = "Admin"
+                                })
+                            </td>
+                            <td>
+                                @* No approve button: a group its owner has not offered is not ours to
+                                   declare finished. Deleting one is still ours. *@
+                                <form action="/siteadmin/groups/@chapter.Id/delete" method="post">
+                                    @Html.AntiForgeryToken()
+                                    @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                    {
+                                        Message = "Are you sure you want to delete this group?",
+                                        Title = "Delete group"
+                                    })
+                                    <button class="btn btn-danger btn-sm">
+                                        Delete
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     }

@@ -134,6 +134,15 @@ public interface IMemberEmailService
     /// Tells site admins a group has been created. <paramref name="chapter"/> is what the email is about,
     /// not what it is sent as - it goes out as the site.
     /// </summary>
+    /// <summary>
+    /// Tells site admins that a group has asked to be approved. Sent as the site, so the group it is about
+    /// travels as a parameter rather than as the sender.
+    /// </summary>
+    Task SendGroupSubmittedEmail(
+        IServiceRequest request,
+        Chapter chapter,
+        IEnumerable<Member> siteAdmins);
+
     Task SendNewGroupEmail(
         IServiceRequest request,
         Chapter chapter,

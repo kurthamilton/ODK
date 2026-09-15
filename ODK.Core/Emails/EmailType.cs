@@ -115,5 +115,8 @@ public enum EmailType
     MemberRemoved = 36,
 
     [Display(Name = "Invites waiting to be sent")]
-    InvitesWaiting = 37
+    InvitesWaiting = 37,
+
+    [Display(Name = "Group submitted for approval")]
+    GroupSubmittedAdmin = 38
 }

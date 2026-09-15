@@ -948,8 +948,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             chapter,
             adminMember,
             currentMember,
-            checklistItems.Where(x => ChecklistStepApplies(x.Type, ownerSubscriptionFeatures)).ToArray(),
+            checklistItems,
             recordedChecklistItems,
+            ownerSubscriptionFeatures,
             new ChapterChecklistFacts
             {
                 FirstEventCreatedUtc = firstEvent?.CreatedUtc,
@@ -1780,6 +1781,77 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         chapter.OwnerId = memberId;
         _unitOfWork.ChapterRepository.Update(chapter);
         await _unitOfWork.SaveChanges();
+    }
+
+    public async Task<ServiceResult> SubmitChapterForApproval(IMemberChapterAdminServiceRequest request)
+    {
+        var chapter = request.Chapter;
+
+        var (
+            checklistItems,
+            recordedChecklistItems,
+            ownerSubscriptionFeatures,
+            image,
+            texts,
+            hasQuestions,
+            hasMemberProperties,
+            hasTopics,
+            firstEvent,
+            siteAdmins
+        ) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChecklistItemRepository.GetAll(),
+            x => x.ChapterChecklistItemRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRecordRepository
+                .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
+                .SiteSubscription()
+                .Features()
+                .GetAll(),
+            x => x.ChapterImageRepository.GetVersionDtoByChapterId(chapter.Id),
+            x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
+            x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
+            x => x.ChapterTopicRepository.ChapterHasTopics(chapter.Id),
+            x => x.EventRepository.GetFirstCreatedByChapterId(chapter.Id),
+            x => x.MemberRepository.Query().IsSiteAdmin().GetAll());
+
+        var resolution = ResolveChecklist(
+            chapter,
+            checklistItems,
+            recordedChecklistItems,
+            ownerSubscriptionFeatures,
+            new ChapterChecklistFacts
+            {
+                FirstEventCreatedUtc = firstEvent?.CreatedUtc,
+                HasDescription = !string.IsNullOrWhiteSpace(texts?.DescriptionHtml),
+                HasImage = image != null,
+                HasMemberProperties = hasMemberProperties,
+                HasQuestions = hasQuestions,
+                HasShortDescription = !string.IsNullOrWhiteSpace(texts?.ShortDescription),
+                HasTopics = hasTopics
+            });
+
+        var result = await _chapterPublicationWorkflow.Fire(
+            ChapterPublicationTrigger.Submit,
+            new ChapterPublicationContext
+            {
+                Chapter = chapter,
+                ChecklistReadyToSubmit =
+                    resolution.PrecedingStepsResolved(ChecklistItemType.SubmitForApproval),
+                Request = request,
+                SiteAdmins = siteAdmins
+            });
+
+        if (result.Success)
+        {
+            return ServiceResult.Successful();
+        }
+
+        /* Submitting is only legal from a draft whose earlier steps are behind it, so an outstanding step
+           and a group that has already moved on are the two ways to get here. The outstanding step earns
+           its own wording, being the one the owner can act on. */
+        return ServiceResult.Failure(chapter.SubmittedForApproval() || chapter.Approved()
+            ? "This group has already been submitted"
+            : "Finish the steps above this one before submitting");
     }
 
     public async Task<ServiceResult> StartConversation(
@@ -2778,16 +2850,35 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             _ => true
         };
 
+    /// <summary>
+    /// The group's checklist as it stands: the blueprint less the steps this group does not have, resolved
+    /// against what it has actually done. The one place the applicability rule is applied, so the checklist
+    /// a submission is judged against is the checklist the dashboard shows.
+    /// </summary>
+    private ChapterChecklistResolution ResolveChecklist(
+        Chapter chapter,
+        IReadOnlyCollection<ChecklistItem> items,
+        IReadOnlyCollection<ChapterChecklistItem> recorded,
+        IReadOnlyCollection<SiteSubscriptionFeature> ownerSubscriptionFeatures,
+        ChapterChecklistFacts facts)
+        => ChapterChecklist.Resolve(
+            chapter,
+            items.Where(x => ChecklistStepApplies(x.Type, ownerSubscriptionFeatures)).ToArray(),
+            recorded,
+            facts,
+            DateTime.UtcNow);
+
     private async Task<GroupChecklistViewModel?> GetGroupChecklistViewModel(
         Chapter chapter,
         ChapterAdminMember? adminMember,
         Member currentMember,
         IReadOnlyCollection<ChecklistItem> items,
         IReadOnlyCollection<ChapterChecklistItem> recorded,
+        IReadOnlyCollection<SiteSubscriptionFeature> ownerSubscriptionFeatures,
         ChapterChecklistFacts facts,
         bool canPublish)
     {
-        var resolution = ChapterChecklist.Resolve(chapter, items, recorded, facts, DateTime.UtcNow);
+        var resolution = ResolveChecklist(chapter, items, recorded, ownerSubscriptionFeatures, facts);
 
         /* A read that writes, on the loads that observe a step completing and on no others. The steps
            worth a timestamp of their own are done somewhere else entirely - a picture uploaded on the
@@ -2820,6 +2911,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return new GroupChecklistViewModel
         {
             CanPublish = canPublish,
+            CanSubmitForApproval =
+                !chapter.SubmittedForApproval()
+                && resolution.PrecedingStepsResolved(ChecklistItemType.SubmitForApproval),
             Chapter = chapter,
             Items = permitted
         };

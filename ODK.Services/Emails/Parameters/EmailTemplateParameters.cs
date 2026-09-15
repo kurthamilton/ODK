@@ -39,6 +39,7 @@ public static class EmailTemplateParameters
             [EmailType.MemberImportActivation] = MemberImportActivationParameters.Names,
             [EmailType.MemberImportInvite] = MemberImportInviteParameters.Names,
             [EmailType.MemberLeftAdmin] = MemberLeftParameters.Names,
+            [EmailType.GroupSubmittedAdmin] = GroupSubmittedAdminParameters.Names,
             [EmailType.MemberRemoved] = MemberRemovedParameters.Names,
             [EmailType.NewGroupAdmin] = NewGroupAdminParameters.Names,
             [EmailType.NewMember] = NewMemberParameters.Names,

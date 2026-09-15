@@ -177,6 +177,12 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
             {
                 Reason = "Test reason"
             },
+            EmailType.GroupSubmittedAdmin => chapter != null
+                ? new GroupSubmittedAdminParameters(chapter)
+                {
+                    GroupsUrl = urlProvider.SiteAdminGroups()
+                }
+                : null,
             EmailType.NewGroupAdmin => chapter != null
                 ? new NewGroupAdminParameters(chapter)
                 {
