@@ -189,6 +189,7 @@ public static class DependencyRegistrar
             .AddScoped<IChapterAdminService, ChapterAdminService>()
             .AddSingleton(new ChapterAdminServiceSettings
             {
+                MigrationWindowDays = appSettings.Groups.MigrationWindowDays,
                 ContactMessageRecaptchaScoreThreshold = appSettings.Recaptcha.ScoreThreshold,
                 DashboardNewestMemberCount = appSettings.Groups.Dashboard.NewestMemberCount,
                 DashboardUpcomingEventCount = appSettings.Groups.Dashboard.UpcomingEventCount,

@@ -110,6 +110,13 @@ public class GroupDashboardViewModel
     /// </summary>
     public required bool PromptMovedPage { get; init; }
 
+    /// <summary>
+    /// Whether to offer the admin the wording for telling the old community, which is the action that
+    /// follows setting a moved page up. Runs out with the migration window: after that the move is not
+    /// news, and a panel nobody can clear is a panel everybody stops reading.
+    /// </summary>
+    public required bool PromptShareMovedPage { get; init; }
+
     public required int? UnrepliedContactMessages { get; init; }
 
     /// <summary>

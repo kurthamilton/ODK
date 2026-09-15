@@ -910,6 +910,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 && chapter.IsPublished()
                 && migration?.HasMoved() != true
                 && migration?.PromptDismissedUtc == null,
+            PromptShareMovedPage =
+                canSeeMovedPage
+                && migration?.MovedRecently(_settings.MigrationWindowDays, DateTime.UtcNow) == true,
             UnrepliedContactMessages = canSeeMessages ? unrepliedMessages : null,
             WaitingToBeInvited = canSeeImports ? waitingToBeInvited : null,
             UpcomingEvents = canSeeEvents ? upcomingEvents : null
@@ -1121,11 +1124,18 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         // owns the group - see IUrlProvider.MovedPageUrl.
         var urlProvider = _urlProviderFactory.Create(request, chapter: null);
 
+        var movedPageUrl = urlProvider.MovedPageUrl(chapter);
+
         return new ChapterMigrationAdminPageViewModel
         {
             Chapter = chapter,
             Migration = migration,
-            MovedPageUrl = urlProvider.MovedPageUrl(chapter)
+            MovedPageUrl = movedPageUrl,
+            Share = ChapterMigrationShareViewModel.Create(
+                chapter.GetDisplayName(request.Platform),
+                urlProvider.GroupUrl(chapter),
+                movedPageUrl,
+                migration?.PreviousPlatformName)
         };
     }
 

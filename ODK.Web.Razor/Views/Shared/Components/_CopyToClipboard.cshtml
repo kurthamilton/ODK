@@ -2,7 +2,7 @@
 @model CopyToClipboardViewModel
 
 <span data-copy-to-clipboard="@Model.Text"
-      data-bs-toggle="tooltip" data-bs-title="@Model.Text"
+      data-bs-toggle="tooltip" data-bs-title="@(Model.Tooltip ?? Model.Text)"
       class="cursor-pointer">    
     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Copy)
     {

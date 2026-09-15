@@ -1,0 +1,20 @@
+﻿@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Components
+@model ChapterAdminMovedShareBlockViewModel
+
+<div data-odk-component="_ChapterAdminMovedShareBlock">
+    <div class="d-flex align-items-center gap-2">
+        <strong>@Model.Title</strong>
+        @* The text itself would fill the tooltip, so the label says what the button does instead. *@
+        @await Html.PartialAsync("Components/_CopyToClipboard", new CopyToClipboardViewModel
+        {
+            Text = Model.Text,
+            Tooltip = $"Copy the {Model.Title.ToLowerInvariant()}"
+        })
+    </div>
+
+    <p class="text-muted small mb-1">@Model.Description</p>
+
+    @* Read-only rather than a form field: it posts nowhere, and a pre would not wrap a long line. *@
+    <textarea class="form-control" readonly rows="@Model.Text.Split('\n').Length">@Model.Text</textarea>
+</div>

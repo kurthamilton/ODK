@@ -17,4 +17,7 @@ public class ChapterMigrationAdminPageViewModel
     /// somewhere that is not this site.
     /// </summary>
     public required string MovedPageUrl { get; init; }
+
+    /// <summary>Wording to paste wherever the old community still is.</summary>
+    public required ChapterMigrationShareViewModel Share { get; init; }
 }
