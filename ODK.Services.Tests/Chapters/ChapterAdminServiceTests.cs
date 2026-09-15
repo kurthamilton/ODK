@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -46,6 +46,8 @@ namespace ODK.Services.Tests.Chapters;
 [Parallelizable]
 public static class ChapterAdminServiceTests
 {
+    private const int MigrationWindowDays = 30;
+
     [Test]
     public static async Task AddChapterAdminMember_WhenMemberNotChapterAdmin_ThrowsException()
     {
@@ -1131,6 +1133,119 @@ public static class ChapterAdminServiceTests
 
         // Assert
         result.PromptMovedPage.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenMovedPagePublished_PromptsToShareIt()
+    {
+        /* Arrange - the moved page existing is half the job; the outstanding action is telling people it
+           does, and nobody goes looking for wording they do not know is there. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = CreatePublishedChapter(context, currentMember);
+
+        context.Create(new ChapterMigration
+        {
+            ChapterId = chapter.Id,
+            MovedUtc = DateTime.UtcNow
+        });
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.PromptShareMovedPage.Should().BeTrue();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenTheMoveIsOld_StopsPromptingToShareIt()
+    {
+        /* Arrange - after the migration window the move is not news, and a panel nobody can clear is a
+           panel everybody stops reading. */
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = CreatePublishedChapter(context, currentMember);
+
+        context.Create(new ChapterMigration
+        {
+            ChapterId = chapter.Id,
+            MovedUtc = DateTime.UtcNow.AddDays(-(MigrationWindowDays + 1))
+        });
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.PromptShareMovedPage.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetGroupDashboardViewModel_WhenNoMovedPage_DoesNotPromptToShareIt()
+    {
+        // Arrange - there is nothing to tell anyone about yet.
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = CreatePublishedChapter(context, currentMember);
+
+        var service = CreateChapterAdminService(context);
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember);
+
+        // Act
+        var result = await service.GetGroupDashboardViewModel(request);
+
+        // Assert
+        result.PromptShareMovedPage.Should().BeFalse();
+    }
+
+    [Test]
+    public static async Task GetChapterMigrationViewModel_BuildsWordingNamingTheGroupAndItsAddress()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = CreatePublishedChapter(context, currentMember, name: "Bristol Knitters");
+
+        context.Create(new ChapterMigration
+        {
+            ChapterId = chapter.Id,
+            MovedUtc = DateTime.UtcNow,
+            PreviousPlatformName = "Meetup"
+        });
+
+        var service = CreateChapterAdminService(
+            context, urlProviderFactory: CreateMockUrlProviderFactory(chapter));
+
+        var request = CreateMemberChapterAdminServiceRequest(
+            chapter: chapter,
+            currentMember: currentMember,
+            securable: ChapterAdminSecurable.MovedPage);
+
+        // Act
+        var result = await service.GetChapterMigrationViewModel(request);
+
+        // Assert
+        result.Share.ShortMessage.Should().Contain("Bristol Knitters");
+        result.Share.ShortMessage.Should().Contain("from Meetup");
+        result.Share.ShortMessage.Should().Contain(result.MovedPageUrl);
     }
 
     [Test]
@@ -2597,10 +2712,31 @@ public static class ChapterAdminServiceTests
     /// An approved, published group with the picture publication requires, owned by
     /// <paramref name="owner"/> - the state a dashboard prompt about an established group is read against.
     /// </summary>
-    private static Chapter CreatePublishedChapter(MockOdkContext context, Member owner)
+    /* The wording is built from URLs, so the provider has to answer rather than be a bare mock - a null
+       from it is the difference between a sentence and a NullReferenceException. */
+    private static IUrlProviderFactory CreateMockUrlProviderFactory(Chapter chapter)
+    {
+        var urlProvider = new Mock<IUrlProvider>();
+
+        urlProvider.Setup(x => x.GroupUrl(It.IsAny<Chapter>()))
+            .Returns($"https://example.com/groups/{chapter.Slug}");
+
+        urlProvider.Setup(x => x.MovedPageUrl(It.IsAny<Chapter>()))
+            .Returns($"https://example.com/groups/{chapter.Slug}/moved");
+
+        var factory = new Mock<IUrlProviderFactory>();
+
+        factory.Setup(x => x.Create(It.IsAny<IServiceRequest>(), It.IsAny<Chapter?>()))
+            .Returns(urlProvider.Object);
+
+        return factory.Object;
+    }
+
+    private static Chapter CreatePublishedChapter(MockOdkContext context, Member owner, string name = "")
     {
         var chapter = context.CreateChapter(
             approvedUtc: DateTime.UtcNow,
+            name: name,
             owner: owner,
             afterCreate: x => x.PublishedUtc = DateTime.UtcNow);
 
@@ -2781,6 +2917,7 @@ public static class ChapterAdminServiceTests
             DashboardNewestMemberCount = 4,
             DashboardUpcomingEventCount = 3,
             DefaultCountryCode = defaultCountryCode ?? "",
+            MigrationWindowDays = MigrationWindowDays,
             ReservedSlugs = reservedSlugs ?? []
         };
 

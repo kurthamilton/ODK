@@ -15,5 +15,11 @@ public class ChapterAdminServiceSettings
 
     public required string DefaultCountryCode { get; init; }
 
+    /// <summary>
+    /// How long a group counts as newly arrived (Groups:MigrationWindowDays) - here, how long its
+    /// dashboard keeps offering it the words to tell its old community with.
+    /// </summary>
+    public required int MigrationWindowDays { get; init; }
+
     public required IReadOnlyCollection<string> ReservedSlugs { get; init; }
 }

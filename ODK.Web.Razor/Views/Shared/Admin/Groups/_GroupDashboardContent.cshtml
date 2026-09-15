@@ -107,6 +107,37 @@
         })
     }
 
+    @* The second half of the same job: the page exists, so the outstanding action is telling people it
+       does. Nobody goes looking for wording they do not know is there. *@
+    @if (Model.PromptShareMovedPage)
+    {
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            Heading = new HeadingViewModel
+            {
+                Title = "Tell your old community",
+                Type = headingType
+            },
+            BodyContentFunc =
+                @<div>
+                    <p>
+                        Your moved page is live. The last thing between you and everyone finding you is
+                        telling them - and we have written the words, with your group's name and address
+                        already in them.
+                    </p>
+                    <div class="button-container">
+                        @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
+                        {
+                            Class = "btn btn-primary",
+                            Icon = IconType.Copy,
+                            Route = OdkRoutes.GroupAdmin.Moved(Model.Chapter),
+                            Text = "Get the words"
+                        })
+                    </div>
+                </div>
+        })
+    }
+
     @if (Model.UpcomingEvents != null)
     {
         @* A section is null when the admin can't reach the page behind it, and empty when the group has

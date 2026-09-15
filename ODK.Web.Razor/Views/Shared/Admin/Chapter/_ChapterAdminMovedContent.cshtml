@@ -69,4 +69,54 @@
                 </p>
             </div>
     })
+
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Heading = new HeadingViewModel
+        {
+            Title = "Words you can use",
+            Type = HeadingType.H3
+        },
+        BodyContentFunc =
+            @<div class="d-flex flex-column gap-3">
+                <p class="mb-0">
+                    Written for you, with your group's name and address already in them. Copy whichever
+                    fits and change anything you like - we never see what you send.
+                </p>
+
+                @await Html.PartialAsync("Admin/Chapter/_ChapterAdminMovedShareBlock",
+                    new ChapterAdminMovedShareBlockViewModel
+                    {
+                        Description = "For the top of your old group's description, where it is read as a "
+                            + "search result and may never be clicked.",
+                        Title = "Old group description",
+                        Text = Model.Share.OldGroupDescription
+                    })
+
+                @await Html.PartialAsync("Admin/Chapter/_ChapterAdminMovedShareBlock",
+                    new ChapterAdminMovedShareBlockViewModel
+                    {
+                        Description = "For a post or announcement on the platform you came from.",
+                        Title = "Announcement",
+                        Text = Model.Share.Announcement
+                    })
+
+                @await Html.PartialAsync("Admin/Chapter/_ChapterAdminMovedShareBlock",
+                    new ChapterAdminMovedShareBlockViewModel
+                    {
+                        Description = "For an email to your members. The only one that mentions the "
+                            + "invitation, because the people receiving it are the ones you have invited.",
+                        Title = "Email",
+                        Text = Model.Share.Email
+                    })
+
+                @await Html.PartialAsync("Admin/Chapter/_ChapterAdminMovedShareBlock",
+                    new ChapterAdminMovedShareBlockViewModel
+                    {
+                        Description = "For a chat or a group message.",
+                        Title = "Short message",
+                        Text = Model.Share.ShortMessage
+                    })
+            </div>
+    })
 </div>
