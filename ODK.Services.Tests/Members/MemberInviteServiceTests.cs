@@ -16,6 +16,8 @@ namespace ODK.Services.Tests.Members;
 [Parallelizable]
 public static class MemberInviteServiceTests
 {
+    private const int ResendCooldownHours = 24;
+
     private const int RetentionDays = 90;
 
     [Test]
@@ -194,6 +196,166 @@ public static class MemberInviteServiceTests
         context.Set<Member>().Any(x => x.Id == invited.Id).Should().BeTrue();
     }
 
+    [Test]
+    public static async Task RequestInviteResend_SentInvitePastTheCooldown_SendsItAgain()
+    {
+        // Arrange
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter();
+        var member = context.CreateMember(activated: false);
+        member.EmailAddress = "invited@example.com";
+        context.SaveChanges();
+
+        var receivedUtc = DateTime.UtcNow.AddDays(-10);
+        CreateInvite(
+            context,
+            chapter.Id,
+            member.Id,
+            receivedUtc,
+            sentUtc: DateTime.UtcNow.AddHours(-(ResendCooldownHours + 1)));
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateService(context, emailService.Object);
+
+        // Act
+        var result = await service.RequestInviteResend(
+            CreateChapterRequest(chapter), "invited@example.com");
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        // The retention clock runs from when the details arrived, so only the send moves.
+        var invite = context.Set<MemberChapterInvite>().Single(x => x.MemberId == member.Id);
+        invite.CreatedUtc.Should().BeCloseTo(receivedUtc, TimeSpan.FromSeconds(1));
+        invite.SentUtc.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+
+        emailService.Verify(
+            x => x.SendMemberImportInviteEmail(
+                It.IsAny<IChapterServiceRequest>(),
+                It.Is<Member>(m => m.Id == member.Id),
+                It.IsAny<string>()),
+            Times.Once);
+    }
+
+    [Test]
+    public static async Task RequestInviteResend_UnknownAddress_SucceedsWithoutSendingAnything()
+    {
+        /* Arrange - anyone can put an address into the form this comes from, so a miss has to be
+           indistinguishable from a hit: same result, and the caller renders one wording for both. */
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter();
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateService(context, emailService.Object);
+
+        // Act
+        var result = await service.RequestInviteResend(
+            CreateChapterRequest(chapter), "stranger@example.com");
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Message.Should().BeNull();
+
+        emailService.Verify(
+            x => x.SendMemberImportInviteEmail(
+                It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Test]
+    public static async Task RequestInviteResend_AddressWithNoInviteToThisGroup_SucceedsWithoutSendingAnything()
+    {
+        // Arrange - a member of the site who this group never invited is a new member, not a lost one.
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter();
+        var member = context.CreateMember();
+        member.EmailAddress = "member@example.com";
+        context.SaveChanges();
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateService(context, emailService.Object);
+
+        // Act
+        var result = await service.RequestInviteResend(
+            CreateChapterRequest(chapter), "member@example.com");
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        emailService.Verify(
+            x => x.SendMemberImportInviteEmail(
+                It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Test]
+    public static async Task RequestInviteResend_HeldInvite_SendsNothing()
+    {
+        /* Arrange - an invite the group has never emailed is released by publishing the group. Letting a
+           stranger's guess release it would take that decision away from the organisers. */
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter();
+        var member = context.CreateMember(activated: false);
+        member.EmailAddress = "held@example.com";
+        context.SaveChanges();
+
+        CreateInvite(context, chapter.Id, member.Id, DateTime.UtcNow.AddDays(-1), sentUtc: null);
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateService(context, emailService.Object);
+
+        // Act
+        var result = await service.RequestInviteResend(
+            CreateChapterRequest(chapter), "held@example.com");
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        context.Set<MemberChapterInvite>().Single(x => x.MemberId == member.Id).SentUtc.Should().BeNull();
+
+        emailService.Verify(
+            x => x.SendMemberImportInviteEmail(
+                It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Test]
+    public static async Task RequestInviteResend_WithinTheCooldown_SendsNothing()
+    {
+        // Arrange - the cooldown is what stops the form being used to send somebody repeated invitations.
+        using var context = CreateMockOdkContext();
+
+        var chapter = context.CreateChapter();
+        var member = context.CreateMember(activated: false);
+        member.EmailAddress = "recent@example.com";
+        context.SaveChanges();
+
+        var sentUtc = DateTime.UtcNow.AddHours(-1);
+        CreateInvite(context, chapter.Id, member.Id, DateTime.UtcNow.AddDays(-5), sentUtc: sentUtc);
+
+        var emailService = new Mock<IMemberEmailService>();
+        var service = CreateService(context, emailService.Object);
+
+        // Act
+        var result = await service.RequestInviteResend(
+            CreateChapterRequest(chapter), "recent@example.com");
+
+        // Assert
+        result.Success.Should().BeTrue();
+
+        context.Set<MemberChapterInvite>().Single(x => x.MemberId == member.Id)
+            .SentUtc.Should().BeCloseTo(sentUtc, TimeSpan.FromSeconds(1));
+
+        emailService.Verify(
+            x => x.SendMemberImportInviteEmail(
+                It.IsAny<IChapterServiceRequest>(), It.IsAny<Member>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
     private static IChapterServiceRequest CreateChapterRequest(
         Chapter chapter, PlatformType platform = PlatformType.GroupSquirrel) =>
         Mock.Of<IChapterServiceRequest>(x =>
@@ -202,13 +364,18 @@ public static class MemberInviteServiceTests
             x.HttpRequestContext == Mock.Of<IHttpRequestContext>());
 
     private static MemberChapterInvite CreateInvite(
-        MockOdkContext context, Guid chapterId, Guid memberId, DateTime createdUtc) => context.Create(
+        MockOdkContext context,
+        Guid chapterId,
+        Guid memberId,
+        DateTime createdUtc,
+        DateTime? sentUtc = null) => context.Create(
         new MemberChapterInvite
         {
             ChapterId = chapterId,
             CreatedUtc = createdUtc,
             Id = Guid.NewGuid(),
             MemberId = memberId,
+            SentUtc = sentUtc,
             Token = Guid.NewGuid().ToString()
         });
 
@@ -221,7 +388,16 @@ public static class MemberInviteServiceTests
        resolves two instances of one row to a single instance, which would hide a write the real one rejects. */
     private static MockOdkContext CreateMockOdkContext() => new MockOdkContext(noTracking: true);
 
-    private static MemberInviteService CreateService(MockOdkContext context) => new MemberInviteService(
+    private static MemberInviteService CreateService(
+        MockOdkContext context,
+        IMemberEmailService? memberEmailService = null) => new MemberInviteService(
         MockUnitOfWorkFactory.Create(context),
-        new MemberInviteServiceSettings { RetentionDays = RetentionDays });
+        memberEmailService ?? Mock.Of<IMemberEmailService>(),
+        new MockBackgroundTaskService(),
+        new MockServiceRequestFactory(context),
+        new MemberInviteServiceSettings
+        {
+            ResendCooldownHours = ResendCooldownHours,
+            RetentionDays = RetentionDays
+        });
 }

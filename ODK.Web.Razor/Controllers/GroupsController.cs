@@ -10,6 +10,7 @@ using ODK.Web.Common.Services;
 using ODK.Web.Razor.Attributes;
 using ODK.Web.Razor.Models.Contact;
 using ODK.Web.Razor.Models.Feedback;
+using ODK.Web.Razor.Models.Groups;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -111,6 +112,25 @@ public class GroupsController : OdkControllerBase
         }
 
         return Redirect(OdkRoutes.GroupAdmin.Index().Path);
+    }
+
+    [HttpPost("groups/{chapterId:guid}/moved/resend-invite")]
+    public async Task<IActionResult> ResendMovedInvite(
+        Guid chapterId,
+        [FromForm] GroupMovedInviteResendViewModel viewModel)
+    {
+        var result = await _memberInviteService.RequestInviteResend(
+            ChapterServiceRequest, viewModel.EmailAddress ?? string.Empty);
+
+        /* One wording for every outcome. The service reports nothing about whether there was an invite,
+           and this must not either - the visitor is anonymous, so the difference would say who was in
+           this group. */
+        AddFeedback(
+            result,
+            "If that address was invited to this group, the invitation has been sent again. " +
+            "Check your inbox.");
+
+        return Redirect(OdkRoutes.Groups.Moved(Chapter));
     }
 
     [HttpPost("groups/{chapterId:guid}/refuse-invite")]

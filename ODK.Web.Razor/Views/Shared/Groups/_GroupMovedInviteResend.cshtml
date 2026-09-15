@@ -1,0 +1,30 @@
+﻿@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Groups
+@using ODK.Web.Razor.Mvc
+@model GroupMovedInviteResendViewModel
+@inject IOdkRoutes OdkRoutes
+
+<div data-odk-component="_GroupMovedInviteResend">
+    <p class="text-muted">
+        Already invited? If the organisers sent you an invitation by email, follow the link in it - that
+        activates the account they have already set up for you.
+    </p>
+
+    <details>
+        <summary class="text-muted">I was a member of the old group and cannot find the email</summary>
+
+        <form class="mt-3"
+              action="@OdkRoutes.Groups.MovedInviteResend(Model.Chapter)"
+              method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="form-group mb-3 required">
+                @Html.LabelFor(x => x.EmailAddress, new { @class = "form-label" })
+                @Html.OdkEmailBoxFor(x => x.EmailAddress, new { @class = "form-control" })
+                @Html.ValidationMessageFor(x => x.EmailAddress, null)
+            </div>
+
+            <button class="btn btn-outline-primary">Send my invitation again</button>
+        </form>
+    </details>
+</div>

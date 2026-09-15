@@ -123,6 +123,12 @@ public class GroupRoutes
     /// </summary>
     public string Moved(Chapter chapter) => GroupPath(chapter, "/moved");
 
+    /// <summary>
+    /// Asks for an outstanding invite to be emailed again, from the moved page, by somebody the page
+    /// cannot identify.
+    /// </summary>
+    public string MovedInviteResend(Chapter chapter) => $"/groups/{chapter.Id}/moved/resend-invite";
+
     public string PastEvents(Chapter chapter) => $"{Events(chapter)}/past";
 
     public string Profile(Chapter chapter) => GroupPath(chapter, "/profile");

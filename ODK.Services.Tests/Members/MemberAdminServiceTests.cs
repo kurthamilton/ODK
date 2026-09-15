@@ -2174,7 +2174,14 @@ public static class MemberAdminServiceTests
             // to the account behind the invite is the thing worth asserting.
             new MemberInviteService(
                 unitOfWork,
-                new MemberInviteServiceSettings { RetentionDays = InviteRetentionDays }),
+                emailService,
+                new MockBackgroundTaskService(),
+                new MockServiceRequestFactory(context),
+                new MemberInviteServiceSettings
+                {
+                    ResendCooldownHours = InviteResendCooldownHours,
+                    RetentionDays = InviteRetentionDays
+                }),
             new MockBackgroundTaskService(),
             new MemberChapterSubscriptionWriter(unitOfWork),
             new EmailValidationService(new InconclusiveEmailVerifier()),

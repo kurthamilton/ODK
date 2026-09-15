@@ -5,6 +5,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Groups
 @using ODK.Web.Razor.Mvc
 @model GroupMovedPageViewModel
 @inject IOdkRoutes OdkRoutes
@@ -74,26 +75,39 @@
                 </p>
 
                 <div class="button-container">
-                    @if (Model.IsMember)
+                    @switch (Model.Visitor)
                     {
-                        <a href="@groupUrl" class="btn btn-primary">Go to @groupName</a>
-                    }
-                    else
-                    {
-                        <a href="@OdkRoutes.Groups.Join(chapter)" class="btn btn-success">
-                            Join @groupName
-                        </a>
-                        <a href="@groupUrl" class="btn btn-outline-primary">Have a look round first</a>
+                        case GroupMovedVisitorState.Member:
+                            <a href="@groupUrl" class="btn btn-primary">Go to @groupName</a>
+                            break;
+
+                        @* The group has already said yes to them, so they accept rather than apply.
+                           Straight to the invite they hold, not to the join form. *@
+                        case GroupMovedVisitorState.Invited:
+                            <a href="@OdkRoutes.Groups.AcceptInvite(chapter, Model.InviteToken ?? string.Empty)"
+                               class="btn btn-success">
+                                Accept your invitation
+                            </a>
+                            <a href="@groupUrl" class="btn btn-outline-primary">Have a look round first</a>
+                            break;
+
+                        default:
+                            <a href="@OdkRoutes.Groups.Join(chapter)" class="btn btn-success">
+                                Join @groupName
+                            </a>
+                            <a href="@groupUrl" class="btn btn-outline-primary">Have a look round first</a>
+                            break;
                     }
                 </div>
 
-                @if (!Model.IsMember)
+                @* Only for somebody we cannot name. A signed-in visitor's invite is already known, and
+                   they have been sent straight to it. *@
+                @if (Model.Visitor == GroupMovedVisitorState.Anonymous)
                 {
-                    <p class="text-muted mb-0">
-                        Already invited? If the organisers have sent you an invitation by email, follow
-                        the link in it instead - that activates the account they have already set up for
-                        you.
-                    </p>
+                    @await Html.PartialAsync("Groups/_GroupMovedInviteResend", new GroupMovedInviteResendViewModel
+                    {
+                        Chapter = chapter
+                    })
                 }
             </div>
     })

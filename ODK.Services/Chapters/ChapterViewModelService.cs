@@ -812,7 +812,8 @@ public class ChapterViewModelService : IChapterViewModelService
             upcomingEventDtos,
             membershipSettings,
             privacySettings,
-            memberSubscription
+            memberSubscription,
+            invite
         ) = await _unitOfWork.Run(
             x => x.ChapterMigrationRepository.GetByChapterId(chapter.Id),
             x => x.ChapterImageRepository.GetVersionDtoByChapterId(chapter.Id),
@@ -836,7 +837,13 @@ public class ChapterViewModelService : IChapterViewModelService
                     .ForChapter(chapter.Id)
                     .ToChapterSubscription()
                     .GetSingleOrDefault()
-                : DefaultDeferredQuerySingleOrDefault.For<MemberChapterSubscription>());
+                : DefaultDeferredQuerySingleOrDefault.For<MemberChapterSubscription>(),
+            /* Only for somebody signed in. An anonymous visitor cannot be matched to an invite without
+               being asked for an address, and answering that on a public page would tell anyone who
+               was in this group - see the resend form, which answers identically either way. */
+            x => currentMember != null
+                ? x.MemberChapterInviteRepository.GetByMemberId(currentMember.Id, chapter.Id)
+                : DefaultDeferredQuerySingleOrDefault.For<MemberChapterInvite>());
 
         if (migration?.HasMoved() != true)
         {
@@ -857,10 +864,11 @@ public class ChapterViewModelService : IChapterViewModelService
             Chapter = chapter,
             ContactPage = chapterPages.FirstOrDefault(x => x.PageType == PageType.Contact),
             Image = image,
-            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
+            InviteToken = invite?.Token,
             Migration = migration,
             NextEvent = upcomingEventViewModels.FirstOrDefault(),
-            ShortDescription = texts?.ShortDescription
+            ShortDescription = texts?.ShortDescription,
+            Visitor = MovedPageVisitor(chapter.Id, currentMember, invite)
         };
     }
 
@@ -1182,6 +1190,28 @@ public class ChapterViewModelService : IChapterViewModelService
             Member = member,
             Owned = owned
         };
+    }
+
+    /// <summary>
+    /// Which of the four a moved page's visitor is. Membership wins over an invite: a group that invited
+    /// somebody who then joined by another route has a stale invite, and they are in the group either way.
+    /// </summary>
+    private static GroupMovedVisitorState MovedPageVisitor(
+        Guid chapterId, Member? currentMember, MemberChapterInvite? invite)
+    {
+        if (currentMember == null)
+        {
+            return GroupMovedVisitorState.Anonymous;
+        }
+
+        if (currentMember.IsMemberOf(chapterId))
+        {
+            return GroupMovedVisitorState.Member;
+        }
+
+        return invite != null
+            ? GroupMovedVisitorState.Invited
+            : GroupMovedVisitorState.SignedInNotMember;
     }
 
     private IReadOnlyCollection<GroupPageListEventViewModel> ToGroupPageListEvents(

@@ -12,6 +12,7 @@ using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
+using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Geolocation;
 using ODK.Services.Logging;
 using ODK.Services.Members;
@@ -140,7 +141,110 @@ public static class ChapterViewModelServiceTests
         result.Chapter.Id.Should().Be(chapter.Id);
         result.Migration.MessageHtml.Should().Be("<p>Somewhere better</p>");
         result.Migration.PreviousPlatformName.Should().Be("Meetup");
-        result.IsMember.Should().BeFalse();
+        result.Visitor.Should().Be(GroupMovedVisitorState.Anonymous);
+    }
+
+    [Test]
+    public static async Task GetGroupMovedPage_SignedInMember_IsSentToTheGroup()
+    {
+        // Arrange
+        using var context = new MockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+
+        CreateMigration(context, chapter);
+
+        var service = CreateChapterViewModelService(context);
+
+        // Act
+        var result = await service.GetGroupMovedPage(CreateChapterServiceRequest(chapter, member));
+
+        // Assert
+        result.Visitor.Should().Be(GroupMovedVisitorState.Member);
+    }
+
+    [Test]
+    public static async Task GetGroupMovedPage_SignedInWithAnInvite_IsSentToAcceptIt()
+    {
+        /* Arrange - the group has already said yes to them, so the page offers the invite rather than the
+           join form. Someone who signed up independently after being imported lands exactly here. */
+        using var context = new MockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter();
+
+        context.Create(new MemberChapterInvite
+        {
+            ChapterId = chapter.Id,
+            CreatedUtc = DateTime.UtcNow.AddDays(-1),
+            Id = Guid.NewGuid(),
+            MemberId = member.Id,
+            SentUtc = DateTime.UtcNow.AddDays(-1),
+            Token = "invite-token"
+        });
+
+        CreateMigration(context, chapter);
+
+        var service = CreateChapterViewModelService(context);
+
+        // Act
+        var result = await service.GetGroupMovedPage(CreateChapterServiceRequest(chapter, member));
+
+        // Assert
+        result.Visitor.Should().Be(GroupMovedVisitorState.Invited);
+        result.InviteToken.Should().Be("invite-token");
+    }
+
+    [Test]
+    public static async Task GetGroupMovedPage_MemberWithAStaleInvite_IsStillAMember()
+    {
+        /* Arrange - a group that invited somebody who then joined by another route has an invite it never
+           consumed. They are in the group either way, so membership wins. */
+        using var context = new MockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter(members: [member]);
+
+        context.Create(new MemberChapterInvite
+        {
+            ChapterId = chapter.Id,
+            CreatedUtc = DateTime.UtcNow.AddDays(-1),
+            Id = Guid.NewGuid(),
+            MemberId = member.Id,
+            Token = "stale"
+        });
+
+        CreateMigration(context, chapter);
+
+        var service = CreateChapterViewModelService(context);
+
+        // Act
+        var result = await service.GetGroupMovedPage(CreateChapterServiceRequest(chapter, member));
+
+        // Assert
+        result.Visitor.Should().Be(GroupMovedVisitorState.Member);
+    }
+
+    [Test]
+    public static async Task GetGroupMovedPage_SignedInStranger_IsOfferedTheGroup()
+    {
+        // Arrange
+        using var context = new MockOdkContext();
+
+        var member = context.CreateMember();
+        var chapter = context.CreateChapter();
+
+        CreateMigration(context, chapter);
+
+        var service = CreateChapterViewModelService(context);
+
+        // Act
+        var result = await service.GetGroupMovedPage(CreateChapterServiceRequest(chapter, member));
+
+        // Assert
+        result.Visitor.Should().Be(GroupMovedVisitorState.SignedInNotMember);
+        result.InviteToken.Should().BeNull();
     }
 
     [Test]
@@ -224,12 +328,23 @@ public static class ChapterViewModelServiceTests
     private static ChapterService CreateChapterService(MockOdkContext context)
         => new(MockUnitOfWorkFactory.Create(context), CreateSubscriptionsPageViewModelFactory());
 
-    private static IChapterServiceRequest CreateChapterServiceRequest(Chapter chapter)
+    private static ChapterMigration CreateMigration(MockOdkContext context, Chapter chapter)
+        => context.Create(new ChapterMigration
+        {
+            ChapterId = chapter.Id,
+            MovedUtc = DateTime.UtcNow
+        });
+
+    private static IChapterServiceRequest CreateChapterServiceRequest(
+        Chapter chapter, Member? currentMember = null)
     {
         var mock = new Mock<IChapterServiceRequest>();
 
         mock.Setup(x => x.Chapter)
             .Returns(chapter);
+
+        mock.Setup(x => x.CurrentMemberOrDefault)
+            .Returns(currentMember);
 
         mock.Setup(x => x.Environment)
             .Returns(EnvironmentType.Dev);
