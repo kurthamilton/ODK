@@ -38,6 +38,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IChapterSubscriptionRepository> _chapterSubscriptionRepository;
     private readonly Lazy<IChapterTextsRepository> _chapterTextsRepository;
     private readonly Lazy<IChapterTopicRepository> _chapterTopicRepository;
+    private readonly Lazy<IChapterVenueRepository> _chapterVenueRepository;
     private readonly Lazy<IChecklistItemRepository> _checklistItemRepository;
     private readonly Lazy<ICountryRepository> _countryRepository;
     private readonly Lazy<ICurrencyRepository> _currencyRepository;
@@ -141,6 +142,7 @@ public class UnitOfWork : IUnitOfWork
         _chapterSubscriptionRepository = new(() => new ChapterSubscriptionRepository(_context));
         _chapterTextsRepository = new(() => new ChapterTextsRepository(_context));
         _chapterTopicRepository = new(() => new ChapterTopicRepository(_context));
+        _chapterVenueRepository = new(() => new ChapterVenueRepository(_context));
         _checklistItemRepository = new(() => new ChecklistItemRepository(_context));
         _countryRepository = new(() => new CountryRepository(_context));
         _currencyRepository = new(() => new CurrencyRepository(_context));
@@ -240,6 +242,7 @@ public class UnitOfWork : IUnitOfWork
     public IChapterSubscriptionRepository ChapterSubscriptionRepository => _chapterSubscriptionRepository.Value;
     public IChapterTextsRepository ChapterTextsRepository => _chapterTextsRepository.Value;
     public IChapterTopicRepository ChapterTopicRepository => _chapterTopicRepository.Value;
+    public IChapterVenueRepository ChapterVenueRepository => _chapterVenueRepository.Value;
     public IChecklistItemRepository ChecklistItemRepository => _checklistItemRepository.Value;
     public ICountryRepository CountryRepository => _countryRepository.Value;
     public ICurrencyRepository CurrencyRepository => _currencyRepository.Value;

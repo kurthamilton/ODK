@@ -55,20 +55,22 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
         var existing = FindByName(chapterVenues, name);
 
-        var venue = new Venue
+        var venue = _unitOfWork.VenueRepository.Add(new Venue
         {
             Address = model.Address,
             ChapterId = chapter.Id,
             MapQuery = model.LocationName,
-            Name = name
-        };
+            Name = name,
+            Slug = CreateSlug(name, chapterVenues, venueId: null)
+        });
 
-        var location = new VenueLocation
+        var location = _unitOfWork.VenueLocationRepository.Add(new VenueLocation
         {
             Latitude = model.Location?.Lat ?? 0,
             Longitude = model.Location?.Long ?? 0,
-            Name = model.LocationName ?? string.Empty
-        };
+            Name = model.LocationName ?? string.Empty,
+            VenueId = venue.Id
+        });
 
         var validationResult = ValidateVenue(venue, existing, location);
         if (!validationResult.Success)
@@ -76,12 +78,11 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             return validationResult;
         }
 
-        venue.Slug = CreateSlug(venue.Name, chapterVenues, venueId: null);
-
-        _unitOfWork.VenueRepository.Add(venue);
-
-        location.VenueId = venue.Id;
-        _unitOfWork.VenueLocationRepository.Add(location);
+        _unitOfWork.ChapterVenueRepository.Add(new ChapterVenue
+        {
+            ChapterId = chapter.Id,
+            VenueId = venue.Id
+        });
 
         await _unitOfWork.SaveChanges();
 

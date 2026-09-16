@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using ODK.Data.EntityFramework;
@@ -12,9 +13,11 @@ using ODK.Data.EntityFramework;
 namespace ODK.Data.EntityFramework.Migrations.Migrations
 {
     [DbContext(typeof(OdkContext))]
-    partial class OdkContextModelSnapshot : ModelSnapshot
+    [Migration("20260916081723_Venues-ChapterId-RemoveForeignKey")]
+    partial class VenuesChapterIdRemoveForeignKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3033,21 +3036,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.ToTable("TopicGroups", (string)null);
                 });
 
-            modelBuilder.Entity("ODK.Core.Venues.ChapterVenue", b =>
-                {
-                    b.Property<Guid>("ChapterId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("VenueId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("ChapterId", "VenueId");
-
-                    b.HasIndex("VenueId");
-
-                    b.ToTable("ChapterVenues", (string)null);
-                });
-
             modelBuilder.Entity("ODK.Core.Venues.Venue", b =>
                 {
                     b.Property<Guid>("Id")
@@ -4162,21 +4150,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .IsRequired();
 
                     b.Navigation("TopicGroup");
-                });
-
-            modelBuilder.Entity("ODK.Core.Venues.ChapterVenue", b =>
-                {
-                    b.HasOne("ODK.Core.Chapters.Chapter", null)
-                        .WithMany()
-                        .HasForeignKey("ChapterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ODK.Core.Venues.Venue", null)
-                        .WithMany()
-                        .HasForeignKey("VenueId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("ODK.Core.Venues.VenueLocation", b =>

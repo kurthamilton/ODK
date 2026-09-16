@@ -8,12 +8,13 @@ namespace ODK.E2E.Data;
 /// rows (activation token, password, preferences, site subscription, etc.). SentEmails has no foreign
 /// key to Members, so its test rows (identified by recipient address) are removed explicitly.
 ///
-/// A chapter's child rows cascade when the chapter is deleted - including Venues, via their foreign key
-/// to Chapters. Events are the exception: their foreign key to Chapters is RESTRICT (not cascade), so
-/// events are deleted explicitly first (which also clears the Events -> Venues reference before the
-/// chapter delete cascades the venues). Deleting an event cascades its own children (hosts, topics,
+/// A chapter's child rows cascade when the chapter is deleted, but venues and events do not. Events'
+/// foreign key to Chapters is RESTRICT (not cascade), so events are deleted explicitly first, which also
+/// clears the Events -> Venues reference. Deleting an event cascades its own children (hosts, topics,
 /// ticket settings, emails, responses, etc.). EventInvites is a further exception - its foreign key to
 /// Events is RESTRICT - so any invites for the test events are removed before the events are deleted.
+/// Venues belong to the site rather than to a chapter, so nothing removes them when their chapter goes;
+/// they are found through ChapterVenues and deleted explicitly, which cascades their locations and links.
 ///
 /// Site subscriptions a test creates (name prefixed <see cref="SiteSubscriptionDataHelper.TestNamePrefix"/>)
 /// are not member-scoped, so they're removed explicitly - children (features, prices) first, then the
@@ -54,6 +55,11 @@ public class TestDataCleaner : DataHelperBase
 
             DELETE e FROM Events e
                 INNER JOIN Chapters c ON c.Id = e.ChapterId
+                WHERE c.OwnerId IN ({memberIdSql});
+
+            DELETE v FROM Venues v
+                INNER JOIN ChapterVenues cv ON cv.VenueId = v.Id
+                INNER JOIN Chapters c ON c.Id = cv.ChapterId
                 WHERE c.OwnerId IN ({memberIdSql});
 
             DELETE FROM ChapterPaymentAccounts WHERE ChapterId IN

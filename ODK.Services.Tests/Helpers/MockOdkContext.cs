@@ -480,13 +480,24 @@ internal class MockOdkContext : OdkContext
         });
     }
 
-    internal Venue CreateVenue(Chapter chapter, string name = "", string slug = "") => Create(new Venue
+    internal Venue CreateVenue(Chapter chapter, string name = "", string slug = "")
     {
-        ChapterId = chapter.Id,
-        Id = Guid.NewGuid(),
-        Name = name,
-        Slug = slug
-    });
+        var venue = Create(new Venue
+        {
+            ChapterId = chapter.Id,
+            Id = Guid.NewGuid(),
+            Name = name,
+            Slug = slug
+        });
+
+        Create(new ChapterVenue
+        {
+            ChapterId = chapter.Id,
+            VenueId = venue.Id
+        });
+
+        return venue;
+    }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
