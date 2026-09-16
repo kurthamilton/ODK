@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Data.Core;
 using ODK.Data.Core.QueryBuilders;
-using ODK.Data.EntityFramework.QueryBuilders;
 
 namespace ODK.Data.EntityFramework;
 

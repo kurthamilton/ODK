@@ -579,7 +579,10 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
 
         var (venue, members, notificationSettings) = await _unitOfWork.Run(
-            x => x.ChapterVenueRepository.Query(q => q.ForVenue(@event.VenueId)).ToVenue().GetSingle(),
+            x => x.ChapterVenueRepository
+                .Query(x => x.ForVenue(@event.VenueId).ForChapter(@event.ChapterId))
+                .ToVenue()
+                .GetSingle(),
             x => x.MemberRepository.GetAllByChapterId(@event.ChapterId),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(@event.ChapterId, NotificationType.NewEvent));
 
@@ -765,7 +768,10 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 .HasFeature(SiteFeatureType.ScheduledEventEmails),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
-            x => x.ChapterVenueRepository.Query(x => x.ForVenue(@event.VenueId)).ToVenue().GetSingle(),
+            x => x.ChapterVenueRepository
+                .Query(q => q.ForVenue(@event.VenueId).ForChapter(@event.ChapterId))
+                .ToVenue()
+                .GetSingle(),
             x => x.EventResponseRepository.GetByEventId(@event.Id),
             x => x.EventInviteRepository.GetByEventId(@event.Id),
             x => x.MemberRepository.GetByChapterId(@event.ChapterId),

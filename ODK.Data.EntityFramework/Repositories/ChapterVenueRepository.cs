@@ -15,7 +15,7 @@ public class ChapterVenueRepository
     }
 
     public override IChapterVenueQueryBuilder Query()
-        => CreateQueryBuilder<IChapterVenueQueryBuilder>(context => new ChapterVenueQueryBuilder(context));
+        => CreateQueryBuilder<IChapterVenueQueryBuilder>(context => new ChapterVenueQueryBuilder(context, Set()));
 
     protected override IQueryable<ChapterVenue> Set()
         => base.Set().Include(x => x.Venue);
