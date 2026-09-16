@@ -147,6 +147,41 @@ public class ChapterSubscriptionPurchaseTests : DefaultPageTest
     /// A published group whose owner can take money, with a non-recurring £5 chapter subscription on a real
     /// Stripe price. Returns the group, the subscription to check out, and the currency it is priced in.
     /// </summary>
+    private static async Task<bool> PollForPurchaseRecord(Guid memberId, Guid chapterSubscriptionId)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(90);
+        while (DateTime.UtcNow < deadline)
+        {
+            if (await MemberChapterSubscriptions.HasSubscriptionRecord(memberId, chapterSubscriptionId))
+            {
+                return true;
+            }
+
+            await Task.Delay(2000);
+        }
+
+        return await MemberChapterSubscriptions.HasSubscriptionRecord(memberId, chapterSubscriptionId);
+    }
+
+    /* The slowest step in the flow, and the one furthest from the click: the settlement is read on a job
+       scheduled for the provider's own settlement delay after the purchase webhook, and the transfer is made
+       from what it read. CompletedUtc is what says the whole of that finished. */
+    private static async Task<TestPaymentTransfer?> PollForTransfer(Guid memberId, Guid chapterId)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(120);
+        while (DateTime.UtcNow < deadline)
+        {
+            var transfer = await Payments.GetTransfer(memberId, chapterId);
+            if (transfer?.CompletedUtc != null)
+            {
+                return transfer;
+            }
+
+            await Task.Delay(2000);
+        }
+
+        return await Payments.GetTransfer(memberId, chapterId);
+    }
     private async Task<(TestGroup Group, Guid SubscriptionId, Guid CurrencyId)> ArrangePurchasableSubscription()
     {
         // A purchase needs the webhook tunnel up and a real onboarded connected account.
@@ -183,39 +218,4 @@ public class ChapterSubscriptionPurchaseTests : DefaultPageTest
         return (group, subscriptionId, currencyId);
     }
 
-    private static async Task<bool> PollForPurchaseRecord(Guid memberId, Guid chapterSubscriptionId)
-    {
-        var deadline = DateTime.UtcNow.AddSeconds(90);
-        while (DateTime.UtcNow < deadline)
-        {
-            if (await MemberChapterSubscriptions.HasSubscriptionRecord(memberId, chapterSubscriptionId))
-            {
-                return true;
-            }
-
-            await Task.Delay(2000);
-        }
-
-        return await MemberChapterSubscriptions.HasSubscriptionRecord(memberId, chapterSubscriptionId);
-    }
-
-    /* The slowest step in the flow, and the one furthest from the click: the settlement is read on a job
-       scheduled for the provider's own settlement delay after the purchase webhook, and the transfer is made
-       from what it read. CompletedUtc is what says the whole of that finished. */
-    private static async Task<TestPaymentTransfer?> PollForTransfer(Guid memberId, Guid chapterId)
-    {
-        var deadline = DateTime.UtcNow.AddSeconds(120);
-        while (DateTime.UtcNow < deadline)
-        {
-            var transfer = await Payments.GetTransfer(memberId, chapterId);
-            if (transfer?.CompletedUtc != null)
-            {
-                return transfer;
-            }
-
-            await Task.Delay(2000);
-        }
-
-        return await Payments.GetTransfer(memberId, chapterId);
-    }
 }

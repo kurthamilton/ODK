@@ -33,6 +33,7 @@ public interface IUnitOfWork
     IChapterSubscriptionRepository ChapterSubscriptionRepository { get; }
     IChapterTextsRepository ChapterTextsRepository { get; }
     IChapterTopicRepository ChapterTopicRepository { get; }
+    IChapterVenueRepository ChapterVenueRepository { get; }
     IChecklistItemRepository ChecklistItemRepository { get; }
     ICountryRepository CountryRepository { get; }
     ICurrencyRepository CurrencyRepository { get; }

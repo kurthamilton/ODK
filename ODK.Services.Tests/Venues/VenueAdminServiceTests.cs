@@ -57,6 +57,23 @@ public static class VenueAdminServiceTests
     }
 
     [Test]
+    public static async Task CreateVenue_LinksTheVenueToTheChapter()
+    {
+        // Arrange
+        var (context, currentMember, chapter) = CreateChapterWithOwner();
+        var (service, request) = CreateService(context, currentMember, chapter);
+
+        // Act
+        var result = await service.CreateVenue(request, CreateModel("The Oak"));
+
+        // Assert
+        result.Success.Should().BeTrue();
+        var venue = SingleVenue(context, chapter);
+        context.Set<ChapterVenue>()
+            .Should().ContainSingle(x => x.ChapterId == chapter.Id && x.VenueId == venue.Id);
+    }
+
+    [Test]
     public static async Task CreateVenue_NameHasStrayWhitespace_StoresItNormalised()
     {
         // Arrange

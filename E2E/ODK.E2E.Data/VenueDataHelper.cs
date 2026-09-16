@@ -15,9 +15,10 @@ public class VenueDataHelper : DataHelperBase
     {
         const string sql =
             """
-            SELECT TOP 1 Id
-            FROM Venues
-            WHERE ChapterId = @chapterId AND Name = @name AND ArchivedUtc IS NULL
+            SELECT TOP 1 v.Id
+            FROM Venues v
+            INNER JOIN ChapterVenues cv ON cv.VenueId = v.Id
+            WHERE cv.ChapterId = @chapterId AND v.Name = @name AND v.ArchivedUtc IS NULL
             """;
 
         await using var builder = Builder(sql)
@@ -35,9 +36,10 @@ public class VenueDataHelper : DataHelperBase
     {
         const string sql =
             """
-            SELECT TOP 1 Slug
-            FROM Venues
-            WHERE ChapterId = @chapterId AND Name = @name AND ArchivedUtc IS NULL
+            SELECT TOP 1 v.Slug
+            FROM Venues v
+            INNER JOIN ChapterVenues cv ON cv.VenueId = v.Id
+            WHERE cv.ChapterId = @chapterId AND v.Name = @name AND v.ArchivedUtc IS NULL
             """;
 
         await using var builder = Builder(sql)
