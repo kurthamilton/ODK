@@ -1,4 +1,12 @@
-﻿namespace ODK.Data.Core.Repositories;
+﻿using ODK.Data.Core.QueryBuilders;
+
+namespace ODK.Data.Core;
+
+public interface IWriteRepository<T, TQueryBuilder> : IWriteRepository<T>
+{
+    TQueryBuilder Query();
+    TQueryBuilder Query(Func<TQueryBuilder, TQueryBuilder> filter);
+}
 
 public interface IWriteRepository<T>
 {

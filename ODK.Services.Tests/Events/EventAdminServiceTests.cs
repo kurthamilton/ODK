@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
+using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Data.Core.Events;
 using ODK.Services.Authorization;
@@ -91,6 +93,39 @@ public static class EventAdminServiceTests
         var eventEmail = context.Set<EventEmail>().Single();
         var expectedScheduledUtc = DateTime.ParseExact(expectedScheduledEmailDate, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
         eventEmail.ScheduledUtc.Should().Be(expectedScheduledUtc);
+    }
+
+    [Test]
+    public static async Task PublishEvent_PublishesAndNotifiesWithTheEventsVenue()
+    {
+        // Arrange - the venue is reached through ChapterVenues, so the lookup has to use the event's
+        // VenueId and not its own id.
+        var context = CreateMockOdkContext();
+
+        var currentMember = context.CreateMember();
+        var chapter = context.CreateChapter(adminMembers: [currentMember], members: [currentMember]);
+        var venue = context.CreateVenue(chapter, "The Oak", "the-oak");
+        var @event = context.CreateEvent(chapter, venue);
+        @event.PublishedUtc = null;
+
+        var notificationService = new Mock<INotificationService>();
+        var service = CreateService(context, notificationService.Object);
+
+        var request = CreateMockMemberChapterAdminServiceRequest(
+            securable: ChapterAdminSecurable.Events,
+            currentMember: currentMember,
+            chapter: chapter);
+
+        // Act
+        await service.PublishEvent(request, @event.Id);
+
+        // Assert
+        context.Set<Event>().Single(x => x.Id == @event.Id).PublishedUtc.Should().NotBeNull();
+        notificationService.Verify(x => x.AddNewEventNotifications(
+            It.Is<Event>(e => e.Id == @event.Id),
+            It.Is<Venue>(v => v.Id == venue.Id),
+            It.IsAny<IReadOnlyCollection<Member>>(),
+            It.IsAny<IReadOnlyCollection<MemberNotificationSettings>>()));
     }
 
     [Test]
@@ -333,12 +368,13 @@ public static class EventAdminServiceTests
     private static IUnitOfWork CreateMockUnitOfWork(MockOdkContext? context = null) => MockUnitOfWorkFactory.Create(context);
 
     private static EventAdminService CreateService(
-        MockOdkContext context)
+        MockOdkContext context,
+        INotificationService? notificationService = null)
     {
         return new EventAdminService(
             unitOfWork: CreateMockUnitOfWork(context),
             Mock.Of<IAuthorizationService>(),
-            Mock.Of<INotificationService>(),
+            notificationService ?? Mock.Of<INotificationService>(),
             Mock.Of<IHtmlValidator>(x =>
                 x.Validate(It.IsAny<string?>(), It.IsAny<HtmlValidatorOptions>())
                     == ServiceResult.Successful()),

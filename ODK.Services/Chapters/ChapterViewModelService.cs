@@ -1096,7 +1096,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var eventResponseViewModels = eventDtos
             .Where(x =>
                 _authorizationService.CanViewEvent(x.Event, currentMember, memberSubscription, membershipSettings, privacySettings) &&
-                _authorizationService.CanViewVenue(x.Venue, currentMember, memberSubscription, membershipSettings, privacySettings))
+                _authorizationService.CanViewVenue(x.Event.ChapterId, currentMember, memberSubscription, membershipSettings, privacySettings))
             .Select(x => new EventResponseViewModel(
                 @event: x.Event,
                 venue: x.Venue,
@@ -1243,7 +1243,7 @@ public class ChapterViewModelService : IChapterViewModelService
             memberResponseDictionary.TryGetValue(@event.Id, out var memberResponse);
 
             var canViewVenue = _authorizationService.CanViewVenue(
-                venue, currentMember, memberSubscription, membershipSettings, privacySettings);
+                @event.ChapterId, currentMember, memberSubscription, membershipSettings, privacySettings);
             viewModels.Add(new GroupPageListEventViewModel
             {
                 Event = @event,

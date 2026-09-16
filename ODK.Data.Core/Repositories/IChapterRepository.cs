@@ -6,7 +6,7 @@ using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.Core.Repositories;
 
-public interface IChapterRepository : IWriteRepository<Chapter>
+public interface IChapterRepository : IWriteRepository<Chapter, IChapterQueryBuilder>
 {
     IDeferredQueryMultiple<Chapter> GetAll(PlatformType platform, bool includeUnpublished);
 
@@ -47,7 +47,7 @@ public interface IChapterRepository : IWriteRepository<Chapter>
     /// a lookup by an id that already names the chapter. Prefer an overload that names a platform wherever
     /// the answer should depend on one.
     /// </summary>
-    IChapterQueryBuilder Query();
+    new IChapterQueryBuilder Query();
 
     /// <summary>The chapters <paramref name="platform"/> shows, published only.</summary>
     IChapterQueryBuilder Query(PlatformType platform);

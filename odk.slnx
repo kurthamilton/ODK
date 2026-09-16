@@ -49,6 +49,7 @@
     <File Path="Scripts/ngrok/odk.bat" />
   </Folder>
   <Folder Name="/Solution Items/npm/">
+    <File Path="Scripts/npm/audit.bat" />
     <File Path="Scripts/npm/outdated.bat" />
     <File Path="Scripts/npm/update.bat" />
   </Folder>

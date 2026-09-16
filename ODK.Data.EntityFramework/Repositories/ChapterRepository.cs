@@ -9,7 +9,7 @@ using ODK.Data.EntityFramework.QueryBuilders;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepository
+public class ChapterRepository : WriteRepositoryBase<Chapter, IChapterQueryBuilder>, IChapterRepository
 {
     public ChapterRepository(DbContext context)
         : base(context)
@@ -91,7 +91,7 @@ public class ChapterRepository : WriteRepositoryBase<Chapter>, IChapterRepositor
             .ForName(name)
             .Any();
 
-    public IChapterQueryBuilder Query()
+    public override IChapterQueryBuilder Query()
         => CreateQueryBuilder<IChapterQueryBuilder>(context
             => new ChapterQueryBuilder(context, context.Set<Chapter>()));
 

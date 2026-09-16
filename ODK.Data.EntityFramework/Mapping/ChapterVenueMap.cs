@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
 using ODK.Core.Venues;
+using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -16,12 +17,18 @@ public class ChapterVenueMap : IEntityTypeConfiguration<ChapterVenue>
            is served by the index on the VenueId foreign key. */
         builder.HasKey(x => new { x.ChapterId, x.VenueId });
 
+        builder.Property(x => x.ArchivedUtc)
+            .HasConversion<NullableUtcDateTimeConverter>();
+
+        builder.Property(x => x.Name)
+            .HasMaxLength(Venue.NameMaxLength);
+
         builder.HasOne<Chapter>()
             .WithMany()
             .HasForeignKey(x => x.ChapterId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne<Venue>()
+        builder.HasOne(x => x.Venue)
             .WithMany()
             .HasForeignKey(x => x.VenueId)
             .OnDelete(DeleteBehavior.Cascade);

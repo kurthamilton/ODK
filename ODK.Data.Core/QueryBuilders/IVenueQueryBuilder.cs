@@ -5,9 +5,9 @@ namespace ODK.Data.Core.QueryBuilders;
 
 public interface IVenueQueryBuilder : IDatabaseEntityQueryBuilder<Venue, IVenueQueryBuilder>
 {
-    IVenueQueryBuilder Archived(bool value);
-
     IVenueQueryBuilder ForChapter(Guid chapterId);
+
+    IVenueQueryBuilder SlugStartingWith(string prefix);
 
     IQueryBuilder<VenueWithEventSummaryDto> WithEventSummary();
 }

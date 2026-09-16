@@ -1,8 +1,24 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ODK.Data.Core;
 using ODK.Data.Core.QueryBuilders;
-using ODK.Data.Core.Repositories;
+using ODK.Data.EntityFramework.QueryBuilders;
 
 namespace ODK.Data.EntityFramework;
+
+public abstract class WriteRepositoryBase<T, TQueryBuilder> : WriteRepositoryBase<T>, IWriteRepository<T, TQueryBuilder>
+    where T : class
+    where TQueryBuilder : IQueryBuilder<T>
+{
+    protected WriteRepositoryBase(DbContext context)
+        : base(context)
+    {
+    }
+
+    public abstract TQueryBuilder Query();
+
+    public virtual TQueryBuilder Query(Func<TQueryBuilder, TQueryBuilder> filter)
+        => filter(Query());
+}
 
 public abstract class WriteRepositoryBase<T> : RepositoryBase, IWriteRepository<T>
     where T : class
@@ -40,9 +56,9 @@ public abstract class WriteRepositoryBase<T> : RepositoryBase, IWriteRepository<
         }
     }
 
-    protected TBuilder CreateQueryBuilder<TBuilder>(Func<DbContext, TBuilder> factory)
-        where TBuilder : IQueryBuilder<T>
-        => CreateQueryBuilder<TBuilder, T>(factory);
+    protected TQueryBuilder CreateQueryBuilder<TQueryBuilder>(Func<DbContext, TQueryBuilder> factory)
+        where TQueryBuilder : IQueryBuilder<T>
+        => CreateQueryBuilder<TQueryBuilder, T>(factory);
 
     protected virtual IQueryable<T> Set() => Set<T>();
 }

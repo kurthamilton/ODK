@@ -80,8 +80,8 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
             .Page(1, pageSize)
             .GetAll();
 
-    public override IEventQueryBuilder Query() => CreateQueryBuilder<IEventQueryBuilder, Event>(
-        context => new EventQueryBuilder(context));
+    public override IEventQueryBuilder Query()
+        => CreateQueryBuilder<IEventQueryBuilder, Event>(context => new EventQueryBuilder(context));
 
     public IDeferredQuery<bool> ShortcodeExists(string shortcode)
         => Query()

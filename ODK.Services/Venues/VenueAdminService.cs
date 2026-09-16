@@ -2,6 +2,7 @@
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 using ODK.Services.Venues.Models;
 using ODK.Services.Venues.ViewModels;
 
@@ -21,19 +22,18 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     {
         var chapter = request.Chapter;
 
-        var venue = await GetChapterAdminRestrictedContent(
+        var chapterVenue = await GetChapterAdminRestrictedContent(
             request,
-            x => x.VenueRepository.GetById(venueId));
+            x => x.ChapterVenueRepository.Query().ForChapter(chapter.Id).ForVenue(venueId).GetSingle());
 
-        OdkAssertions.BelongsToChapter(venue, chapter.Id);
-
-        if (venue.ArchivedUtc != null)
+        if (chapterVenue.ArchivedUtc != null)
         {
             return ServiceResult.Successful();
         }
 
-        venue.ArchivedUtc = DateTime.UtcNow;
-        _unitOfWork.VenueRepository.Update(venue);
+        chapterVenue.ArchivedUtc = DateTime.UtcNow;
+        _unitOfWork.ChapterVenueRepository.Update(chapterVenue);
+
         await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
@@ -48,10 +48,12 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         // "The  Oak" through as a second venue alongside "Oak" / "The Oak". Both would pass the unique
         // index on (ChapterId, Name) as distinct names, then collide on slug.
         var name = model.Name.NormaliseWhitespace();
+        var slugBase = SlugBase(name);
 
-        var chapterVenues = await GetChapterAdminRestrictedContent(
+        var (chapterVenues, slugCandidates) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.VenueRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterVenueRepository.Query(x => x.ForChapter(chapter.Id)).ToVenue().GetAll(),
+            x => x.VenueRepository.Query(q => q.SlugStartingWith(slugBase)).GetAll());
 
         var existing = FindByName(chapterVenues, name);
 
@@ -61,7 +63,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             ChapterId = chapter.Id,
             MapQuery = model.LocationName,
             Name = name,
-            Slug = CreateSlug(name, chapterVenues, venueId: null)
+            Slug = CreateSlug(slugBase, slugCandidates, venueId: null)
         });
 
         var location = _unitOfWork.VenueLocationRepository.Add(new VenueLocation
@@ -81,7 +83,8 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         _unitOfWork.ChapterVenueRepository.Add(new ChapterVenue
         {
             ChapterId = chapter.Id,
-            VenueId = venue.Id
+            VenueId = venue.Id,
+            Venue = venue
         });
 
         await _unitOfWork.SaveChanges();
@@ -93,19 +96,19 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     {
         var chapter = request.Chapter;
 
-        var (venue, hasEvents) = await GetChapterAdminRestrictedContent(
+        var (chapterVenue, hasEvents) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.VenueRepository.GetById(venueId),
+            x => x.ChapterVenueRepository.Query(q => q.ForVenue(venueId).ForChapter(chapter.Id)).GetSingle(),
             x => x.EventRepository.Query().ForVenue(venueId).Any());
 
-        OdkAssertions.BelongsToChapter(venue, chapter.Id);
-
+        // Every chapter's events, not just this one's: the venue itself is about to go.
         if (hasEvents)
         {
             return ServiceResult.Failure("Cannot delete a venue with events");
         }
 
-        _unitOfWork.VenueRepository.Delete(venue);
+        // ChapterVenues and VenueLocations both cascade from Venues, so this is the whole delete.
+        _unitOfWork.VenueRepository.Delete(chapterVenue.Venue);
         await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
@@ -113,15 +116,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
     public async Task<Venue> GetVenue(
         IMemberChapterAdminServiceRequest request, Guid venueId)
-    {
-        var chapter = request.Chapter;
-
-        var venue = await GetChapterAdminRestrictedContent(
-            request,
-            x => x.VenueRepository.GetById(venueId));
-
-        return OdkAssertions.BelongsToChapter(venue, chapter.Id);
-    }
+        => await GetChapterVenue(request, venueId);
 
     public async Task<VenueEventsAdminPageViewModel> GetVenueEventsViewModel(
         IMemberChapterAdminServiceRequest request, Guid venueId)
@@ -130,10 +125,10 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
         var (venue, events) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.VenueRepository.GetById(venueId),
+            x => ChapterVenueQuery(x, chapter.Id, venueId),
             x => x.EventRepository.GetByVenueId(venueId));
 
-        OdkAssertions.BelongsToChapter(venue, chapter.Id);
+        OdkAssertions.Exists(venue);
 
         return new VenueEventsAdminPageViewModel
         {
@@ -151,11 +146,12 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
         var (venues, otherVenueCount) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.VenueRepository
+            x => x.ChapterVenueRepository
                 .Query(x => x.ForChapter(chapter.Id).Archived(archived))
+                .ToVenue()
                 .WithEventSummary()
                 .GetAll(),
-            x => x.VenueRepository
+            x => x.ChapterVenueRepository
                 .Query(x => x.ForChapter(chapter.Id).Archived(!archived))
                 .Count());
 
@@ -176,10 +172,10 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
         var (venue, location) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.VenueRepository.GetById(venueId),
+            x => ChapterVenueQuery(x, chapter.Id, venueId),
             x => x.VenueLocationRepository.GetByVenueId(venueId));
 
-        OdkAssertions.BelongsToChapter(venue, chapter.Id);
+        OdkAssertions.Exists(venue);
 
         return new VenueAdminPageViewModel
         {
@@ -194,19 +190,17 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     {
         var chapter = request.Chapter;
 
-        var venue = await GetChapterAdminRestrictedContent(
+        var chapterVenue = await GetChapterAdminRestrictedContent(
             request,
-            x => x.VenueRepository.GetById(venueId));
+            x => x.ChapterVenueRepository.Query().ForChapter(chapter.Id).ForVenue(venueId).GetSingle());
 
-        OdkAssertions.BelongsToChapter(venue, chapter.Id);
-
-        if (venue.ArchivedUtc == null)
+        if (chapterVenue.ArchivedUtc == null)
         {
             return ServiceResult.Successful();
         }
 
-        venue.ArchivedUtc = null;
-        _unitOfWork.VenueRepository.Update(venue);
+        chapterVenue.ArchivedUtc = null;
+        _unitOfWork.ChapterVenueRepository.Update(chapterVenue);
         await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
@@ -219,16 +213,17 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
         // Normalised before the duplicate lookup - see CreateVenue.
         var name = model.Name.NormaliseWhitespace();
+        var slugBase = SlugBase(name);
 
-        var (location, chapterVenues) = await GetChapterAdminRestrictedContent(
+        var (location, chapterVenues, slugCandidates) = await GetChapterAdminRestrictedContent(
             request,
             x => x.VenueLocationRepository.GetByVenueId(id),
-            x => x.VenueRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterVenueRepository.Query(x => x.ForChapter(chapter.Id)).ToVenue().GetAll(),
+            x => x.VenueRepository.Query(q => q.SlugStartingWith(slugBase)).GetAll());
 
-        // chapterVenues is already scoped to the chapter, so a miss covers both "no such venue" and
-        // "not this chapter's venue"; BelongsToChapter asserts existence first, so either is a 404.
-        var venue = OdkAssertions.BelongsToChapter(
-            chapterVenues.FirstOrDefault(x => x.Id == id), chapter.Id);
+        // chapterVenues holds the venues linked to this chapter, so a miss covers both "no such venue"
+        // and "not one of this chapter's venues"; either is a 404.
+        var venue = OdkAssertions.Exists(chapterVenues.FirstOrDefault(x => x.Id == id));
 
         var existing = FindByName(chapterVenues, name);
 
@@ -248,7 +243,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             return validationResult;
         }
 
-        venue.Slug = CreateSlug(venue.Name, chapterVenues, venue.Id);
+        venue.Slug = CreateSlug(slugBase, slugCandidates, venue.Id);
 
         _unitOfWork.VenueRepository.Update(venue);
 
@@ -268,27 +263,39 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     }
 
     /// <summary>
-    /// A slug unique within the chapter. <paramref name="venueId"/> is excluded from the taken set so
-    /// that renaming a venue to another form of its own name (e.g. "The Oak" to "The Oak!") keeps its
-    /// slug rather than colliding with itself and versioning to "the-oak-2".
+    /// A venue of this chapter's, by id. Membership is a row in ChapterVenues rather than a column on
+    /// the venue, so the query carries it: a venue no chapter link joins to this one is simply a miss,
+    /// which is the 404 that asserting on a loaded venue used to produce.
+    /// </summary>
+    private static IDeferredQuerySingleOrDefault<Venue> ChapterVenueQuery(
+        IUnitOfWork unitOfWork, Guid chapterId, Guid venueId)
+        => unitOfWork.VenueRepository
+            .Query(x => x.ById(venueId).ForChapter(chapterId))
+            .GetSingleOrDefault();
+
+    /// <summary>
+    /// A slug unique across the site. <paramref name="candidates"/> is every venue whose slug starts
+    /// with <paramref name="slugBase"/>, which is the whole set a version of it could collide with.
+    /// <paramref name="venueId"/> is excluded from it so that renaming a venue to another form of its
+    /// own name (e.g. "The Oak" to "The Oak!") keeps its slug rather than colliding with itself and
+    /// versioning to "the-oak-2".
     /// </summary>
     /// <remarks>
     /// Compared case-insensitively to match SQL Server's default collation, so the slugs stay unique
     /// under the unique index this is building towards. Archived venues keep their slugs and are
     /// counted, so restoring one can never introduce a duplicate.
     /// </remarks>
-    private static string CreateSlug(string name, IReadOnlyCollection<Venue> chapterVenues, Guid? venueId)
+    private static string CreateSlug(
+        string slugBase, IReadOnlyCollection<Venue> candidates, Guid? venueId)
     {
-        var taken = chapterVenues
+        var taken = candidates
             .Where(x => x.Id != venueId)
             .Select(x => x.Slug)
             .Where(x => !string.IsNullOrEmpty(x))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        // A name with no letters or digits at all slugs to nothing, and the column is required, so it
-        // falls back to a generic slug that the versioning then keeps unique.
-        return UrlUtils.SlugifyUnique(name, taken, Venue.SlugMaxLength)
-            ?? UrlUtils.SlugifyUnique(Venue.SlugFallback, taken, Venue.SlugMaxLength)!;
+        // slugBase is already a slug and never empty, so this always produces one.
+        return UrlUtils.SlugifyUnique(slugBase, taken, Venue.SlugMaxLength)!;
     }
 
     /// <summary>
@@ -300,6 +307,24 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     private static Venue? FindByName(IReadOnlyCollection<Venue> chapterVenues, string name)
         => chapterVenues.FirstOrDefault(
             x => string.Equals(x.Name.NormaliseWhitespace(), name, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// The slug a venue of that name takes before versioning, and so the prefix that finds every slug
+    /// it could collide with. A name with no letters or digits at all slugs to nothing, and the column
+    /// is required, so it falls back to a generic slug that the versioning then keeps unique.
+    /// </summary>
+    private static string SlugBase(string name)
+        => UrlUtils.SlugBase(name, Venue.SlugMaxLength) ?? Venue.SlugFallback;
+
+    private async Task<Venue> GetChapterVenue(
+        IMemberChapterAdminServiceRequest request, Guid venueId)
+    {
+        var venue = await GetChapterAdminRestrictedContent(
+            request,
+            x => ChapterVenueQuery(x, request.Chapter.Id, venueId));
+
+        return OdkAssertions.Exists(venue);
+    }
 
     private ServiceResult ValidateVenue(Venue venue, Venue? existing, VenueLocation location)
     {

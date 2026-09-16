@@ -3,7 +3,6 @@ using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Subscriptions;
-using ODK.Core.Venues;
 
 namespace ODK.Services.Authorization;
 
@@ -24,7 +23,7 @@ public interface IAuthorizationService
         ChapterPrivacySettings? privacySettings);
 
     bool CanViewVenue(
-        Venue venue,
+        Guid chapterId,
         Member? member,
         MemberChapterSubscription? subscription,
         ChapterMembershipSettings? membershipSettings,

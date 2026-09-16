@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Venues;
-using ODK.Data.Core.Deferred;
 using ODK.Data.Core.QueryBuilders;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.QueryBuilders;
@@ -13,11 +12,6 @@ public class VenueRepository : ReadWriteRepositoryBase<Venue, IVenueQueryBuilder
         : base(context)
     {
     }
-
-    public IDeferredQueryMultiple<Venue> GetByChapterId(Guid chapterId)
-        => Query()
-            .ForChapter(chapterId)
-            .GetAll();
 
     public override IVenueQueryBuilder Query()
         => CreateQueryBuilder(context => new VenueQueryBuilder(context));
