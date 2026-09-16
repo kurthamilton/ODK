@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core;
+using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.QueryBuilders;
-using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 using ODK.Data.EntityFramework.QueryBuilders;
 
@@ -36,9 +36,10 @@ public abstract class ReadWriteRepositoryBase<T> : ReadWriteRepositoryBase<T, ID
             context => new DatabaseEntityQueryBuilder<T>(context));
 }
 
-public abstract class ReadWriteRepositoryBase<T, TBuilder> : WriteRepositoryBase<T>, IReadWriteRepository<T, TBuilder>
+public abstract class ReadWriteRepositoryBase<T, TQueryBuilder>
+    : WriteRepositoryBase<T, TQueryBuilder>, IReadWriteRepository<T, TQueryBuilder>
     where T : class, IDatabaseEntity
-    where TBuilder : IDatabaseEntityQueryBuilder<T, TBuilder>
+    where TQueryBuilder : IDatabaseEntityQueryBuilder<T, TQueryBuilder>
 {
     protected ReadWriteRepositoryBase(DbContext context)
         : base(context)
@@ -77,10 +78,6 @@ public abstract class ReadWriteRepositoryBase<T, TBuilder> : WriteRepositoryBase
             .ByIds(ids)
             .GetAll();
 
-    public abstract TBuilder Query();
-
-    public TBuilder Query(Func<TBuilder, TBuilder> filter) => filter(Query());
-
     public void Upsert(T entity)
     {
         if (entity.Id == default)
@@ -92,9 +89,6 @@ public abstract class ReadWriteRepositoryBase<T, TBuilder> : WriteRepositoryBase
             Update(entity);
         }
     }
-
-    protected TBuilder CreateQueryBuilder(Func<DbContext, TBuilder> factory)
-        => CreateQueryBuilder<TBuilder, T>(factory);
 
     /* Taken from the generator's static entry point: a repository is constructed
        by the unit of work per property, so there is nothing here to inject through. It is the

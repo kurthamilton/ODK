@@ -21,15 +21,18 @@ public class VenueQueryBuilder
 
     protected override IVenueQueryBuilder Builder => this;
 
-    public IVenueQueryBuilder Archived(bool value)
+    public IVenueQueryBuilder ForChapter(Guid chapterId)
     {
-        Query = Query.Where(x => x.ArchivedUtc != null == value);
+        Query = Query.Where(
+            x => Set<ChapterVenue>().Any(cv => cv.VenueId == x.Id && cv.ChapterId == chapterId));
         return this;
     }
 
-    public IVenueQueryBuilder ForChapter(Guid chapterId)
+    /* Matched under the database's collation, which is case-insensitive, so the candidates this
+       collects are the same set CreateSlug then compares case-insensitively. */
+    public IVenueQueryBuilder SlugStartingWith(string prefix)
     {
-        Query = Query.Where(x => x.ChapterId == chapterId);
+        Query = Query.Where(x => x.Slug.StartsWith(prefix));
         return this;
     }
 

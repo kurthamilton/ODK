@@ -480,7 +480,7 @@ internal class MockOdkContext : OdkContext
         });
     }
 
-    internal Venue CreateVenue(Chapter chapter, string name = "", string slug = "")
+    internal Venue CreateVenue(Chapter chapter, string name = "", string slug = "", bool archived = false)
     {
         var venue = Create(new Venue
         {
@@ -492,7 +492,9 @@ internal class MockOdkContext : OdkContext
 
         Create(new ChapterVenue
         {
+            ArchivedUtc = archived ? DateTime.UtcNow : null,
             ChapterId = chapter.Id,
+            Venue = venue,
             VenueId = venue.Id
         });
 

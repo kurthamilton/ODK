@@ -355,7 +355,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             request,
             x => x.MemberRepository.GetById(memberId),
             x => x.EventRepository.GetByChapterId(chapter.Id),
-            x => x.VenueRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterVenueRepository.Query(x => x.ForChapter(chapter.Id)).ToVenue().GetAll(),
             x => x.EventResponseRepository.GetAllByMemberId(memberId, chapter.Id),
             x => x.EventInviteRepository.GetAllByMemberId(memberId, chapter.Id));
 

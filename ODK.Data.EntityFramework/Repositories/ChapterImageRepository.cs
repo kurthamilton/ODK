@@ -44,7 +44,5 @@ public class ChapterImageRepository : WriteRepositoryBase<ChapterImage>, IChapte
             .DeferredSingleOrDefault();
 
     public void Upsert(ChapterImage entity, Guid chapterId)
-    {
-        _chapterEntityRepository.Upsert(entity, chapterId);
-    }
+        => _chapterEntityRepository.Upsert(entity, chapterId);
 }

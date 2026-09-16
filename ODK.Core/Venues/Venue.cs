@@ -11,6 +11,13 @@ public class Venue : IVersioned, IDatabaseEntity, IChapterEntity
     public const int SlugMaxLength = 255;
 
     /// <summary>
+    /// Matches the nvarchar(255) the database already uses for Venues.Name. Shared with
+    /// <see cref="ChapterVenue.Name"/>, which holds a chapter's own name for the same venue and has to
+    /// accept anything this one does.
+    /// </summary>
+    public const int NameMaxLength = 255;
+
+    /// <summary>
     /// Used when a name has nothing sluggable at all (no letters or digits in any script). The slug is
     /// required, so there has to be something to fall back to; the usual version suffix keeps it unique
     /// within the chapter.

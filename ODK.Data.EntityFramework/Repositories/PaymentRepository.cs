@@ -13,5 +13,6 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment, IPaymentQueryB
     {
     }
 
-    public override IPaymentQueryBuilder Query() => CreateQueryBuilder(context => new PaymentQueryBuilder(context));
+    public override IPaymentQueryBuilder Query()
+        => CreateQueryBuilder(context => new PaymentQueryBuilder(context));
 }

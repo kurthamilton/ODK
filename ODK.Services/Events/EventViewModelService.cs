@@ -138,7 +138,7 @@ public class EventViewModelService : IEventViewModelService
             });
 
         var canViewVenue = _authorizationService.CanViewVenue(
-            venue, currentMember, memberSubscription, membershipSettings, privacySettings);
+            @event.ChapterId, currentMember, memberSubscription, membershipSettings, privacySettings);
 
         return new EventCheckoutPageViewModel
         {
@@ -222,7 +222,7 @@ public class EventViewModelService : IEventViewModelService
             throw new OdkNotFoundException($"Event not found: {shortcode}");
         }
 
-        var canViewVenue = _authorizationService.CanViewVenue(venue, currentMember, memberSubscription, membershipSettings, privacySettings);
+        var canViewVenue = _authorizationService.CanViewVenue(@event.ChapterId, currentMember, memberSubscription, membershipSettings, privacySettings);
         var canRespond = _authorizationService.CanRespondToEvent(@event, currentMember, memberSubscription, membershipSettings, privacySettings);
 
         IReadOnlyCollection<MemberWithAvatarDto> commentMembers = [];
@@ -395,7 +395,7 @@ public class EventViewModelService : IEventViewModelService
             }
 
             var canViewVenue = _authorizationService
-                .CanViewVenue(venue, currentMember, memberSubscription, membershipSettings, chapterPrivacySettings);
+                .CanViewVenue(@event.ChapterId, currentMember, memberSubscription, membershipSettings, chapterPrivacySettings);
 
             var invited = invitedEventIds.Contains(@event.Id);
             memberResponseLookup.TryGetValue(@event.Id, out EventResponseType responseType);

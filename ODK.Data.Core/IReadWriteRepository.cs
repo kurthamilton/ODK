@@ -2,26 +2,22 @@
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.QueryBuilders;
 
-namespace ODK.Data.Core.Repositories;
+namespace ODK.Data.Core;
 
 public interface IReadWriteRepository<T> : IReadWriteRepository<T, IDatabaseEntityQueryBuilder<T>>
     where T : IDatabaseEntity
 {
 }
 
-public interface IReadWriteRepository<T, TBuilder> : IWriteRepository<T>
+public interface IReadWriteRepository<T, TQueryBuilder> : IWriteRepository<T, TQueryBuilder>
     where T : IDatabaseEntity
-    where TBuilder : IDatabaseEntityQueryBuilder<T, TBuilder>
+    where TQueryBuilder : IDatabaseEntityQueryBuilder<T, TQueryBuilder>
 {
     IDeferredQuerySingle<T> GetById(Guid id);
 
     IDeferredQuerySingleOrDefault<T> GetByIdOrDefault(Guid? id);
 
     IDeferredQueryMultiple<T> GetByIds(IReadOnlyCollection<Guid> ids);
-
-    TBuilder Query();
-
-    TBuilder Query(Func<TBuilder, TBuilder> filter);
 
     void Upsert(T entity);
 }

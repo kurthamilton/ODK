@@ -12,15 +12,15 @@ public class QueryBuilder<T> : IQueryBuilder<T>
 {
     private readonly DbContext _context;
 
-    protected QueryBuilder(DbContext context)
-        : this(context, context.Set<T>())
-    {
-    }
-
-    protected QueryBuilder(DbContext context, IQueryable<T> query)
+    internal QueryBuilder(DbContext context, IQueryable<T> query)
     {
         _context = context;
         Query = query;
+    }
+
+    protected QueryBuilder(DbContext context)
+        : this(context, context.Set<T>())
+    {
     }
 
     protected IQueryable<T> Query { get; set; }

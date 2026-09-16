@@ -3,7 +3,6 @@ using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Subscriptions;
-using ODK.Core.Venues;
 
 namespace ODK.Services.Authorization;
 
@@ -38,14 +37,16 @@ public class AuthorizationService : IAuthorizationService
         return memberVisibility.CanView(chapterVisibility);
     }
 
+    /* Takes the chapter whose page is being rendered rather than the venue, which is site-level and
+       can be used by several chapters - there is no one chapter to read off it. */
     public bool CanViewVenue(
-        Venue venue,
+        Guid chapterId,
         Member? member,
         MemberChapterSubscription? subscription,
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings)
     {
-        var memberVisibility = GetMemberVisibilityType(venue.ChapterId, member, subscription, membershipSettings);
+        var memberVisibility = GetMemberVisibilityType(chapterId, member, subscription, membershipSettings);
         var chapterVisibility = privacySettings.Visibility(ChapterFeatureType.Venues);
         return memberVisibility.CanView(chapterVisibility);
     }

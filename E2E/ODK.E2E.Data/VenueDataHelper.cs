@@ -18,7 +18,7 @@ public class VenueDataHelper : DataHelperBase
             SELECT TOP 1 v.Id
             FROM Venues v
             INNER JOIN ChapterVenues cv ON cv.VenueId = v.Id
-            WHERE cv.ChapterId = @chapterId AND v.Name = @name AND v.ArchivedUtc IS NULL
+            WHERE cv.ChapterId = @chapterId AND v.Name = @name AND cv.ArchivedUtc IS NULL
             """;
 
         await using var builder = Builder(sql)
@@ -39,7 +39,7 @@ public class VenueDataHelper : DataHelperBase
             SELECT TOP 1 v.Slug
             FROM Venues v
             INNER JOIN ChapterVenues cv ON cv.VenueId = v.Id
-            WHERE cv.ChapterId = @chapterId AND v.Name = @name AND v.ArchivedUtc IS NULL
+            WHERE cv.ChapterId = @chapterId AND v.Name = @name AND cv.ArchivedUtc IS NULL
             """;
 
         await using var builder = Builder(sql)

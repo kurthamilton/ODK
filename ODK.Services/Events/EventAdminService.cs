@@ -86,7 +86,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.EventTickets),
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
-            x => x.VenueRepository.GetById(model.VenueId),
+            x => x.ChapterVenueRepository.Query(x => x.ForVenue(model.VenueId).ForChapter(chapter.Id))
+                .ToVenue()
+                .GetSingleOrDefault(),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetAllByChapterId(chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewEvent),
@@ -135,7 +137,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             @event.WaitlistDisabled = @event.Ticketed;
         }
 
-        var validationResult = ValidateEvent(@event, venue);
+        if (venue == null)
+        {
+            return ServiceResult.Failure("Venue not found");
+        }
+
+        var validationResult = ValidateEvent(@event);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -322,8 +329,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             currency,
             ownerSubscriptionFeatures) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.VenueRepository
+            x => x.ChapterVenueRepository
                 .Query(x => x.ForChapter(chapter.Id).Archived(false))
+                .ToVenue()
                 .GetAll(),
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id),
@@ -370,7 +378,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
             x => x.EventHostRepository.GetByEventId(eventId),
-            x => x.VenueRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterVenueRepository.Query(
+                x => x.ForChapter(chapter.Id)).ToVenue().GetAll());
 
         AssertMemberIsChapterAdmin(
             request,
@@ -447,7 +456,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             request,
             x => x.EventRepository.GetSummariesByChapterId(chapter.Id, filter.VenueSlug, fromUtc, toUtcExclusive, pageFilter),
             x => x.EventRepository.GetCountByChapterId(chapter.Id, filter.VenueSlug, fromUtc, toUtcExclusive),
-            x => x.VenueRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterVenueRepository.Query(x => x.ForChapter(chapter.Id)).ToVenue().GetAll());
 
         return new EventsAdminPageViewModel
         {
@@ -570,7 +579,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
 
         var (venue, members, notificationSettings) = await _unitOfWork.Run(
-            x => x.VenueRepository.GetById(@event.VenueId),
+            x => x.ChapterVenueRepository.Query(q => q.ForVenue(@event.VenueId)).ToVenue().GetSingle(),
             x => x.MemberRepository.GetAllByChapterId(@event.ChapterId),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(@event.ChapterId, NotificationType.NewEvent));
 
@@ -756,7 +765,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 .HasFeature(SiteFeatureType.ScheduledEventEmails),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
-            x => x.VenueRepository.GetById(@event.VenueId),
+            x => x.ChapterVenueRepository.Query(x => x.ForVenue(@event.VenueId)).ToVenue().GetSingle(),
             x => x.EventResponseRepository.GetByEventId(@event.Id),
             x => x.EventInviteRepository.GetByEventId(@event.Id),
             x => x.MemberRepository.GetByChapterId(@event.ChapterId),
@@ -833,7 +842,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             chapterAdminMembers,
             @event,
             hosts,
-            venue,
+            venueExists,
             currency,
             attendees
         ) = await _unitOfWork.Run(
@@ -843,7 +852,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.EventRepository.GetById(id),
             x => x.EventHostRepository.GetByEventId(id),
-            x => x.VenueRepository.GetById(model.VenueId),
+            x => x.ChapterVenueRepository.Query(q => q.ForVenue(model.VenueId).ForChapter(chapter.Id)).Any(),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
             x => x.EventResponseRepository.GetByEventId(id, EventResponseType.Yes));
 
@@ -907,7 +916,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             @event.TicketSettings = null;
         }
 
-        var validationResult = ValidateEvent(@event, venue);
+        if (!venueExists)
+        {
+            return ServiceResult.Failure("Venue not found");
+        }
+
+        var validationResult = ValidateEvent(@event);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -1155,9 +1169,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return nextEventDate + startTime;
     }
 
-    private static ServiceResult ValidateEvent(
-        Event @event,
-        Venue venue)
+    private static ServiceResult ValidateEvent(Event @event)
     {
         var messages = new List<string>();
 
@@ -1179,11 +1191,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         if (@event.RsvpDeadlineUtc >= @event.DateUtc)
         {
             messages.Add("RSVP Deadline must be before event date");
-        }
-
-        if (venue.ChapterId != @event.ChapterId)
-        {
-            messages.Add("Venue not found");
         }
 
         var ticketSettings = @event.TicketSettings;

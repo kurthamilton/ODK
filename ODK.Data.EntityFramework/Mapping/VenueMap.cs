@@ -23,7 +23,7 @@ public class VenueMap : IEntityTypeConfiguration<Venue>
             .HasMaxLength(255);
 
         builder.Property(x => x.Name)
-            .HasMaxLength(255);
+            .HasMaxLength(Venue.NameMaxLength);
 
         builder.Property(x => x.Slug)
             .HasMaxLength(Venue.SlugMaxLength);

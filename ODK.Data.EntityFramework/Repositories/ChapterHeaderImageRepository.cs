@@ -34,7 +34,5 @@ public class ChapterHeaderImageRepository
             .DeferredSingleOrDefault();
 
     public void Upsert(ChapterHeaderImage entity, Guid chapterId)
-    {
-        _chapterEntityRepository.Upsert(entity, chapterId);
-    }
+        => _chapterEntityRepository.Upsert(entity, chapterId);
 }
