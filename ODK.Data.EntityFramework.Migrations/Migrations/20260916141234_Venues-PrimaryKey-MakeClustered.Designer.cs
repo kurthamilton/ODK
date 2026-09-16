@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using ODK.Data.EntityFramework;
@@ -12,9 +13,11 @@ using ODK.Data.EntityFramework;
 namespace ODK.Data.EntityFramework.Migrations.Migrations
 {
     [DbContext(typeof(OdkContext))]
-    partial class OdkContextModelSnapshot : ModelSnapshot
+    [Migration("20260916141234_Venues-PrimaryKey-MakeClustered")]
+    partial class VenuesPrimaryKeyMakeClustered
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3065,6 +3068,12 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<DateTime?>("ArchivedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ChapterId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("MapQuery")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
@@ -3090,6 +3099,12 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"));
 
                     b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.HasIndex("ChapterId", "Name")
+                        .IsUnique();
+
+                    b.HasIndex("ChapterId", "Slug")
                         .IsUnique();
 
                     b.ToTable("Venues", (string)null);

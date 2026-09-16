@@ -20,7 +20,7 @@ public class ChapterVenue
     /// </summary>
     public string? Name { get; set; }
 
-    public required Venue Venue { get; set; } = null!;
+    public required Venue Venue { get; set; }
 
     public Guid VenueId { get; set; }
 }

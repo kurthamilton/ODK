@@ -21,13 +21,6 @@ public class VenueQueryBuilder
 
     protected override IVenueQueryBuilder Builder => this;
 
-    public IVenueQueryBuilder ForChapter(Guid chapterId)
-    {
-        Query = Query.Where(
-            x => Set<ChapterVenue>().Any(cv => cv.VenueId == x.Id && cv.ChapterId == chapterId));
-        return this;
-    }
-
     /* Matched under the database's collation, which is case-insensitive, so the candidates this
        collects are the same set CreateSlug then compares case-insensitively. */
     public IVenueQueryBuilder SlugStartingWith(string prefix)

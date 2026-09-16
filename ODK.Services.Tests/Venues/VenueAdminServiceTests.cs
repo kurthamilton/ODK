@@ -238,10 +238,10 @@ public static class VenueAdminServiceTests
     }
 
     [Test]
-    public static async Task GetVenue_LinkedToThisChapterButOwnedByAnother_IsFound()
+    public static async Task GetVenue_SharedWithAnotherChapter_IsFound()
     {
-        // Arrange - the link is what makes a venue one of this chapter's. Venue.ChapterId points
-        // somewhere else here, which is what a venue shared between two chapters will look like.
+        // Arrange - a venue another chapter already uses, linked to this one as well. The link is the
+        // only thing that makes it this chapter's.
         var (context, currentMember, chapter) = CreateChapterWithOwner();
         var venue = context.CreateVenue(context.CreateChapter(), "The Oak", "the-oak");
         context.Create(new ChapterVenue { ChapterId = chapter.Id, VenueId = venue.Id, Venue = venue });
@@ -257,12 +257,10 @@ public static class VenueAdminServiceTests
     [Test]
     public static async Task GetVenue_NotLinkedToThisChapter_Throws()
     {
-        // Arrange - a venue whose ChapterId names this chapter but which no link joins to it. The
-        // column no longer decides, so it is a miss.
+        // Arrange - a venue that exists but which no link joins to this chapter.
         var (context, currentMember, chapter) = CreateChapterWithOwner();
         var venue = context.Create(new Venue
         {
-            ChapterId = chapter.Id,
             Id = Guid.NewGuid(),
             Name = "The Oak",
             Slug = "the-oak"
