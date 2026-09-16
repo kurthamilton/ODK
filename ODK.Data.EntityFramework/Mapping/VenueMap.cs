@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Venues;
-using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -11,13 +10,13 @@ public class VenueMap : IEntityTypeConfiguration<Venue>
     {
         builder.ToTable("Venues");
 
-        builder.HasKey(x => x.Id);
+        /* A venue is reached by its key: ChapterVenues is clustered on (ChapterId, VenueId) and yields
+           venue ids, and every other read is a lookup by id. */
+        builder.HasKey(x => x.Id)
+            .IsClustered();
 
         builder.Property(x => x.Address)
             .HasMaxLength(255);
-
-        builder.Property(x => x.ArchivedUtc)
-            .HasConversion<NullableUtcDateTimeConverter>();
 
         builder.Property(x => x.MapQuery)
             .HasMaxLength(255);
@@ -31,10 +30,7 @@ public class VenueMap : IEntityTypeConfiguration<Venue>
         builder.Property(x => x.Version)
             .IsRowVersion();
 
-        builder.HasIndex(x => new { x.ChapterId, x.Name })
-            .IsUnique();
-
-        builder.HasIndex(x => new { x.ChapterId, x.Slug })
+        builder.HasIndex(x => x.Slug)
             .IsUnique();
     }
 }

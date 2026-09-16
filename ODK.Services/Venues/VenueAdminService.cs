@@ -45,8 +45,9 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         var chapter = request.Chapter;
 
         // Normalised before the duplicate lookup, not after: whitespace must not let " Oak" or
-        // "The  Oak" through as a second venue alongside "Oak" / "The Oak". Both would pass the unique
-        // index on (ChapterId, Name) as distinct names, then collide on slug.
+        // "The  Oak" through as a second venue alongside "Oak" / "The Oak". Nothing in the database
+        // stops it - a name is unique to a chapter only by this check - and the two would then collide
+        // on slug.
         var name = model.Name.NormaliseWhitespace();
         var slugBase = SlugBase(name);
 
@@ -60,7 +61,6 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         var venue = _unitOfWork.VenueRepository.Add(new Venue
         {
             Address = model.Address,
-            ChapterId = chapter.Id,
             MapQuery = model.LocationName,
             Name = name,
             Slug = CreateSlug(slugBase, slugCandidates, venueId: null)
@@ -269,8 +269,9 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     /// </summary>
     private static IDeferredQuerySingleOrDefault<Venue> ChapterVenueQuery(
         IUnitOfWork unitOfWork, Guid chapterId, Guid venueId)
-        => unitOfWork.VenueRepository
-            .Query(x => x.ById(venueId).ForChapter(chapterId))
+        => unitOfWork.ChapterVenueRepository
+            .Query(x => x.ForChapter(chapterId).ForVenue(venueId))
+            .ToVenue()
             .GetSingleOrDefault();
 
     /// <summary>
@@ -301,8 +302,8 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     /// <summary>
     /// The chapter's venue of that name, if any. Both stored and candidate names are normalised before
     /// comparing, so a legacy name saved before normalisation ("The  Oak") is still recognised as the
-    /// same venue as "The Oak" — the database's unique index would reject the insert anyway, and a
-    /// friendly failure beats an unhandled constraint violation.
+    /// same venue as "The Oak". This is the only thing keeping a chapter's venue names distinct; the
+    /// database holds no constraint on them, since a name belongs to the site rather than to a chapter.
     /// </summary>
     private static Venue? FindByName(IReadOnlyCollection<Venue> chapterVenues, string name)
         => chapterVenues.FirstOrDefault(

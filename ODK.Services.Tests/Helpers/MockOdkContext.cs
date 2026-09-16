@@ -484,7 +484,6 @@ internal class MockOdkContext : OdkContext
     {
         var venue = Create(new Venue
         {
-            ChapterId = chapter.Id,
             Id = Guid.NewGuid(),
             Name = name,
             Slug = slug
