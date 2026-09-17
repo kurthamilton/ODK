@@ -1,5 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Countries;
+﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Security;
 using ODK.Services.Venues;
 using ODK.Services.Venues.Models;
@@ -29,12 +28,10 @@ public class VenueModel : OdkGroupAdminPageModel
     public async Task<IActionResult> OnPostAsync(Guid venueId, VenueFormViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest;
-        var result = await _venueAdminService.UpdateVenue(request, venueId, new VenueCreateModel
+        var result = await _venueAdminService.UpdateVenue(request, venueId, new VenueUpdateModel
         {
-            Address = viewModel.Address,
-            Location = LatLong.FromCoords(viewModel.Lat, viewModel.Long),
-            LocationName = viewModel.LocationName,
-            Name = viewModel.Name ?? ""
+            AdditionalInfo = viewModel.AdditionalInfo,
+            Name = viewModel.Name
         });
 
         AddFeedback(result, "Venue updated");

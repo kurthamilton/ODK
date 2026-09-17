@@ -52,6 +52,12 @@ public class QueryBuilder<T> : IQueryBuilder<T>
         return this;
     }
 
+    public IQueryBuilder<T> ThenByDescending<TOrderBy>(Expression<Func<T, TOrderBy>> orderBy)
+    {
+        Query = ((IOrderedQueryable<T>)Query).ThenByDescending(orderBy);
+        return this;
+    }
+
     public IQueryBuilder<T> Page(PageFilter pageFilter) => Page(pageFilter.Page, pageFilter.PageSize);
 
     public IQueryBuilder<T> Page(int page, int pageSize)

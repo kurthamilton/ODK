@@ -22,5 +22,5 @@ public interface IVenueAdminService
 
     Task<ServiceResult> RestoreVenue(IMemberChapterAdminServiceRequest request, Guid venueId);
 
-    Task<ServiceResult> UpdateVenue(IMemberChapterAdminServiceRequest request, Guid id, VenueCreateModel venue);
+    Task<ServiceResult> UpdateVenue(IMemberChapterAdminServiceRequest request, Guid id, VenueUpdateModel venue);
 }

@@ -480,13 +480,31 @@ internal class MockOdkContext : OdkContext
         });
     }
 
-    internal Venue CreateVenue(Chapter chapter, string name = "", string slug = "", bool archived = false)
+    internal Venue CreateVenue(
+        Chapter chapter,
+        string name = "",
+        string slug = "",
+        bool archived = false,
+        string? externalId = null,
+        double lat = 0,
+        double @long = 0,
+        DateTime? createdUtc = null)
     {
         var venue = Create(new Venue
         {
+            CreatedUtc = createdUtc ?? DateTime.UtcNow,
             Id = Guid.NewGuid(),
             Name = name,
             Slug = slug
+        });
+
+        Create(new VenueLocation
+        {
+            ExternalId = externalId,
+            Latitude = lat,
+            Longitude = @long,
+            Name = name,
+            VenueId = venue.Id
         });
 
         Create(new ChapterVenue

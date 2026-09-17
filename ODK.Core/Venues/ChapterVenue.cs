@@ -32,7 +32,11 @@ public class ChapterVenue
     /// </summary>
     public string? Name { get; set; }
 
-    public required Venue Venue { get; set; }
+    /// <summary>
+    /// The venue this links to, as the reading queries include it. Not set when writing a link: the pair
+    /// of ids is the link, and assigning a venue loaded without tracking makes EF insert it again.
+    /// </summary>
+    public Venue Venue { get; set; } = null!;
 
     public Guid VenueId { get; set; }
 }

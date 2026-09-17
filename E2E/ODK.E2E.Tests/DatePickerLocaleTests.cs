@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using FluentAssertions;
 using Microsoft.Playwright;
 using NUnit.Framework;
@@ -110,7 +110,7 @@ public class DatePickerLocaleTests : DefaultPageTest
         var page = await context.NewPageAsync();
 
         await new LoginPage(page).LogIn(owner.Email, owner.Password);
-        await new VenueAdminPage(page).CreateVenue(routes.VenueCreate, $"E2E Venue {Guid.NewGuid():N}");
+        await new VenueAdminPage(page).CreateVenue(routes.VenueCreate, $"E2E Venue {Guid.NewGuid():N}", E2ESettings.VenueExternalId(0));
         return await new EventAdminPage(page).SetDateAndReadPicker(routes.EventCreate, "05/08/2026 19:00");
     }
 }

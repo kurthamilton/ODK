@@ -16,9 +16,6 @@ public class VenueMap : IEntityTypeConfiguration<Venue>
         builder.HasKey(x => x.Id)
             .IsClustered();
 
-        builder.Property(x => x.Address)
-            .HasMaxLength(255);
-
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 

@@ -2,6 +2,9 @@
     const $inputs = document.querySelectorAll('[data-location]');
     if ($inputs.length === 0) return;
 
+    // The loader is async, so google.maps arrives after this script has run - see _GoogleLocation.
+    await window.odkGoogleMapsReady;
+
     const { AutocompleteSuggestion, AutocompleteSessionToken } = await google.maps.importLibrary('places');
 
     $inputs.forEach($input => bindInput($input));
@@ -118,7 +121,7 @@
         $input.value = placePrediction.text.text;
 
         const place = placePrediction.toPlace();
-        await place.fetchFields({ fields: ['location'] });
+        await place.fetchFields({ fields: ['location', 'displayName'] });
 
         // session end
         sessionToken = null;
@@ -135,6 +138,7 @@
         // The id the server re-resolves the place by. Read from the Place rather than kept from the
         // prediction so it travels with the same object the coordinates come from.
         location.externalId = place.id;
+        location.name = place.displayName;
 
         if (place.location) {
             location.lat = place.location.lat();
@@ -170,18 +174,30 @@
         const $latlong = $container.querySelector('[data-location-latlong]');
         const $name = $container.querySelector('[data-location-name]');
         const $externalId = $container.querySelector('[data-location-external-id]');
+        const $mapQuery = $container.querySelector('[data-location-map-query]');
 
         $lat.value = location.lat;
         $long.value = location.long;
 
         if ($externalId) $externalId.value = location.externalId ?? '';
 
+        // The embed takes a place id directly, so the map follows the place, not the typed text.
+        if ($mapQuery) {
+            $mapQuery.value = location.externalId ? `place_id:${location.externalId}` : '';
+            $mapQuery.dispatchEvent(new Event('change'));
+        }
+
         if ($latlong) {
             $latlong.value = `${location.lat},${location.long}`;
             $latlong.dispatchEvent(new Event('change'));
         }
 
-        if ($name) $name.value = $input.value;
+        /* Filled from the place, but never over something the member typed: the field arrives holding
+           either nothing or the name the previous selection put there. */
+        if ($name && (!$name.value || $name.value === $name.dataset.locationNameSource)) {
+            $name.value = location.name ?? '';
+            $name.dataset.locationNameSource = $name.value;
+        }
 
         setDefaults($container);
     }

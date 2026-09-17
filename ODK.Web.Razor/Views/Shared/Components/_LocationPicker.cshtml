@@ -4,6 +4,11 @@
     var latLong = Model.Lat != null && Model.Long != null
         ? $"{Model.Lat},{Model.Long}"
         : null;
+
+    /* The Maps Embed API takes a place id directly, so a map of a picked place needs no coordinates. */
+    var placeQuery = !string.IsNullOrEmpty(Model.ExternalId)
+        ? $"place_id:{Model.ExternalId}"
+        : null;
 }
 
 <div class="input-group" data-location-container>
@@ -28,5 +33,6 @@
     @Html.HiddenFor(x => x.Lat, new { data_location_lat = "" })
     @Html.HiddenFor(x => x.Long, new { data_location_long = "" })
     <input type="hidden" id="map-latlong" data-location-latlong value="@latLong" />
+    <input type="hidden" id="map-place-query" data-location-map-query value="@placeQuery" />
 </div>
 @Html.ValidationMessageFor(x => x.LocationName)

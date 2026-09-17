@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace ODK.E2E.Tests.Pages;
 
@@ -17,20 +17,23 @@ internal class VenueAdminPage
         _page = page;
     }
 
-    public async Task CreateVenue(string createUrl, string name)
+    /// <param name="externalId">
+    /// A real Google place id. The server resolves it for itself, so it has to be one Google still knows -
+    /// the venue's own name and slug come from that lookup, and <paramref name="name"/> is only what this
+    /// group calls it. Two venues in one group need two different places, or the second resolves to the
+    /// first and is refused.
+    /// </param>
+    public async Task CreateVenue(string createUrl, string name, string externalId)
     {
         await _page.Navigate(createUrl);
 
         await _page.FillAsync("#Name", name);
 
-        // Location is required (client-side). Set the name + lat/long directly, raising only a `change`
-        // event so the Google Places autocomplete (which listens on focus/input) never fires a billable
-        // Places call.
+        /* Set directly, raising only a `change` event, so the autocomplete - which listens on focus and
+           input - never fires a billable Places call from the browser. The server still makes one. */
         await _page.EvalOnSelectorAsync(
-            "#LocationName",
-            "el => { el.value = 'London'; el.dispatchEvent(new Event('change', { bubbles: true })); }");
-        await _page.EvalOnSelectorAsync("#Lat", "el => el.value = '51.5074'");
-        await _page.EvalOnSelectorAsync("#Long", "el => el.value = '-0.1278'");
+            "#ExternalId",
+            "el => { el.value = '" + externalId + "'; el.dispatchEvent(new Event('change', { bubbles: true })); }");
 
         await _page.ClickAsync("button:has-text('Create')");
 

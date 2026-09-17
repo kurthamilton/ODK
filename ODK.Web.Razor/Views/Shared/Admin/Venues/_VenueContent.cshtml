@@ -1,9 +1,6 @@
 ﻿@using ODK.Services.Venues.ViewModels
-@using ODK.Web.Common.Extensions
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Admin.Venues
-@using ODK.Web.Razor.Models.Components
 @model VenueAdminPageViewModel
 
 @await Html.PartialAsync("Components/_AdminPageDescription",
@@ -20,11 +17,12 @@
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Venues/_VenueForm", new VenueFormViewModel
     {
-        Address = Model.Venue.Address,
+        AdditionalInfo = Model.ChapterVenue.AdditionalInfo,
+        ExternalId = Model.Location?.ExternalId,
         Lat = Model.Location?.LatLong.Lat,
         LocationName = Model.Location?.Name ?? Model.Venue.MapQuery ?? string.Empty,
         Long = Model.Location?.LatLong.Long,
-        Name = Model.Venue.Name
+        Name = Model.ChapterVenue.Name ?? Model.Venue.Name
     })
     
     <button type="submit" class="btn btn-primary">Update</button>

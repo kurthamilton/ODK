@@ -1,5 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Countries;
+﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Venues;
 using ODK.Services.Venues.Models;
 using ODK.Web.Razor.Models.Admin.Venues;
@@ -21,12 +20,10 @@ public class VenueModel : VenueAdminPageModel
     public async Task<IActionResult> OnPostAsync(VenueFormViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest;
-        var result = await VenueAdminService.UpdateVenue(request, Venue.Id, new VenueCreateModel
+        var result = await VenueAdminService.UpdateVenue(request, Venue.Id, new VenueUpdateModel
         {
-            Address = viewModel.Address,
-            Location = LatLong.FromCoords(viewModel.Lat, viewModel.Long),
-            LocationName = viewModel.LocationName,
-            Name = viewModel.Name ?? ""
+            AdditionalInfo = viewModel.AdditionalInfo,
+            Name = viewModel.Name
         });
 
         if (!result.Success)
