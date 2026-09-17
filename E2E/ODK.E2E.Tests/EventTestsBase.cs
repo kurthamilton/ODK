@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using FluentAssertions;
 using NUnit.Framework;
 using ODK.E2E.Data;
@@ -40,7 +40,7 @@ public abstract class EventTestsBase : OdkPageTest
         await new LoginPage(Page).LogIn(owner.Email, owner.Password);
 
         var venueName = $"E2E Venue {Guid.NewGuid():N}";
-        await new VenueAdminPage(Page).CreateVenue(routes.VenueCreate, venueName);
+        await new VenueAdminPage(Page).CreateVenue(routes.VenueCreate, venueName, E2ESettings.VenueExternalId(0));
         var venueId = await Venues.GetVenueId(group.ChapterId, venueName);
         venueId.Should().NotBeNull();
 
@@ -66,7 +66,7 @@ public abstract class EventTestsBase : OdkPageTest
         await new EventSettingsPage(Page).SetDefaults(routes.EventSettings, defaultDay, "19:00");
 
         // The create-event form (and its Date field) only renders once the chapter has a venue.
-        await new VenueAdminPage(Page).CreateVenue(routes.VenueCreate, $"E2E Venue {Guid.NewGuid():N}");
+        await new VenueAdminPage(Page).CreateVenue(routes.VenueCreate, $"E2E Venue {Guid.NewGuid():N}", E2ESettings.VenueExternalId(1));
 
         // Act - open the create-event page; its Date defaults to the next default day at the default time.
         var dateValue = await new EventAdminPage(Page).GetPrepopulatedDate(routes.EventCreate);
@@ -94,8 +94,8 @@ public abstract class EventTestsBase : OdkPageTest
         var (oakVenue, elmVenue) = ($"E2E Oak {suffix}", $"E2E Elm {suffix}");
 
         var venueAdminPage = new VenueAdminPage(Page);
-        await venueAdminPage.CreateVenue(routes.VenueCreate, oakVenue);
-        await venueAdminPage.CreateVenue(routes.VenueCreate, elmVenue);
+        await venueAdminPage.CreateVenue(routes.VenueCreate, oakVenue, E2ESettings.VenueExternalId(0));
+        await venueAdminPage.CreateVenue(routes.VenueCreate, elmVenue, E2ESettings.VenueExternalId(1));
 
         var oakVenueId = await Venues.GetVenueId(group.ChapterId, oakVenue);
         var elmVenueId = await Venues.GetVenueId(group.ChapterId, elmVenue);
@@ -144,8 +144,8 @@ public abstract class EventTestsBase : OdkPageTest
         var (firstByName, lastByName) = ($"E2E Aaa {suffix}", $"E2E Zzz {suffix}");
 
         var venueAdminPage = new VenueAdminPage(Page);
-        await venueAdminPage.CreateVenue(routes.VenueCreate, firstByName);
-        await venueAdminPage.CreateVenue(routes.VenueCreate, lastByName);
+        await venueAdminPage.CreateVenue(routes.VenueCreate, firstByName, E2ESettings.VenueExternalId(0));
+        await venueAdminPage.CreateVenue(routes.VenueCreate, lastByName, E2ESettings.VenueExternalId(1));
 
         var table = new SortableTable(Page);
         await table.Open(routes.VenuesList);
@@ -179,7 +179,7 @@ public abstract class EventTestsBase : OdkPageTest
         // Act - the owner creates a venue.
         var suffix = Guid.NewGuid().ToString("N");
         var venueName = $"E2E Venue {suffix}";
-        await new VenueAdminPage(Page).CreateVenue(routes.VenueCreate, venueName);
+        await new VenueAdminPage(Page).CreateVenue(routes.VenueCreate, venueName, E2ESettings.VenueExternalId(0));
 
         // Assert - the venue now exists for the chapter, slugged from its name.
         var exists = await Venues.VenueExists(group.ChapterId, venueName);
@@ -203,7 +203,7 @@ public abstract class EventTestsBase : OdkPageTest
         // Act - the owner types a name with stray whitespace both around it and inside it.
         var suffix = Guid.NewGuid().ToString("N");
         var venueName = $"E2E Venue {suffix}";
-        await new VenueAdminPage(Page).CreateVenue(routes.VenueCreate, $"  E2E   Venue  {suffix}  ");
+        await new VenueAdminPage(Page).CreateVenue(routes.VenueCreate, $"  E2E   Venue  {suffix}  ", E2ESettings.VenueExternalId(1));
 
         // Assert - the venue is stored under the normalised name. Looking it up by that name is itself
         // the assertion: any surviving stray whitespace would make it a different name and find nothing.
@@ -234,8 +234,8 @@ public abstract class EventTestsBase : OdkPageTest
 
         // Act - create both. CreateVenue throws if the form fails to redirect, so the second call
         // reaching the venues list is itself the assertion that a collision doesn't block creation.
-        await venueAdminPage.CreateVenue(routes.VenueCreate, firstName);
-        await venueAdminPage.CreateVenue(routes.VenueCreate, secondName);
+        await venueAdminPage.CreateVenue(routes.VenueCreate, firstName, E2ESettings.VenueExternalId(0));
+        await venueAdminPage.CreateVenue(routes.VenueCreate, secondName, E2ESettings.VenueExternalId(1));
 
         // Assert - both exist, the first keeps the unversioned slug, and the second is versioned.
         var firstSlug = await Venues.GetVenueSlug(group.ChapterId, firstName);

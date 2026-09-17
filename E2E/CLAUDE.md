@@ -66,6 +66,23 @@ to arrange, the same value is stated in `ODK.E2E.Tests/appsettings.json`.
   the row missing. `ChapterPaymentAccountDataHelper.EnsureSetupComplete` stamps what the setting says, and
   `SiteSubscriptionDataHelper.Exists` asks by it.
 
+**The Google Places lookup stays live, deliberately.** Creating a venue resolves the submitted place
+against Google server-side, and everything a venue is - its name, its position, its slug - comes from that
+response. Stubbing it in this environment would leave the suite covering everything about a venue except the
+part most likely to break, so the app under test calls Google for real. Two consequences:
+
+- **`appsettings.e2e.json` needs `Google:Platforms:<platform>:Places:ServerApiKey`.** A blank key is read as
+  unconfigured and every venue creation fails, which surfaces as a create that never redirects. The key may
+  be the dev one or a dedicated E2E one; it needs Places API (New) enabled.
+- **`Venues:ExternalIds` in this solution's `appsettings.json` names the places the tests create**, and has
+  to hold **two** real place ids. Two, because the same place resolves to the same venue and a group cannot
+  link one twice - `EventsAdmin_FilteredByVenueSlug_ShowsOnlyThatVenuesEvents` creates two venues in one
+  group. `E2ESettings.VenueExternalId` throws with that guidance rather than letting a made-up id fail as a
+  mystifying not-found.
+
+A venue's own name is the place's, so a test that names its venue is naming it *for its group* - that name
+lives on `ChapterVenues`, which is what `VenueDataHelper` matches on.
+
 **The Stripe keys the app transacts with are configuration, not data.** `appsettings.e2e.json` states them
 per platform under `Stripe:Platforms:<platform>`, so the app under test takes money on whichever Stripe
 account that file names. Two of this solution's own settings have to belong to that same account, and

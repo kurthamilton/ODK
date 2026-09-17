@@ -1,5 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Countries;
+﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Security;
 using ODK.Services.Venues;
 using ODK.Services.Venues.Models;
@@ -29,10 +28,9 @@ public class CreateModel : OdkGroupAdminPageModel
         var request = MemberChapterAdminServiceRequest;
         var result = await _venueAdminService.CreateVenue(request, new VenueCreateModel
         {
-            Address = viewModel.Address,
-            Location = LatLong.FromCoords(viewModel.Lat, viewModel.Long),
-            LocationName = viewModel.LocationName,
-            Name = viewModel.Name ?? ""
+            AdditionalInfo = viewModel.AdditionalInfo,
+            ExternalId = viewModel.ExternalId,
+            Name = viewModel.Name
         });
 
         if (!result.Success)

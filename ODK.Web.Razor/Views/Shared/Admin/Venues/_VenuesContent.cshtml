@@ -61,7 +61,7 @@
 
             @foreach (var venueDto in Model.Venues.OrderBy(x => x.Venue.Name))
             {
-                var (venue, lastEvent) = (venueDto.Venue, venueDto.LastEvent);
+                var (venue, location, lastEvent) = (venueDto.Venue, venueDto.Location, venueDto.LastEvent);
 
                 <tr>
                     <td>
@@ -72,7 +72,7 @@
                             Text = venue.Name
                         })
                     </td>
-                    <td>@venue.MapQuery</td>
+                    <td>@location?.MapQuery</td>
                     <td>@venueDto.EventCount</td>
                     <td>
                         @if (lastEvent != null)

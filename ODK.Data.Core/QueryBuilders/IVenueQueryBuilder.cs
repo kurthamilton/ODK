@@ -5,7 +5,11 @@ namespace ODK.Data.Core.QueryBuilders;
 
 public interface IVenueQueryBuilder : IDatabaseEntityQueryBuilder<Venue, IVenueQueryBuilder>
 {
+    IVenueQueryBuilder ForExternalLocationId(string externalId);
+
     IVenueQueryBuilder SlugStartingWith(string prefix);
+
+    IQueryBuilder<VenueWithLocationDto> WithLocation();
 
     IQueryBuilder<VenueWithEventSummaryDto> WithEventSummary();
 }

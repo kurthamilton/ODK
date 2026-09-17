@@ -80,6 +80,22 @@ public static class E2ESettings
     public static string StripeSecretApiKey(int platformTypeId)
         => GetRequired($"Stripe:Platforms:{PlatformTypeIds.Key(platformTypeId)}:SecretApiKey");
 
+    /// <summary>
+    /// Real Google place ids for the venues tests to create. The app resolves a submitted place against
+    /// Google for itself, so these have to be places it still knows - and two venues in one group need two
+    /// entries, because the same place resolves to the same venue and the second link is refused.
+    /// </summary>
+    public static string VenueExternalId(int index)
+    {
+        var id = Configuration[$"Venues:ExternalIds:{index}"];
+
+        return !string.IsNullOrWhiteSpace(id)
+            ? id
+            : throw new InvalidOperationException(
+                $"Set 'Venues:ExternalIds' to at least {index + 1} real Google place ids. The venue admin " +
+                "form posts a place id and the app looks it up, so a made-up one fails as not found.");
+    }
+
     private static string GetOptional(string key) => Configuration[key] ?? string.Empty;
 
     private static string GetRequired(string key)

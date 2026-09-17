@@ -114,10 +114,8 @@
         })
     }
 
-    @if (Model.Venue != null && !string.IsNullOrEmpty(Model.Venue.MapQuery))
+    @if (!string.IsNullOrEmpty(Model.VenueLocation?.MapQuery))
     {
-        var mapQuery = Model.VenueLocation?.Name ?? Model.Venue.MapQuery;
-
         @await Html.PartialAsync("Components/_Section", new SectionViewModel
         {
             Heading = new HeadingViewModel
@@ -129,11 +127,10 @@
                 @<div>
                     @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
                     {
-                        Query = mapQuery
+                        ExternalId = Model.VenueLocation?.ExternalId,
+                        Query = Model.VenueLocation?.MapQuery,
+                        ShowLink = true
                     })
-                    <p>
-                        <a href="https://maps.google.com?q=@mapQuery" target="_blank">View in Google maps</a>
-                    </p>
                 </div>
         })
     }

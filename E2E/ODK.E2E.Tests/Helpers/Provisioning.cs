@@ -400,7 +400,8 @@ internal static class Provisioning
 
         await RunAs(owner, async page =>
         {
-            await new VenueAdminPage(page).CreateVenue(routes.VenueCreate, venueName);
+            await new VenueAdminPage(page).CreateVenue(
+                routes.VenueCreate, venueName, E2ESettings.VenueExternalId(0));
 
             var venueId = await new VenueDataHelper(E2ESettings.ConnectionString).GetVenueId(chapterId, venueName)
                 ?? throw new InvalidOperationException($"Venue '{venueName}' was not created.");

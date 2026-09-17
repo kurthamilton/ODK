@@ -21,6 +21,16 @@ public class VenueQueryBuilder
 
     protected override IVenueQueryBuilder Builder => this;
 
+    /* The place a venue records is identified on its location, not on the venue, so this reaches through
+       VenueLocations. Several venues can match: they are that place as it was at different times. */
+    public IVenueQueryBuilder ForExternalLocationId(string externalId)
+    {
+        Query = Query
+            .Where(venue => Set<VenueLocation>()
+                .Any(x => x.VenueId == venue.Id && x.ExternalId == externalId));
+        return this;
+    }
+
     /* Matched under the database's collation, which is case-insensitive, so the candidates this
        collects are the same set CreateSlug then compares case-insensitively. */
     public IVenueQueryBuilder SlugStartingWith(string prefix)
@@ -29,21 +39,45 @@ public class VenueQueryBuilder
         return this;
     }
 
+    public IQueryBuilder<VenueWithLocationDto> WithLocation()
+    {
+        var query = ToVenueWithLocationDto();
+        return ProjectTo(query);
+    }
+
     public IQueryBuilder<VenueWithEventSummaryDto> WithEventSummary()
     {
         var query =
-            from venue in Query
-            select new VenueWithEventSummaryDto
+            ToVenueWithLocationDto()
+            .Select(dto => new VenueWithEventSummaryDto
             {
                 EventCount = Set<Event>()
-                    .Where(x => x.VenueId == venue.Id)
+                    .Where(x => x.VenueId == dto.Venue.Id)
                     .Count(),
                 LastEvent = Set<Event>()
-                    .Where(x => x.VenueId == venue.Id)
+                    .Where(x => x.VenueId == dto.Venue.Id)
                     .OrderByDescending(x => x.DateUtc)
                     .FirstOrDefault(),
+                Location = dto.Location,
+                Venue = dto.Venue
+            });
+
+        return ProjectTo(query);
+    }
+
+    private IQueryable<VenueWithLocationDto> ToVenueWithLocationDto()
+    {
+        var query =
+            from venue in Query
+            from location in Set<VenueLocation>()
+                .Where(x => x.VenueId == venue.Id)
+                .DefaultIfEmpty()
+            select new VenueWithLocationDto
+            {
+                Location = location,
                 Venue = venue
             };
-        return ProjectTo(query);
+
+        return query;
     }
 }

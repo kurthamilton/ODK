@@ -1,8 +1,12 @@
-﻿using ODK.Core;
+﻿using System.Diagnostics.CodeAnalysis;
+using ODK.Core;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
+using ODK.Data.Core.Venues;
+using ODK.Services.Geolocation;
+using ODK.Services.Places;
 using ODK.Services.Venues.Models;
 using ODK.Services.Venues.ViewModels;
 
@@ -10,11 +14,24 @@ namespace ODK.Services.Venues;
 
 public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 {
+    /* A place Google has repositioned by a few metres is the same place more precisely located; one that
+       has moved is in a different building. Refinements run to single figures and relocations to hundreds,
+       so anywhere in this range separates them - the value is a property of what the two mean, not
+       something a deployment should differ on. */
+    private const double MovedMetres = 50;
+
+    private readonly ILatLongCalculator _latLongCalculator;
+    private readonly IPlacesService _placesService;
     private readonly IUnitOfWork _unitOfWork;
 
-    public VenueAdminService(IUnitOfWork unitOfWork)
+    public VenueAdminService(
+        IUnitOfWork unitOfWork,
+        IPlacesService placesService,
+        ILatLongCalculator latLongCalculator)
         : base(unitOfWork)
     {
+        _latLongCalculator = latLongCalculator;
+        _placesService = placesService;
         _unitOfWork = unitOfWork;
     }
 
@@ -44,48 +61,47 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     {
         var chapter = request.Chapter;
 
-        // Normalised before the duplicate lookup, not after: whitespace must not let " Oak" or
-        // "The  Oak" through as a second venue alongside "Oak" / "The Oak". Nothing in the database
-        // stops it - a name is unique to a chapter only by this check - and the two would then collide
-        // on slug.
-        var name = model.Name.NormaliseWhitespace();
-        var slugBase = SlugBase(name);
+        if (string.IsNullOrEmpty(model.ExternalId))
+        {
+            return ServiceResult.Failure("Location required");
+        }
 
-        var (chapterVenues, slugCandidates) = await GetChapterAdminRestrictedContent(
+        /* Resolved before anything is read or written: the place decides the venue's name, position and
+           slug, so there is nothing to compare or create until it answers. */
+        var placeResult = await _placesService.GetPlace(model.ExternalId);
+        if (!placeResult.Success || placeResult.Place == null)
+        {
+            return ServiceResult.Failure(placeResult.NotFound
+                ? "That location could not be found - search for it again"
+                : "Location could not be looked up");
+        }
+
+        var place = placeResult.Place;
+        var slugBase = SlugBase(place);
+
+        var (latest, chapterVenues, slugCandidates) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.ChapterVenueRepository.Query(x => x.ForChapter(chapter.Id)).ToVenue().GetAll(),
+            x => x.VenueRepository.GetLatestByExternalLocationId(place.ExternalId),
+            x => x.ChapterVenueRepository.Query(q => q.ForChapter(chapter.Id)).ToVenue().GetAll(),
             x => x.VenueRepository.Query(q => q.SlugStartingWith(slugBase)).GetAll());
 
-        var existing = FindByName(chapterVenues, name);
+        /* The same place described the same way is the same venue, however many chapters reach it. A
+           different name or a moved position is a new record of it - see IsSameRecord. */
+        var venue = IsSameRecord(latest, place)
+            ? latest.Venue
+            : CreateVenue(place, slugBase, slugCandidates);
 
-        var venue = _unitOfWork.VenueRepository.Add(new Venue
+        if (chapterVenues.Any(x => x.Id == venue.Id))
         {
-            Address = model.Address,
-            CreatedUtc = DateTime.UtcNow,
-            MapQuery = model.LocationName,
-            Name = name,
-            Slug = CreateSlug(slugBase, slugCandidates, venueId: null)
-        });
-
-        var location = _unitOfWork.VenueLocationRepository.Add(new VenueLocation
-        {
-            Latitude = model.Location?.Lat ?? 0,
-            Longitude = model.Location?.Long ?? 0,
-            Name = model.LocationName ?? string.Empty,
-            VenueId = venue.Id
-        });
-
-        var validationResult = ValidateVenue(venue, existing, location);
-        if (!validationResult.Success)
-        {
-            return validationResult;
+            return ServiceResult.Failure("You already have this venue");
         }
 
         _unitOfWork.ChapterVenueRepository.Add(new ChapterVenue
         {
+            AdditionalInfo = model.AdditionalInfo,
             ChapterId = chapter.Id,
-            VenueId = venue.Id,
-            Venue = venue
+            Name = ChapterName(model.Name, place),
+            VenueId = venue.Id
         });
 
         await _unitOfWork.SaveChanges();
@@ -171,19 +187,20 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var (venue, location) = await GetChapterAdminRestrictedContent(
+        var (chapterVenue, location) = await GetChapterAdminRestrictedContent(
             request,
-            x => ChapterVenueQuery(x, chapter.Id, venueId),
+            x => x.ChapterVenueRepository
+                .Query(q => q.ForChapter(chapter.Id).ForVenue(venueId))
+                .GetSingle(),
             x => x.VenueLocationRepository.GetByVenueId(venueId));
-
-        OdkAssertions.Exists(venue);
 
         return new VenueAdminPageViewModel
         {
             Chapter = chapter,
+            ChapterVenue = chapterVenue,
             Location = location,
             Platform = platform,
-            Venue = venue
+            Venue = chapterVenue.Venue
         };
     }
 
@@ -208,56 +225,20 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     }
 
     public async Task<ServiceResult> UpdateVenue(
-        IMemberChapterAdminServiceRequest request, Guid id, VenueCreateModel model)
+        IMemberChapterAdminServiceRequest request, Guid id, VenueUpdateModel model)
     {
         var chapter = request.Chapter;
 
-        // Normalised before the duplicate lookup - see CreateVenue.
-        var name = model.Name.NormaliseWhitespace();
-        var slugBase = SlugBase(name);
-
-        var (location, chapterVenues, slugCandidates) = await GetChapterAdminRestrictedContent(
+        var chapterVenue = await GetChapterAdminRestrictedContent(
             request,
-            x => x.VenueLocationRepository.GetByVenueId(id),
-            x => x.ChapterVenueRepository.Query(x => x.ForChapter(chapter.Id)).ToVenue().GetAll(),
-            x => x.VenueRepository.Query(q => q.SlugStartingWith(slugBase)).GetAll());
+            x => x.ChapterVenueRepository.Query(x => x.ForChapter(chapter.Id).ForVenue(id)).GetSingle());
 
-        // chapterVenues holds the venues linked to this chapter, so a miss covers both "no such venue"
-        // and "not one of this chapter's venues"; either is a 404.
-        var venue = OdkAssertions.Exists(chapterVenues.FirstOrDefault(x => x.Id == id));
+        /* Only the link. The venue's name, slug and position are what the lookup returned, and are shared
+           with every other chapter using the place. */
+        chapterVenue.AdditionalInfo = model.AdditionalInfo;
+        chapterVenue.Name = ChapterName(model.Name, chapterVenue.Venue);
 
-        var existing = FindByName(chapterVenues, name);
-
-        venue.Address = model.Address;
-        venue.MapQuery = model.LocationName;
-        venue.Name = name;
-
-        location ??= new VenueLocation();
-
-        location.Name = model.LocationName ?? string.Empty;
-        location.Latitude = model.Location?.Lat ?? 0;
-        location.Longitude = model.Location?.Long ?? 0;
-
-        var validationResult = ValidateVenue(venue, existing, location);
-        if (!validationResult.Success)
-        {
-            return validationResult;
-        }
-
-        venue.Slug = CreateSlug(slugBase, slugCandidates, venue.Id);
-
-        _unitOfWork.VenueRepository.Update(venue);
-
-        if (location.VenueId == default)
-        {
-            location.VenueId = venue.Id;
-            _unitOfWork.VenueLocationRepository.Add(location);
-        }
-        else
-        {
-            _unitOfWork.VenueLocationRepository.Update(location);
-        }
-
+        _unitOfWork.ChapterVenueRepository.Update(chapterVenue);
         await _unitOfWork.SaveChanges();
 
         return ServiceResult.Successful();
@@ -276,22 +257,38 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             .GetSingleOrDefault();
 
     /// <summary>
-    /// A slug unique across the site. <paramref name="candidates"/> is every venue whose slug starts
-    /// with <paramref name="slugBase"/>, which is the whole set a version of it could collide with.
-    /// <paramref name="venueId"/> is excluded from it so that renaming a venue to another form of its
-    /// own name (e.g. "The Oak" to "The Oak!") keeps its slug rather than colliding with itself and
-    /// versioning to "the-oak-2".
+    /// What this chapter calls the venue, or null where it calls it what the place is called. Stored as
+    /// null rather than a copy so a chapter that never renamed anything keeps following the place.
+    /// </summary>
+    private static string? ChapterName(string? submitted, Venue venue)
+        => ChapterName(submitted, venue.Name);
+
+    /// <inheritdoc cref="ChapterName(string?, Venue)"/>
+    private static string? ChapterName(string? submitted, Place place)
+        => ChapterName(submitted, place.Name);
+
+    private static string? ChapterName(string? submitted, string placeName)
+    {
+        var name = submitted?.NormaliseWhitespace();
+
+        return !string.IsNullOrEmpty(name)
+            && !string.Equals(name, placeName, StringComparison.OrdinalIgnoreCase)
+            ? name
+            : null;
+    }
+
+    /// <summary>
+    /// A slug unique across the site, from the place's name and the town it is in - "The Oak" in Sheffield
+    /// gives <c>the-oak-sheffield</c>. <paramref name="candidates"/> is every venue whose slug starts with
+    /// <paramref name="slugBase"/>, which is the whole set a version of it could collide with.
     /// </summary>
     /// <remarks>
-    /// Compared case-insensitively to match SQL Server's default collation, so the slugs stay unique
-    /// under the unique index this is building towards. Archived venues keep their slugs and are
-    /// counted, so restoring one can never introduce a duplicate.
+    /// Compared case-insensitively to match SQL Server's default collation, so the slugs stay unique under
+    /// the unique index on Slug.
     /// </remarks>
-    private static string CreateSlug(
-        string slugBase, IReadOnlyCollection<Venue> candidates, Guid? venueId)
+    private static string CreateSlug(string slugBase, IReadOnlyCollection<Venue> candidates)
     {
         var taken = candidates
-            .Where(x => x.Id != venueId)
             .Select(x => x.Slug)
             .Where(x => !string.IsNullOrEmpty(x))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -301,22 +298,18 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     }
 
     /// <summary>
-    /// The chapter's venue of that name, if any. Both stored and candidate names are normalised before
-    /// comparing, so a legacy name saved before normalisation ("The  Oak") is still recognised as the
-    /// same venue as "The Oak". This is the only thing keeping a chapter's venue names distinct; the
-    /// database holds no constraint on them, since a name belongs to the site rather than to a chapter.
+    /// The slug a place takes before versioning, and so the prefix that finds every slug it could collide
+    /// with. A place whose name and town have nothing sluggable between them falls back to a generic slug
+    /// that the versioning then keeps unique.
     /// </summary>
-    private static Venue? FindByName(IReadOnlyCollection<Venue> chapterVenues, string name)
-        => chapterVenues.FirstOrDefault(
-            x => string.Equals(x.Name.NormaliseWhitespace(), name, StringComparison.OrdinalIgnoreCase));
+    private static string SlugBase(Place place)
+    {
+        var source = !string.IsNullOrEmpty(place.Locality)
+            ? $"{place.Name} {place.Locality}"
+            : place.Name;
 
-    /// <summary>
-    /// The slug a venue of that name takes before versioning, and so the prefix that finds every slug
-    /// it could collide with. A name with no letters or digits at all slugs to nothing, and the column
-    /// is required, so it falls back to a generic slug that the versioning then keeps unique.
-    /// </summary>
-    private static string SlugBase(string name)
-        => UrlUtils.SlugBase(name, Venue.SlugMaxLength) ?? Venue.SlugFallback;
+        return UrlUtils.SlugBase(source, Venue.SlugMaxLength) ?? Venue.SlugFallback;
+    }
 
     private async Task<Venue> GetChapterVenue(
         IMemberChapterAdminServiceRequest request, Guid venueId)
@@ -328,23 +321,48 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         return OdkAssertions.Exists(venue);
     }
 
-    private ServiceResult ValidateVenue(Venue venue, Venue? existing, VenueLocation location)
+    private Venue CreateVenue(Place place, string slugBase, IReadOnlyCollection<Venue> slugCandidates)
     {
-        if (string.IsNullOrWhiteSpace(venue.Name))
+        var venue = _unitOfWork.VenueRepository.Add(new Venue
         {
-            return ServiceResult.Failure("Name required");
+            CreatedUtc = DateTime.UtcNow,
+            MapQuery = place.FormattedAddress,
+            Name = place.Name,
+            Slug = CreateSlug(slugBase, slugCandidates)
+        });
+
+        _unitOfWork.VenueLocationRepository.Add(new VenueLocation
+        {
+            ExternalId = place.ExternalId,
+            Latitude = place.Location.Lat,
+            Longitude = place.Location.Long,
+            MapQuery = place.FormattedAddress,
+            Name = place.FormattedAddress ?? place.Name,
+            VenueId = venue.Id
+        });
+
+        return venue;
+    }
+
+    /// <summary>
+    /// Whether the latest record of this place still describes it. The name has to match exactly; the
+    /// position only has to be within <see cref="MovedMetres"/>, because a lookup refining where a place
+    /// sits is not the place moving.
+    /// </summary>
+    private bool IsSameRecord([NotNullWhen(true)] VenueWithLocationDto? latest, Place place)
+    {
+        if (latest?.Location == null)
+        {
+            return false;
         }
 
-        if (existing != null && existing.Id != venue.Id)
+        if (!string.Equals(latest.Venue.Name, place.Name, StringComparison.Ordinal))
         {
-            return ServiceResult.Failure("Venue with that name already exists");
+            return false;
         }
 
-        if (string.IsNullOrEmpty(location.Name) || location.LatLong.IsDefault)
-        {
-            return ServiceResult.Failure("Location not set");
-        }
+        var metres = _latLongCalculator.CalculateMetresBetween(latest.Location.LatLong, place.Location);
 
-        return ServiceResult.Successful();
+        return metres <= MovedMetres;
     }
 }

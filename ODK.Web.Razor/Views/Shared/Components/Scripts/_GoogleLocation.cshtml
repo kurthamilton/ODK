@@ -2,11 +2,19 @@
 @inject GoogleLocationViewSettings Settings
 @{
     var apiKey = Settings.ApiKey;
+
     /* The quarterly channel, not beta: AutocompleteSuggestion and Place are generally available, and beta
-       carries no SLA and no deprecation notice. Quarterly over weekly so the library changes under the
-       site four times a year rather than every week. */
-    var url = $"https://maps.googleapis.com/maps/api/js?key={apiKey}&libraries=places&v=quarterly";
+       carries no SLA and no deprecation notice. Quarterly over weekly so the library changes under the site
+       four times a year rather than every week. */
+    var url = $"https://maps.googleapis.com/maps/api/js?key={apiKey}&libraries=places&v=quarterly" +
+        "&loading=async&callback=odkGoogleMapsLoaded";
 }
 
-<script src="@url"></script>
+@* loading=async defers the bootstrap, so google.maps does not exist when the next script runs - the
+   callback is how the API says it is ready, and this promise is what a script can wait on. Declared before
+   the loader, and synchronously, so it is there whenever the callback fires. *@
+<script>
+    window.odkGoogleMapsReady = new Promise(resolve => { window.odkGoogleMapsLoaded = resolve; });
+</script>
+<script async src="@url"></script>
 <script src="~/js/odk.google.places.js" asp-append-version="true"></script>

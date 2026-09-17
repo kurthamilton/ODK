@@ -21,6 +21,12 @@ public interface IQueryBuilder<T>
 
     IQueryBuilder<T> Page(PageFilter pageFilter);
 
+    /// <summary>
+    /// Breaks ties in the preceding order. A second <c>OrderByDescending</c> would replace that order
+    /// rather than refine it, which is the mistake this exists to make unavailable.
+    /// </summary>
+    IQueryBuilder<T> ThenByDescending<TOrderBy>(Expression<Func<T, TOrderBy>> orderBy);
+
     IQueryBuilder<T> Page(int page, int pageSize);
 
     IQueryBuilder<T> Take(int count);

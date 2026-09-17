@@ -1,29 +1,29 @@
-﻿@using ODK.Core.Countries
+﻿@using ODK.Web.Razor.Models.Admin.Venues
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Models.Admin.Venues.VenueFormViewModel
+@model VenueFormViewModel
 
+@* The lookup is what a venue is, so it comes first and is the only required field. The name below it
+   arrives filled in from the place, and is edited only to call the venue something else. *@
 <div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.LocationName, new { @class = "form-label" })
+    @await Html.PartialAsync("Components/_LocationPicker", Model)
+</div>
+
+<div class="form-group mb-3">
     @Html.LabelFor(x => x.Name, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.Name, new { @class = "form-control" })
+    @Html.TextBoxFor(x => x.Name, new { @class = "form-control", data_location_name = "" })
     @Html.ValidationMessageFor(x => x.Name)
 </div>
 
 <div class="form-group mb-3">
-    @Html.LabelFor(x => x.Address, new { @class = "form-label" })
-    @await Html.PartialAsync("Components/_FormLabelSubtitle", "Additional location information, if required")
-    @Html.TextBoxFor(x => x.Address, new { @class = "form-control" })
-</div>
-
-<div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.LocationName, new { @class = "form-label" })
-    @await Html.PartialAsync("Components/_LocationPicker", Model)
-    @Html.ValidationMessageFor(x => x.LocationName)
+    @Html.LabelFor(x => x.AdditionalInfo, new { @class = "form-label" })
+    @Html.TextAreaFor(x => x.AdditionalInfo, new { @class = "form-control", rows = 2 })
 </div>
 
 <div class="my-3">
     @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
     {
-        LatLong = LatLong.FromCoords(Model.Lat, Model.Long),
-        QuerySource = "#" + Html.IdFor(x => x.LocationName)        
+        ExternalId = Model.ExternalId,
+        QuerySource = "#map-place-query"        
     })
 </div>

@@ -19,9 +19,11 @@ public class VenueLocation : ILocation
 
     public double Latitude { get; set; }
 
-    public LatLong LatLong => new LatLong(Latitude, Latitude);
+    public LatLong LatLong => new LatLong(Latitude, Longitude);
 
     public double Longitude { get; set; }
+
+    public string? MapQuery { get; set; }
 
     public string Name { get; set; } = string.Empty;
 

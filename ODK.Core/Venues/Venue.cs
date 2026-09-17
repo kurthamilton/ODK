@@ -23,8 +23,6 @@ public class Venue : IVersioned, IDatabaseEntity
     /// </summary>
     public const string SlugFallback = "venue";
 
-    public string? Address { get; set; }
-
     /// <summary>
     /// When this record of the place was made. A venue is never rewritten - a place that changes name or
     /// moves becomes a new venue - so this is what orders the record of a place over time.
