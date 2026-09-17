@@ -41,6 +41,32 @@ public class VenueQueryBuilder
 
     public IQueryBuilder<VenueWithLocationDto> WithLocation()
     {
+        var query = ToVenueWithLocationDto();
+        return ProjectTo(query);
+    }
+
+    public IQueryBuilder<VenueWithEventSummaryDto> WithEventSummary()
+    {
+        var query =
+            ToVenueWithLocationDto()
+            .Select(dto => new VenueWithEventSummaryDto
+            {
+                EventCount = Set<Event>()
+                    .Where(x => x.VenueId == dto.Venue.Id)
+                    .Count(),
+                LastEvent = Set<Event>()
+                    .Where(x => x.VenueId == dto.Venue.Id)
+                    .OrderByDescending(x => x.DateUtc)
+                    .FirstOrDefault(),
+                Location = dto.Location,
+                Venue = dto.Venue
+            });
+
+        return ProjectTo(query);
+    }
+
+    private IQueryable<VenueWithLocationDto> ToVenueWithLocationDto()
+    {
         var query =
             from venue in Query
             from location in Set<VenueLocation>()
@@ -51,28 +77,7 @@ public class VenueQueryBuilder
                 Location = location,
                 Venue = venue
             };
-        return ProjectTo(query);
-    }
 
-    public IQueryBuilder<VenueWithEventSummaryDto> WithEventSummary()
-    {
-        var query =
-            from venue in Query
-            from venueLocation in Set<VenueLocation>()
-                .Where(x => x.VenueId == venue.Id)
-                .DefaultIfEmpty()
-            select new VenueWithEventSummaryDto
-            {
-                EventCount = Set<Event>()
-                    .Where(x => x.VenueId == venue.Id)
-                    .Count(),
-                LastEvent = Set<Event>()
-                    .Where(x => x.VenueId == venue.Id)
-                    .OrderByDescending(x => x.DateUtc)
-                    .FirstOrDefault(),
-                Venue = venue,
-                VenueLocation = venueLocation
-            };
-        return ProjectTo(query);
+        return query;
     }
 }

@@ -61,7 +61,7 @@
 
             @foreach (var venueDto in Model.Venues.OrderBy(x => x.Venue.Name))
             {
-                var (venue, location, lastEvent) = (venueDto.Venue, venueDto.VenueLocation, venueDto.LastEvent);
+                var (venue, location, lastEvent) = (venueDto.Venue, venueDto.Location, venueDto.LastEvent);
 
                 <tr>
                     <td>
