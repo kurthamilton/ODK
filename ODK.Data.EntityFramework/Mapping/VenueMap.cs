@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Venues;
+using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -17,6 +18,9 @@ public class VenueMap : IEntityTypeConfiguration<Venue>
 
         builder.Property(x => x.Address)
             .HasMaxLength(255);
+
+        builder.Property(x => x.CreatedUtc)
+            .HasConversion<UtcDateTimeConverter>();
 
         builder.Property(x => x.MapQuery)
             .HasMaxLength(255);

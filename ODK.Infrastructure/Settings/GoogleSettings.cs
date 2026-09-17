@@ -2,7 +2,5 @@
 
 public class GoogleSettings
 {
-    public required GoogleGeolocationSettings Geolocation { get; init; }
-
-    public required GoogleMapsSettings Maps { get; init; }
+    public required Dictionary<PlatformKey, GooglePlatformSettings> Platforms { get; init; }
 }

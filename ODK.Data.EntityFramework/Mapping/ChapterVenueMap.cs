@@ -20,6 +20,9 @@ public class ChapterVenueMap : IEntityTypeConfiguration<ChapterVenue>
         builder.Property(x => x.ArchivedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
 
+        builder.Property(x => x.AdditionalInfo)
+            .HasMaxLength(ChapterVenue.AdditionalInfoMaxLength);
+
         builder.Property(x => x.Name)
             .HasMaxLength(Venue.NameMaxLength);
 

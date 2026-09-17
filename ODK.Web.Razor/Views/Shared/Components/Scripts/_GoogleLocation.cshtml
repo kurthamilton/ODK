@@ -2,7 +2,10 @@
 @inject GoogleLocationViewSettings Settings
 @{
     var apiKey = Settings.ApiKey;
-    var url = $"https://maps.googleapis.com/maps/api/js?key={apiKey}&libraries=places&v=beta";
+    /* The quarterly channel, not beta: AutocompleteSuggestion and Place are generally available, and beta
+       carries no SLA and no deprecation notice. Quarterly over weekly so the library changes under the
+       site four times a year rather than every week. */
+    var url = $"https://maps.googleapis.com/maps/api/js?key={apiKey}&libraries=places&v=quarterly";
 }
 
 <script src="@url"></script>
