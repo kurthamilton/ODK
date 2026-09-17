@@ -1,2 +1,2 @@
-dotnet tool update --global dotnet-ef
+dotnet tool update dotnet-ef
 pause

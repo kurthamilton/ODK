@@ -10,4 +10,6 @@ public class VenueWithEventSummaryDto
     public required Event? LastEvent { get; init; }
 
     public required Venue Venue { get; init; }
+
+    public required VenueLocation? VenueLocation { get; init; }
 }

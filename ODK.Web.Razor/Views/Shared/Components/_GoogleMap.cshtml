@@ -1,37 +1,45 @@
-﻿@using System.Web
+﻿@using ODK.Core.Web
 @using ODK.Web.Common.Settings
 @using ODK.Web.Razor.Models.Components
 @model GoogleMapViewModel
 @inject GoogleMapViewSettings Settings
 @{
-    if (string.IsNullOrEmpty(Model.Query) && 
-        string.IsNullOrEmpty(Model.QuerySource) && 
-        Model.LatLong == null)
+    var query = Model.GoogleMapsQuery();
+
+    if (string.IsNullOrEmpty(query) && 
+        string.IsNullOrEmpty(Model.QuerySource))
     {
         return;
     }
 
-    var baseUrl = $"https://www.google.com/maps/embed/v1/place?key={Settings.ApiKey}&q={{query}}";
-    if (Model.Zoom >= 0)
+    var urlBuilder = UrlBuilder.Base("https://www.google.com/maps/embed/v1/place")
+        .Query("key", Settings.ApiKey);
+
+    if (!string.IsNullOrEmpty(query))
     {
-        baseUrl += $"&zoom={Model.Zoom}";
+        urlBuilder.Query("q", query);
     }
 
-    var url = string.Empty;
-    if (!string.IsNullOrEmpty(Model.Query))
+    if (Model.Zoom >= 0)
     {
-        url = baseUrl.Replace("{query}", HttpUtility.UrlEncode(Model.Query));
+        urlBuilder.Query("zoom", Model.Zoom.Value.ToString());
     }
-    else if (Model.LatLong != null)
-    {
-        url = baseUrl.Replace("{query}", $"{Model.LatLong.Value.Lat},{Model.LatLong.Value.Long}");
-    }
+
+    var url = urlBuilder.Build();
 }
 
 <iframe height="450" frameborder="0" style="border:0; width: 100%;"
         src="@url"
-        data-map-baseurl="@baseUrl"
+        data-map-baseurl="@url"
         data-map-query="@Model.QuerySource"
         allowfullscreen>
 </iframe>
+
+@if (Model.ShowLink)
+{
+    <p>
+        <a href="https://google.com/maps?q=@query" target="_blank">View in Google maps</a>
+    </p>
+}
+
 <script src="~/js/odk.maps.js" asp-append-version="true"></script>

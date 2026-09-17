@@ -1,5 +1,6 @@
-﻿@using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Models.Admin.Venues.VenueFormViewModel
+﻿@using ODK.Web.Razor.Models.Admin.Venues
+@using ODK.Web.Razor.Models.Components
+@model VenueFormViewModel
 
 @* The lookup is what a venue is, so it comes first and is the only required field. The name below it
    arrives filled in from the place, and is edited only to call the venue something else. *@
@@ -10,21 +11,19 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.Name, new { @class = "form-label" })
-    @await Html.PartialAsync("Components/_FormLabelSubtitle", "What your group calls this venue")
     @Html.TextBoxFor(x => x.Name, new { @class = "form-control", data_location_name = "" })
     @Html.ValidationMessageFor(x => x.Name)
 </div>
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.AdditionalInfo, new { @class = "form-label" })
-    @await Html.PartialAsync("Components/_FormLabelSubtitle", "How to find it - which entrance, who to ask for")
-    @Html.TextAreaFor(x => x.AdditionalInfo, new { @class = "form-control", rows = 3 })
+    @Html.TextAreaFor(x => x.AdditionalInfo, new { @class = "form-control", rows = 2 })
 </div>
 
 <div class="my-3">
     @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
     {
-        Query = !string.IsNullOrEmpty(Model.ExternalId) ? $"place_id:{Model.ExternalId}" : null,
-        QuerySource = "#map-place-query"
+        ExternalId = Model.ExternalId,
+        QuerySource = "#map-place-query"        
     })
 </div>

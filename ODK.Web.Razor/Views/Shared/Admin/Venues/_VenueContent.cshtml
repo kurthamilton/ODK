@@ -20,7 +20,7 @@
         AdditionalInfo = Model.ChapterVenue.AdditionalInfo,
         ExternalId = Model.Location?.ExternalId,
         Lat = Model.Location?.LatLong.Lat,
-        LocationName = Model.Location?.Name ?? Model.Venue.MapQuery ?? string.Empty,
+        LocationName = Model.Location?.Name ?? Model.Location?.MapQuery ?? string.Empty,
         Long = Model.Location?.LatLong.Long,
         Name = Model.ChapterVenue.Name ?? Model.Venue.Name
     })

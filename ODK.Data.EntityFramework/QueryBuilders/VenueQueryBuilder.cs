@@ -58,6 +58,9 @@ public class VenueQueryBuilder
     {
         var query =
             from venue in Query
+            from venueLocation in Set<VenueLocation>()
+                .Where(x => x.VenueId == venue.Id)
+                .DefaultIfEmpty()
             select new VenueWithEventSummaryDto
             {
                 EventCount = Set<Event>()
@@ -67,7 +70,8 @@ public class VenueQueryBuilder
                     .Where(x => x.VenueId == venue.Id)
                     .OrderByDescending(x => x.DateUtc)
                     .FirstOrDefault(),
-                Venue = venue
+                Venue = venue,
+                VenueLocation = venueLocation
             };
         return ProjectTo(query);
     }

@@ -336,6 +336,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             ExternalId = place.ExternalId,
             Latitude = place.Location.Lat,
             Longitude = place.Location.Long,
+            MapQuery = place.FormattedAddress,
             Name = place.FormattedAddress ?? place.Name,
             VenueId = venue.Id
         });

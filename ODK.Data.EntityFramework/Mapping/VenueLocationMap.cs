@@ -28,6 +28,9 @@ public class VenueLocationMap : IEntityTypeConfiguration<VenueLocation>
             .HasColumnType("geography")
             .HasComputedColumnSql("[geography]::Point([Latitude],[Longitude],(4326))", stored: true);
 
+        builder.Property(x => x.MapQuery)
+            .HasMaxLength(255);
+
         builder.HasOne<Venue>()
             .WithOne()
             .HasForeignKey<VenueLocation>(x => x.VenueId);

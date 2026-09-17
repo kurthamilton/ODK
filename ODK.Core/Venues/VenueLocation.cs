@@ -23,6 +23,8 @@ public class VenueLocation : ILocation
 
     public double Longitude { get; set; }
 
+    public string? MapQuery { get; set; }
+
     public string Name { get; set; } = string.Empty;
 
     public Guid VenueId { get; set; }
