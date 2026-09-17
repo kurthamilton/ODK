@@ -1,6 +1,6 @@
 ﻿namespace ODK.Infrastructure.Settings;
 
-public record OAuthGoogleSettings
+public record GoogleOAuthSettings
 {
     public required string ClientId { get; set; }
 

@@ -25,6 +25,12 @@ public class Venue : IVersioned, IDatabaseEntity
 
     public string? Address { get; set; }
 
+    /// <summary>
+    /// When this record of the place was made. A venue is never rewritten - a place that changes name or
+    /// moves becomes a new venue - so this is what orders the record of a place over time.
+    /// </summary>
+    public DateTime CreatedUtc { get; set; }
+
     public Guid Id { get; set; }
 
     public string? MapQuery { get; set; }

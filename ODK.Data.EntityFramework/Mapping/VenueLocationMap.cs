@@ -13,6 +13,14 @@ public class VenueLocationMap : IEntityTypeConfiguration<VenueLocation>
 
         builder.HasKey(x => x.VenueId);
 
+        builder.Property(x => x.ExternalId)
+            .HasMaxLength(VenueLocation.ExternalIdMaxLength);
+
+        /* Not unique: a place keeps its ID while its name or position change, and each of those is its own
+           venue with its own location. Indexed because resolving a submitted place to the venue recording
+           it is the hot path. */
+        builder.HasIndex(x => x.ExternalId);
+
         /* Shadow property mapped to the LatLong column to enable server-side spatial queries. The
            database derives the point from the two coordinates, so nothing writes it. */
         builder.Property<Point>("LatLongPoint")

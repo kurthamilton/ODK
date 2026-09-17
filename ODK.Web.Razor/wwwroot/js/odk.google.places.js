@@ -132,6 +132,10 @@
     function parseLocation(place) {
         const location = {};
 
+        // The id the server re-resolves the place by. Read from the Place rather than kept from the
+        // prediction so it travels with the same object the coordinates come from.
+        location.externalId = place.id;
+
         if (place.location) {
             location.lat = place.location.lat();
             location.long = place.location.lng();
@@ -165,9 +169,12 @@
         const $long = $container.querySelector('[data-location-long]');
         const $latlong = $container.querySelector('[data-location-latlong]');
         const $name = $container.querySelector('[data-location-name]');
+        const $externalId = $container.querySelector('[data-location-external-id]');
 
         $lat.value = location.lat;
         $long.value = location.long;
+
+        if ($externalId) $externalId.value = location.externalId ?? '';
 
         if ($latlong) {
             $latlong.value = `${location.lat},${location.long}`;

@@ -32,6 +32,7 @@ using ODK.Services.Integrations.Emails.Brevo;
 using ODK.Services.Integrations.Emails.Reoon;
 using ODK.Services.Integrations.Emails.Smtp;
 using ODK.Services.Integrations.Geolocation;
+using ODK.Services.Integrations.Places;
 using ODK.Services.Integrations.Html;
 using ODK.Services.Integrations.Imaging;
 using ODK.Services.Integrations.Instagram;
@@ -50,6 +51,7 @@ using ODK.Services.Members.Workflows.Account;
 using ODK.Services.Members.Workflows.ChapterMembership;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
+using ODK.Services.Places;
 using ODK.Services.Platforms;
 using ODK.Services.Questions;
 using ODK.Services.Recaptcha;
@@ -302,12 +304,17 @@ public static class DependencyRegistrar
             .AddSingleton<IIpLocationLookup, IpLocationLookup>()
             .AddSingleton(new GeolocationServiceSettings
             {
-                GoogleApiKey = appSettings.Google.Geolocation.ApiKey,
-                GoogleDisabled = appSettings.Google.Geolocation.Disabled,
+                GoogleApiKey = ServedGoogle(appSettings).Geolocation.ServerApiKey,
+                GoogleDisabled = ServedGoogle(appSettings).Geolocation.Disabled,
                 IpDatabaseDirectory = appSettings.Geolocation.IpDatabaseDirectory,
                 PreloadIpDatabase = ServedPlatform
                     .Of(appSettings, appSettings.Geolocation.Platforms)
                     .PreloadIpDatabase
+            })
+            .AddScoped<IPlacesService, PlacesService>()
+            .AddSingleton(new PlacesServiceSettings
+            {
+                ApiKey = ServedGoogle(appSettings).Places.ServerApiKey
             })
             .AddScoped<IInstagramClient, InstagramClient>()
             .AddSingleton(new InstagramClientSettings
@@ -431,13 +438,13 @@ public static class DependencyRegistrar
 
     private static void ConfigureServiceSettings(IServiceCollection services, AppSettings appSettings)
     {
-        AuthSettings auth = appSettings.Auth;
-        OAuthSettings oauth = appSettings.OAuth;
-        RecaptchaSettings recaptcha = appSettings.Recaptcha;
+        var auth = appSettings.Auth;
+        var oauth = ServedGoogle(appSettings).OAuth;
+        var recaptcha = appSettings.Recaptcha;
 
         services.AddSingleton(new AccountViewModelServiceSettings
         {
-            GoogleClientId = oauth.Google.ClientId
+            GoogleClientId = oauth.ClientId
         });
 
         services.AddSingleton(new AuthenticationServiceSettings
@@ -485,22 +492,27 @@ public static class DependencyRegistrar
         });
     }
 
+    /* A key is restricted to the site that uses it, so which platform is served decides which one this
+       deployment may send. */
+    private static GooglePlatformSettings ServedGoogle(AppSettings appSettings)
+        => ServedPlatform.Of(appSettings, appSettings.Google.Platforms);
+
     /* The web layer's own mapped settings, declared in ODK.Web.Common so this project can see them - the
        consumers are middleware and controllers in ODK.Web.Razor, which it cannot. Same rule as the service
        settings above: a consumer takes what it needs, not AppSettings. */
     private static void ConfigureWebSettings(IServiceCollection services, AppSettings appSettings)
     {
-        GoogleMapsSettings maps = appSettings.Google.Maps;
+        GoogleMapsSettings maps = ServedGoogle(appSettings).Maps;
         RateLimitingSettings rateLimiting = appSettings.RateLimiting;
 
         services.AddSingleton(new GoogleLocationViewSettings
         {
-            ApiKey = maps.ApiKey
+            ApiKey = maps.ClientApiKey
         });
 
         services.AddSingleton(new GoogleMapViewSettings
         {
-            ApiKey = maps.ApiKey
+            ApiKey = maps.ClientApiKey
         });
 
         services.AddSingleton(new RateLimitingMiddlewareSettings

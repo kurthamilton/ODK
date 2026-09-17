@@ -61,6 +61,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         var venue = _unitOfWork.VenueRepository.Add(new Venue
         {
             Address = model.Address,
+            CreatedUtc = DateTime.UtcNow,
             MapQuery = model.LocationName,
             Name = name,
             Slug = CreateSlug(slugBase, slugCandidates, venueId: null)

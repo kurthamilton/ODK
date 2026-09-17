@@ -38,8 +38,6 @@ public class AppSettings
 
     public required MembersSettings Members { get; init; }
 
-    public required OAuthSettings OAuth { get; init; }
-
     public required PaymentsSettings Payments { get; init; }
 
     public required PayPalSettings PayPal { get; init; }
