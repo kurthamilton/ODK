@@ -173,8 +173,8 @@ Three axes, composed by the filter:
     `MemberApprovalTests` covers the machine's `PendingApproval` edges — joining a group that vets new
     members, and an admin letting one in — and is Group Squirrel only, because the approvals route is
     declared `PlatformType.GroupSquirrel` in the app.
-  - **`ChapterPublicationWorkflows`** — a group becoming findable: the site admin approving it
-    (`SiteAdminTests`) and its owner publishing it (`GroupOwnerTests`). Applied at *method* level, because
+  - **`ChapterPublicationWorkflows`** — a group becoming findable: its owner submitting it and publishing
+    it (`GroupOwnerTests`), with the site admin approving it in between (`SiteAdminTests`). Applied at *method* level, because
     both fixtures are named for an **actor** rather than for a workflow and so will attract unrelated tests —
     a fixture-level category would swallow them silently. `GroupTests`'s not-approved and not-published cases
     stay out of it: they assert that the *join* is blocked, which is an edge of the membership machine, and
@@ -203,7 +203,7 @@ Three axes, composed by the filter:
 run.tests.bat                              # prompts for a category
 run.tests.bat AccountWorkflows             # every route to an account
 run.tests.bat ChapterMembershipWorkflows   # every route into a group
-run.tests.bat ChapterPublicationWorkflows  # approving and publishing a group
+run.tests.bat ChapterPublicationWorkflows  # submitting, approving and publishing a group
 run.tests.bat Stripe                       # just the payment tests
 run.tests.bat Venues                       # just the venue admin tests
 run.tests.bat SiteQuestions                # just the site FAQ tests
@@ -427,6 +427,22 @@ it as a backdrop.
 **Remember the blast radius:** a shared record's provisioning failure fails *every* dependent test at
 once, and a single leaked mutation cascades into false results elsewhere. That asymmetry is exactly why
 the bar for sharing is high and the default is local.
+
+**A group has to be submitted before it can be approved**, so `Provisioning.CreateGroup` alone is not
+enough for anything that then approves one: a group nobody has offered is a draft, and the site admin's
+queue lists only submitted ones — which is what makes the missing step look like a 30-second timeout on
+the approve button rather than a state error. `CreateSubmittedGroup` is the arrangement to reach for, and
+`CreatePublishedGroup` goes through it.
+
+**Submission is driven through the UI; the checklist it requires is recorded in the database.** Every
+step above submission has to be finished or skipped before the app will offer the button — a picture, a
+description, the privacy settings reviewed, the optional steps dismissed — and nearly every fixture wants
+a published group while none of them are about how one was set up. So `Provisioning.SubmitGroup` writes
+those rows through `ChapterChecklistDataHelper` and then clicks Submit for real, which keeps what a site
+admin sees something an owner actually put there. A recorded row wins outright over what the app would
+infer, which is what makes this work and also what makes it a lie worth containing: only
+`GroupOwnerTests.SubmitGroup_ChecklistComplete_SubmitsForApproval` completes the checklist the way an
+owner does, and it goes nowhere near the helper.
 
 ## DrunkenKnitwits specifics
 

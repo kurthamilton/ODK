@@ -79,6 +79,8 @@ public class SiteAdminRoutes
 
     public SiteAdminRoute Topics => Path("/topics");
 
+    public SiteAdminRoute Venues => Path("/venues");
+
     public SiteAdminRoute Workflows => Path("/workflows");
 
     /// <summary>
@@ -143,6 +145,7 @@ public class SiteAdminRoutes
         new(Referrals, "Referrals"),
         new(Subscriptions, "Subscriptions"),
         new(Topics, "Topics"),
+        new(Venues, "Venues"),
         new(Workflows, "Workflows")
     ];
 
@@ -153,6 +156,12 @@ public class SiteAdminRoutes
     public SiteAdminRoute Subscription(Guid id) => Subscriptions.Child($"/{id}");
 
     public SiteAdminRoute Topic(Guid id) => Topics.Child($"/{id}");
+
+    public SiteAdminRoute Venue(Guid id) => Venues.Child($"/{id}");
+
+    public SiteAdminRoute VenueBackfill(Guid id) => Venue(id).Child("/backfill");
+
+    public SiteAdminRoute VenueDelete(Guid id) => Venue(id).Child("/delete");
 
     private SiteAdminRoute Path(string subPath) => Index.Child(subPath);
 }

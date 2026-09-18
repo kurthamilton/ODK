@@ -85,7 +85,7 @@ public class NotificationService : INotificationService
 
     public async Task AddNewEventNotifications(
         Event @event,
-        Venue venue,
+        ChapterVenue chapterVenue,
         IReadOnlyCollection<Member> members,
         IReadOnlyCollection<MemberNotificationSettings> settings)
     {
@@ -104,7 +104,7 @@ public class NotificationService : INotificationService
                     TimeZone = x.TimeZone,
                     Culture = cultures[x.Id]
                 }),
-                venue.Name),
+                chapterVenue.GetName()),
             currentMembers,
             settings,
             entityId: @event.Id,

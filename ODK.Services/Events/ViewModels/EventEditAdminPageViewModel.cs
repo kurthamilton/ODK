@@ -9,9 +9,9 @@ public class EventEditAdminPageViewModel : EventAdminPageViewModelBase
 {
     public required IReadOnlyCollection<ChapterAdminMember> ChapterAdminMembers { get; init; }
 
+    public required IReadOnlyCollection<ChapterVenue> ChapterVenues { get; init; }
+
     public required Currency Currency { get; init; }
 
     public required IReadOnlyCollection<EventHost> Hosts { get; init; }
-
-    public required IReadOnlyCollection<Venue> Venues { get; init; }
 }

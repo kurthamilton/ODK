@@ -41,13 +41,13 @@ public abstract class EventTestsBase : OdkPageTest
 
         var venueName = $"E2E Venue {Guid.NewGuid():N}";
         await new VenueAdminPage(Page).CreateVenue(routes.VenueCreate, venueName, E2ESettings.VenueExternalId(0));
-        var venueId = await Venues.GetVenueId(group.ChapterId, venueName);
-        venueId.Should().NotBeNull();
+        var chapterVenueId = await Venues.GetChapterVenueId(group.ChapterId, venueName);
+        chapterVenueId.Should().NotBeNull();
 
         // Act - create an event setting only the required fields (Name, Venue, Date).
         var eventName = $"E2E Event {Guid.NewGuid():N}";
         var date = $"{DateTime.Today.AddDays(14):dd/MM/yyyy} 19:00";
-        await new EventAdminPage(Page).CreateEvent(routes.EventCreate, eventName, venueId!.Value, date);
+        await new EventAdminPage(Page).CreateEvent(routes.EventCreate, eventName, chapterVenueId!.Value, date);
 
         // Assert - the event was created for the chapter.
         var eventId = await Events.GetEventId(group.ChapterId, eventName);
@@ -97,22 +97,27 @@ public abstract class EventTestsBase : OdkPageTest
         await venueAdminPage.CreateVenue(routes.VenueCreate, oakVenue, E2ESettings.VenueExternalId(0));
         await venueAdminPage.CreateVenue(routes.VenueCreate, elmVenue, E2ESettings.VenueExternalId(1));
 
-        var oakVenueId = await Venues.GetVenueId(group.ChapterId, oakVenue);
-        var elmVenueId = await Venues.GetVenueId(group.ChapterId, elmVenue);
-        oakVenueId.Should().NotBeNull();
-        elmVenueId.Should().NotBeNull();
+        var oakChapterVenueId = await Venues.GetChapterVenueId(group.ChapterId, oakVenue);
+        var elmChapterVenueId = await Venues.GetChapterVenueId(group.ChapterId, elmVenue);
+        oakChapterVenueId.Should().NotBeNull();
+        elmChapterVenueId.Should().NotBeNull();
 
         var (oakEvent, elmEvent) = ($"E2E Oak Event {suffix}", $"E2E Elm Event {suffix}");
         var date = $"{DateTime.Today.AddDays(14):dd/MM/yyyy} 19:00";
 
         var eventAdminPage = new EventAdminPage(Page);
-        await eventAdminPage.CreateEvent(routes.EventCreate, oakEvent, oakVenueId!.Value, date);
-        await eventAdminPage.CreateEvent(routes.EventCreate, elmEvent, elmVenueId!.Value, date);
+        await eventAdminPage.CreateEvent(routes.EventCreate, oakEvent, oakChapterVenueId!.Value, date);
+        await eventAdminPage.CreateEvent(routes.EventCreate, elmEvent, elmChapterVenueId!.Value, date);
 
-        // Act - filter by the venue's slug, which is what the query string now carries.
+        /* Act - filter by the venue's slug, which is what the query string now carries. Read rather than
+           composed: a slug is built from the place the server looked up, so nothing named above predicts
+           it. The two venues are two different places, which is what makes their slugs differ. */
+        var oakSlug = await Venues.GetVenueSlug(group.ChapterId, oakVenue);
+        oakSlug.Should().NotBeNullOrEmpty();
+
         var eventsAdminPage = new EventsAdminPage(Page);
         var unfiltered = await eventsAdminPage.GetEventsTableText(routes.EventsAdmin);
-        var filtered = await eventsAdminPage.GetEventsTableText(routes.EventsAdmin, $"e2e-oak-{suffix}");
+        var filtered = await eventsAdminPage.GetEventsTableText(routes.EventsAdmin, oakSlug!);
 
         // Assert - unfiltered lists both; filtering by the Oak's slug drops the Elm's event. Checking
         // the unfiltered list first means a filtered miss can't be explained by the events not existing.
@@ -176,19 +181,27 @@ public abstract class EventTestsBase : OdkPageTest
         var routes = RoutesFor(group);
         await new LoginPage(Page).LogIn(owner.Email, owner.Password);
 
-        // Act - the owner creates a venue.
+        // Act - the owner creates a venue, calling it something of their own.
         var suffix = Guid.NewGuid().ToString("N");
-        var venueName = $"E2E Venue {suffix}";
-        await new VenueAdminPage(Page).CreateVenue(routes.VenueCreate, venueName, E2ESettings.VenueExternalId(0));
+        var groupsName = $"E2E Venue {suffix}";
+        await new VenueAdminPage(Page).CreateVenue(routes.VenueCreate, groupsName, E2ESettings.VenueExternalId(0));
 
-        // Assert - the venue now exists for the chapter, slugged from its name.
-        var exists = await Venues.VenueExists(group.ChapterId, venueName);
+        // Assert - the group has a venue under the name it gave.
+        var exists = await Venues.VenueExists(group.ChapterId, groupsName);
         exists.Should().BeTrue();
 
-        // The expected slug is spelled out rather than derived, so the test pins the real rules
-        // (lowercased, spaces to hyphens) instead of restating the app's implementation of them.
-        var slug = await Venues.GetVenueSlug(group.ChapterId, venueName);
-        slug.Should().Be($"e2e-venue-{suffix}");
+        /* Everything the venue itself is comes from the place the server looked up, so its name is the
+           place's rather than the one typed above. Asserted as a difference rather than against a literal:
+           which place this is, is configuration, and the test has no business knowing what it is called. */
+        var venueName = await Venues.GetVenueName(group.ChapterId, groupsName);
+        venueName.Should().NotBeNullOrEmpty();
+        venueName.Should().NotBe(groupsName);
+
+        /* Likewise the slug, which is the place's name and its town. The suffix is unique to the name
+           typed above, so a slug carrying it would be a slug still built from what the group called it. */
+        var slug = await Venues.GetVenueSlug(group.ChapterId, groupsName);
+        slug.Should().NotBeNullOrEmpty();
+        slug.Should().NotContain(suffix);
     }
 
     [Test]
@@ -205,44 +218,51 @@ public abstract class EventTestsBase : OdkPageTest
         var venueName = $"E2E Venue {suffix}";
         await new VenueAdminPage(Page).CreateVenue(routes.VenueCreate, $"  E2E   Venue  {suffix}  ", E2ESettings.VenueExternalId(1));
 
-        // Assert - the venue is stored under the normalised name. Looking it up by that name is itself
-        // the assertion: any surviving stray whitespace would make it a different name and find nothing.
+        /* Assert - the group's name for the venue is stored normalised. Looking it up by that name is
+           itself the assertion: any surviving stray whitespace would make it a different name and find
+           nothing. Only the group's name is at stake - the venue's own name and slug are the place's,
+           and nothing typed here reaches them. */
         var exists = await Venues.VenueExists(group.ChapterId, venueName);
         exists.Should().BeTrue();
-
-        var slug = await Venues.GetVenueSlug(group.ChapterId, venueName);
-        slug.Should().Be($"e2e-venue-{suffix}");
     }
 
+    /// <summary>
+    /// Two groups that add the same place end up on one venue, each under its own name for it.
+    /// </summary>
+    /// <remarks>
+    /// Only reachable end to end: reuse turns on the live lookup answering with the same name and
+    /// position both times, which a stubbed places service is in no position to demonstrate. It is also
+    /// deliberately invisible to a group - neither of these owners can tell the other is there - so the
+    /// shared venue id is the only thing there is to assert.
+    /// </remarks>
     [Test]
     [Category("Venues")]
-    public async Task CreateVenue_NameSlugsToAnExistingSlug_VersionsTheSlugAndStillCreates()
+    public async Task CreateVenue_SamePlaceAsAnotherGroup_SharesTheVenue()
     {
-        // Arrange - an owner with a published chapter on this platform.
-        var (owner, group) = await ProvisionOwnerChapter(GroupName());
-        var routes = RoutesFor(group);
-        await new LoginPage(Page).LogIn(owner.Email, owner.Password);
+        // Arrange - two owners, each with a published chapter of their own.
+        var (firstOwner, firstGroup) = await ProvisionOwnerChapter(GroupName());
+        var (secondOwner, secondGroup) = await ProvisionOwnerChapter(GroupName());
 
-        // A venue name is unique within a chapter, so two venues can never share one - the collision
-        // has to come from two *different* names that slug to the same value. Trailing punctuation is
-        // dropped by the slug rules, so these two names differ (satisfying the unique index) while both
-        // slugging to "e2e-venue-{suffix}".
         var suffix = Guid.NewGuid().ToString("N");
-        var firstName = $"E2E Venue {suffix}";
-        var secondName = $"E2E Venue {suffix}!";
-        var venueAdminPage = new VenueAdminPage(Page);
+        var (firstName, secondName) = ($"E2E First {suffix}", $"E2E Second {suffix}");
 
-        // Act - create both. CreateVenue throws if the form fails to redirect, so the second call
-        // reaching the venues list is itself the assertion that a collision doesn't block creation.
-        await venueAdminPage.CreateVenue(routes.VenueCreate, firstName, E2ESettings.VenueExternalId(0));
-        await venueAdminPage.CreateVenue(routes.VenueCreate, secondName, E2ESettings.VenueExternalId(1));
+        /* Act - both add the same place, each calling it something different. The first owner goes through
+           a browser of their own, which is how this suite acts as a second person: signing two owners in
+           and out of one browser is not what is under test here. */
+        await Provisioning.CreateVenue(
+            firstOwner, RoutesFor(firstGroup), firstName, E2ESettings.VenueExternalId(0), PlatformBaseUrl);
 
-        // Assert - both exist, the first keeps the unversioned slug, and the second is versioned.
-        var firstSlug = await Venues.GetVenueSlug(group.ChapterId, firstName);
-        var secondSlug = await Venues.GetVenueSlug(group.ChapterId, secondName);
+        await new LoginPage(Page).LogIn(secondOwner.Email, secondOwner.Password);
+        await new VenueAdminPage(Page).CreateVenue(
+            RoutesFor(secondGroup).VenueCreate, secondName, E2ESettings.VenueExternalId(0));
 
-        firstSlug.Should().Be($"e2e-venue-{suffix}");
-        secondSlug.Should().Be($"e2e-venue-{suffix}-2");
+        // Assert - one venue, reached by two links. The second create redirecting at all is half of it:
+        // "You already have this venue" refuses a place a group is on, and neither of these is.
+        var firstVenueId = await Venues.GetVenueIdForChapter(firstGroup.ChapterId, firstName);
+        var secondVenueId = await Venues.GetVenueIdForChapter(secondGroup.ChapterId, secondName);
+
+        firstVenueId.Should().NotBeNull();
+        secondVenueId.Should().Be(firstVenueId);
     }
 
     [Test]

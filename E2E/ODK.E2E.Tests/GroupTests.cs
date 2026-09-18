@@ -40,7 +40,7 @@ public class GroupTests : DefaultPageTest
     {
         // Arrange - an approved but not-yet-published group and a logged-in member.
         var owner = await Provisioning.NewAccount(SharedAccounts.GroupOwner);
-        var group = await Provisioning.CreateGroup(owner, $"E2E {Guid.NewGuid():N}");
+        var group = await Provisioning.CreateSubmittedGroup(owner, $"E2E {Guid.NewGuid():N}");
         await Provisioning.ApproveGroup(group.ChapterId);
         var member = await SharedAccounts.Get(SharedAccounts.GroupMember);
         await new LoginPage(Page).LogIn(member.Email, member.Password);

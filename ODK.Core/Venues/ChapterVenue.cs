@@ -4,7 +4,7 @@
 /// Links a venue to a chapter that uses it. A venue is site-level, so several chapters can hold events
 /// at the same one.
 /// </summary>
-public class ChapterVenue
+public class ChapterVenue : IDatabaseEntity, IChapterEntity
 {
     /// <summary>
     /// Longer than the site-level text columns because this is prose rather than a label - directions run
@@ -26,6 +26,8 @@ public class ChapterVenue
 
     public Guid ChapterId { get; set; }
 
+    public Guid Id { get; set; }
+
     /// <summary>
     /// This chapter's own name for the venue, overriding <see cref="Venue.Name"/>. Null means the
     /// chapter uses the site-level name.
@@ -39,4 +41,6 @@ public class ChapterVenue
     public Venue Venue { get; set; } = null!;
 
     public Guid VenueId { get; set; }
+
+    public string GetName() => !string.IsNullOrEmpty(Name) ? Name : Venue.Name;
 }

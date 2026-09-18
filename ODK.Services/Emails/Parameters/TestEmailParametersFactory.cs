@@ -56,6 +56,11 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
             }
             : null;
 
+    private static ChapterVenue TestChapterVenue() => new()
+    {
+        Venue = new Venue { Name = VenueName }
+    };
+
     /* A whole event rather than a bare one, so every event parameter resolves to something readable. An
        unfilled entity leaves event.name empty and dates it to DateTime.MinValue, which reads as a broken
        template rather than as a template with nothing filled in. */
@@ -76,11 +81,6 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
         new NewMemberTopic { Topic = TopicName, TopicGroup = TopicGroupName },
         new NewMemberTopic { Topic = $"{TopicName} 2", TopicGroup = TopicGroupName }
     ];
-
-    private static Venue TestVenue() => new()
-    {
-        Name = VenueName
-    };
 
     /* Only the types with a parameter this can answer. Null for the rest - there is nothing to add, and
        an empty set of the right class would say the same thing at more length. A type gains an entry here
@@ -135,7 +135,7 @@ public class TestEmailParametersFactory : ITestEmailParametersFactory
                 }
                 : null,
             EmailType.EventInvite => chapter != null
-                ? new EventInviteParameters(chapter, TestEvent(), TestVenue(), culture)
+                ? new EventInviteParameters(chapter, TestEvent(), TestChapterVenue(), culture)
                 {
                     RsvpUrl = urlProvider.EventRsvpUrl(chapter, "TEST"),
                     UnsubscribeUrl = urlProvider.EmailPreferences(chapter),

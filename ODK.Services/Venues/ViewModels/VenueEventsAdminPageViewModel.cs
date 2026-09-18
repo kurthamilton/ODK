@@ -9,9 +9,9 @@ public class VenueEventsAdminPageViewModel
 {
     public required Chapter Chapter { get; init; }
 
+    public required ChapterVenue ChapterVenue { get; init; }
+
     public required IReadOnlyCollection<Event> Events { get; init; }
 
     public required PlatformType Platform { get; init; }
-
-    public required Venue Venue { get; init; }
 }

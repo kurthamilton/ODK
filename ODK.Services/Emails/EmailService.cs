@@ -1,4 +1,4 @@
-﻿using System.Web;
+﻿using System.Net;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
@@ -107,10 +107,16 @@ public class EmailService : IEmailService
                 ? StringUtils.Coalesce(templates.ChapterEmail?.Subject, templates.SiteEmail.Subject)
                 : string.Empty;
 
+        var fromEmailAddress =
+            siteSettings.FromEmailAddresses.TryGetValue(options.Type, out var overriden) &&
+            !string.IsNullOrEmpty(overriden)
+                ? overriden
+                : siteSettings.FromEmailAddress;
+
         return new RenderedEmail
         {
             BodyHtml = layoutHtml.Interpolate(parameters),
-            FromEmailAddress = siteSettings.FromEmailAddress,
+            FromEmailAddress = fromEmailAddress,
             /* An email is addressed from the same name its wording refers to its group by, read back out of
                the parameters rather than resolved again, so the two cannot disagree. */
             FromName = parameters[EmailParameters.GroupNameName],
@@ -128,10 +134,8 @@ public class EmailService : IEmailService
 
         await SendEmail(request, new SendEmailOptions
         {
-            BodyHtml = string.Empty,
             Chapter = chapter,
             Parameters = parameters,
-            Subject = string.Empty,
             To = to.Select(x => x.ToEmailAddressee()).ToArray(),
             Type = type
         });
@@ -182,10 +186,8 @@ public class EmailService : IEmailService
         {
             await SendEmail(request, new SendEmailOptions
             {
-                BodyHtml = string.Empty,
                 Chapter = chapter,
                 Parameters = parameters,
-                Subject = string.Empty,
                 To = adminAddressees,
                 Type = EmailType.EventComment
             });
@@ -195,10 +197,8 @@ public class EmailService : IEmailService
         {
             await SendEmail(request, new SendEmailOptions
             {
-                BodyHtml = string.Empty,
                 Chapter = chapter,
                 Parameters = parameters,
-                Subject = string.Empty,
                 To = [replyToMember.ToEmailAddressee()],
                 Type = EmailType.EventCommentReply
             });
@@ -222,9 +222,7 @@ public class EmailService : IEmailService
     {
         return await SendEmail(request, new SendEmailOptions
         {
-            BodyHtml = string.Empty,
             Chapter = chapter,
-            Subject = string.Empty,
             Parameters = parameters,
             To = to.ToArray(),
             Type = type
@@ -249,6 +247,41 @@ public class EmailService : IEmailService
             Subject = subject,
             To = to.ToArray()
         });
+    }
+
+    public async Task<ServiceResult> SendEmail(IServiceRequest request, SendEmailOptions options)
+    {
+        var rendered = await RenderEmail(request, options);
+
+        var queuedEmail = _unitOfWork.QueuedEmailRepository.Add(new QueuedEmail
+        {
+            BodyHtml = rendered.BodyHtml,
+            ChapterId = options.Chapter?.Id,
+            CreatedUtc = DateTime.UtcNow,
+            FromEmailAddress = rendered.FromEmailAddress,
+            FromName = rendered.FromName,
+            Id = _unitOfWork.NewId(),
+            Subject = rendered.Subject
+        });
+
+        foreach (var recipient in options.To)
+        {
+            _unitOfWork.QueuedEmailRecipientRepository.Add(new QueuedEmailRecipient
+            {
+                EmailAddress = recipient.Address,
+                Id = _unitOfWork.NewId(),
+                Name = recipient.Name,
+                QueuedEmailId = queuedEmail.Id
+            });
+        }
+
+        await _unitOfWork.SaveChanges();
+
+        _backgroundTaskService.Enqueue(
+            () => SendQueuedEmailTask(queuedEmail.Id),
+            BackgroundTaskQueueType.Emails);
+
+        return ServiceResult.Successful();
     }
 
     // Public for Hangfire
@@ -348,12 +381,12 @@ public class EmailService : IEmailService
            dictionary too - which is why the layout needs no audience of its own. */
         parameters[EmailParameters.TitleName] =
             EmailTitle.For(siteSettings, chapterEmailSettings, recipientType)
-                .Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
+                .Interpolate(parameters.AsReadOnly(), WebUtility.HtmlEncode);
 
         var body = !string.IsNullOrEmpty(options.BodyHtml)
             ? options.BodyHtml
             : templateHtml ?? string.Empty;
-        body = body.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
+        body = body.Interpolate(parameters.AsReadOnly(), WebUtility.HtmlEncode);
 
         foreach (var htmlParameter in parameters.Where(x => x.Key.StartsWith(EmailParameters.HtmlPrefix)))
         {
@@ -367,40 +400,5 @@ public class EmailService : IEmailService
         parameters[EmailParameters.BodyName] = body;
 
         return parameters.AsReadOnly();
-    }
-
-    private async Task<ServiceResult> SendEmail(IServiceRequest request, SendEmailOptions options)
-    {
-        var rendered = await RenderEmail(request, options);
-
-        var queuedEmail = _unitOfWork.QueuedEmailRepository.Add(new QueuedEmail
-        {
-            BodyHtml = rendered.BodyHtml,
-            ChapterId = options.Chapter?.Id,
-            CreatedUtc = DateTime.UtcNow,
-            FromEmailAddress = rendered.FromEmailAddress,
-            FromName = rendered.FromName,
-            Id = _unitOfWork.NewId(),
-            Subject = rendered.Subject
-        });
-
-        foreach (var recipient in options.To)
-        {
-            _unitOfWork.QueuedEmailRecipientRepository.Add(new QueuedEmailRecipient
-            {
-                EmailAddress = recipient.Address,
-                Id = _unitOfWork.NewId(),
-                Name = recipient.Name,
-                QueuedEmailId = queuedEmail.Id
-            });
-        }
-
-        await _unitOfWork.SaveChanges();
-
-        _backgroundTaskService.Enqueue(
-            () => SendQueuedEmailTask(queuedEmail.Id),
-            BackgroundTaskQueueType.Emails);
-
-        return ServiceResult.Successful();
     }
 }

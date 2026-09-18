@@ -2181,13 +2181,13 @@ public static class ChapterAdminServiceTests
 
         var chapter = context.CreateChapter(owner: currentMember);
 
-        var venue = context.CreateVenue(chapter);
+        var chapterVenue = context.CreateChapterVenue(chapter);
 
-        context.CreateEvent(chapter, venue, date: DateTime.UtcNow.AddDays(-1));
-        context.CreateEvent(chapter, venue, date: DateTime.UtcNow.AddDays(4));
-        context.CreateEvent(chapter, venue, date: DateTime.UtcNow.AddDays(1));
-        context.CreateEvent(chapter, venue, date: DateTime.UtcNow.AddDays(3));
-        context.CreateEvent(chapter, venue, date: DateTime.UtcNow.AddDays(2));
+        context.CreateEvent(chapter, chapterVenue, date: DateTime.UtcNow.AddDays(-1));
+        context.CreateEvent(chapter, chapterVenue, date: DateTime.UtcNow.AddDays(4));
+        context.CreateEvent(chapter, chapterVenue, date: DateTime.UtcNow.AddDays(1));
+        context.CreateEvent(chapter, chapterVenue, date: DateTime.UtcNow.AddDays(3));
+        context.CreateEvent(chapter, chapterVenue, date: DateTime.UtcNow.AddDays(2));
 
         var service = CreateChapterAdminService(context);
 
@@ -3677,8 +3677,7 @@ public static class ChapterAdminServiceTests
             ChapterId = chapter.Id,
             FacebookName = null,
             InstagramName = null,
-            TwitterName = null,
-            Version = []
+            TwitterName = null
         };
 
     private static ChapterPrivacySettings CreateChapterPrivacySettings(Chapter chapter)

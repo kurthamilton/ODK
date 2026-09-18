@@ -155,7 +155,7 @@ public static class EmailTemplateParametersTests
 
         if (parametersType == typeof(EventInviteParameters))
         {
-            return new EventInviteParameters(Chapter(), Event(), Venue(), CultureInfo.InvariantCulture)
+            return new EventInviteParameters(Chapter(), Event(), ChapterVenue(), CultureInfo.InvariantCulture)
             {
                 RsvpUrl = "value",
                 UnsubscribeUrl = "value",
@@ -330,10 +330,13 @@ public static class EmailTemplateParametersTests
         new NewMemberTopic { Topic = "Test topic", TopicGroup = "Test topic group" }
     ];
 
-    private static Venue Venue() => new()
+    private static ChapterVenue ChapterVenue() => new()
     {
-        Id = Guid.NewGuid(),
-        Name = "Test venue"
+        Venue = new Venue
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test venue"
+        }
     };
 
     private static IEnumerable<Type> ParameterTypes() => typeof(EmailTypeParameters).Assembly

@@ -34,7 +34,7 @@ public interface INotificationService
 
     Task AddNewEventNotifications(
         Event @event,
-        Venue venue,
+        ChapterVenue chapterVenue,
         IReadOnlyCollection<Member> members,
         IReadOnlyCollection<MemberNotificationSettings> settings);
 

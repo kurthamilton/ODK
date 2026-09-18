@@ -1,6 +1,6 @@
 ﻿namespace ODK.Core.Venues;
 
-public class Venue : IVersioned, IDatabaseEntity
+public class Venue : IDatabaseEntity
 {
     /// <summary>
     /// Matches the nvarchar(255) the database already uses for Chapters.Name, Chapters.Slug and
@@ -31,8 +31,6 @@ public class Venue : IVersioned, IDatabaseEntity
 
     public Guid Id { get; set; }
 
-    public string? MapQuery { get; set; }
-
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
@@ -40,6 +38,4 @@ public class Venue : IVersioned, IDatabaseEntity
     /// changes when the venue is renamed; <see cref="Id"/> is canonical.
     /// </summary>
     public string Slug { get; set; } = string.Empty;
-
-    public byte[] Version { get; set; } = [];
 }

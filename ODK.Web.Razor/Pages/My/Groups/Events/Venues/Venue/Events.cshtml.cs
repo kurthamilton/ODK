@@ -6,10 +6,10 @@ public class EventsModel : OdkGroupAdminPageModel
 {
     public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Events;
 
-    public Guid VenueId { get; private set; }
+    public Guid ChapterVenueId { get; private set; }
 
-    public void OnGet(Guid venueId)
+    public void OnGet(Guid chapterVenueId)
     {
-        VenueId = venueId;
+        ChapterVenueId = chapterVenueId;
     }
 }

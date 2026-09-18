@@ -28,16 +28,16 @@ public sealed class EventInviteParameters : EmailTypeParameters
     private const string UrlName = "event.url";
 
     private readonly Chapter _chapter;
+    private readonly ChapterVenue _chapterVenue;
     private readonly CultureInfo _culture;
     private readonly Event _event;
-    private readonly Venue _venue;
 
-    public EventInviteParameters(Chapter chapter, Event @event, Venue venue, CultureInfo culture)
+    public EventInviteParameters(Chapter chapter, Event @event, ChapterVenue chapterVenue, CultureInfo culture)
     {
         _chapter = chapter;
+        _chapterVenue = chapterVenue;
         _culture = culture;
         _event = @event;
-        _venue = venue;
     }
 
     public static IReadOnlyCollection<string> Names { get; } =
@@ -62,7 +62,7 @@ public sealed class EventInviteParameters : EmailTypeParameters
     {
         Add(values, DateName, _chapter.ToLocalTime(_event.DateUtc).ToString("dddd dd MMMM, yyyy", _culture));
         Add(values, EventIdName, _event.Id.ToString());
-        Add(values, LocationName, _venue.Name);
+        Add(values, LocationName, _chapterVenue.GetName());
         Add(values, NameName, _event.GetDisplayName());
         Add(values, RsvpUrlName, RsvpUrl);
         Add(values, TimeName, _event.ToLocalTimeString(_chapter.TimeZone));

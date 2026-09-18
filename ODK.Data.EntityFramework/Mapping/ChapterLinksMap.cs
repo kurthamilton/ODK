@@ -24,9 +24,6 @@ public class ChapterLinksMap : IEntityTypeConfiguration<ChapterLinks>
         builder.Property(x => x.WhatsApp)
             .HasMaxLength(255);
 
-        builder.Property(x => x.Version)
-            .IsRowVersion();
-
         builder.HasOne<Chapter>()
             .WithOne()
             // No action, matching the constraint the database already enforces - unlike its siblings, which

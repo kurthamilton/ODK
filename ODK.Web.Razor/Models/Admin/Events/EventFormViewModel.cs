@@ -9,9 +9,9 @@ public class EventFormViewModel : EventFormSubmitViewModel
 {
     public required Chapter Chapter { get; init; }
 
+    public required IReadOnlyCollection<ChapterVenue> ChapterVenues { get; init; }
+
     public required Currency Currency { get; init; }
 
     public required IReadOnlyCollection<SiteFeatureType> OwnerSubscriptionFeatures { get; init; }
-
-    public required IReadOnlyCollection<Venue> Venues { get; init; }
 }

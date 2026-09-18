@@ -3,7 +3,6 @@ using ODK.Core;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
-using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Venues;
 using ODK.Services.Geolocation;
 using ODK.Services.Places;
@@ -23,25 +22,30 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     private readonly ILatLongCalculator _latLongCalculator;
     private readonly IPlacesService _placesService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IVenueSlugService _venueSlugService;
 
     public VenueAdminService(
         IUnitOfWork unitOfWork,
         IPlacesService placesService,
-        ILatLongCalculator latLongCalculator)
+        ILatLongCalculator latLongCalculator,
+        IVenueSlugService venueSlugService)
         : base(unitOfWork)
     {
         _latLongCalculator = latLongCalculator;
         _placesService = placesService;
         _unitOfWork = unitOfWork;
+        _venueSlugService = venueSlugService;
     }
 
-    public async Task<ServiceResult> ArchiveVenue(IMemberChapterAdminServiceRequest request, Guid venueId)
+    public async Task<ServiceResult> ArchiveVenue(IMemberChapterAdminServiceRequest request, Guid chapterVenueId)
     {
         var chapter = request.Chapter;
 
         var chapterVenue = await GetChapterAdminRestrictedContent(
             request,
-            x => x.ChapterVenueRepository.Query().ForChapter(chapter.Id).ForVenue(venueId).GetSingle());
+            x => x.ChapterVenueRepository.GetById(chapterVenueId));
+
+        OdkAssertions.BelongsToChapter(chapterVenue, chapter.Id);
 
         if (chapterVenue.ArchivedUtc != null)
         {
@@ -77,23 +81,35 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         }
 
         var place = placeResult.Place;
-        var slugBase = SlugBase(place);
+        var slugBase = _venueSlugService.SlugBase(place);
 
-        var (latest, chapterVenues, slugCandidates) = await GetChapterAdminRestrictedContent(
+        var (latestVenue, slugCandidates) = await GetChapterAdminRestrictedContent(
             request,
             x => x.VenueRepository.GetLatestByExternalLocationId(place.ExternalId),
-            x => x.ChapterVenueRepository.Query(q => q.ForChapter(chapter.Id)).ToVenue().GetAll(),
             x => x.VenueRepository.Query(q => q.SlugStartingWith(slugBase)).GetAll());
 
         /* The same place described the same way is the same venue, however many chapters reach it. A
            different name or a moved position is a new record of it - see IsSameRecord. */
-        var venue = IsSameRecord(latest, place)
-            ? latest.Venue
-            : CreateVenue(place, slugBase, slugCandidates);
+        Venue venue;
 
-        if (chapterVenues.Any(x => x.Id == venue.Id))
+        if (IsSameRecord(latestVenue, place))
         {
-            return ServiceResult.Failure("You already have this venue");
+            venue = latestVenue.Venue;
+
+            var chapterVenueExists = await _unitOfWork.ChapterVenueRepository.Query()
+                .ForVenue(venue.Id)
+                .ForChapter(chapter.Id)
+                .Any()
+                .Run();
+
+            if (chapterVenueExists)
+            {
+                return ServiceResult.Failure("You already have this venue");
+            }
+        }
+        else
+        {
+            venue = CreateVenue(place, slugBase, slugCandidates);
         }
 
         _unitOfWork.ChapterVenueRepository.Add(new ChapterVenue
@@ -109,50 +125,35 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> DeleteVenue(IMemberChapterAdminServiceRequest request, Guid venueId)
+    public async Task<ChapterVenue> GetChapterVenue(IMemberChapterAdminServiceRequest request, Guid chapterVenueId)
     {
         var chapter = request.Chapter;
 
-        var (chapterVenue, hasEvents) = await GetChapterAdminRestrictedContent(
+        var chapterVenue = await GetChapterAdminRestrictedContent(
             request,
-            x => x.ChapterVenueRepository.Query(q => q.ForVenue(venueId).ForChapter(chapter.Id)).GetSingle(),
-            x => x.EventRepository.Query().ForVenue(venueId).Any());
+            x => x.ChapterVenueRepository.GetById(chapterVenueId));
 
-        // Every chapter's events, not just this one's: the venue itself is about to go.
-        if (hasEvents)
-        {
-            return ServiceResult.Failure("Cannot delete a venue with events");
-        }
-
-        // ChapterVenues and VenueLocations both cascade from Venues, so this is the whole delete.
-        _unitOfWork.VenueRepository.Delete(chapterVenue.Venue);
-        await _unitOfWork.SaveChanges();
-
-        return ServiceResult.Successful();
+        return OdkAssertions.BelongsToChapter(chapterVenue, chapter.Id);
     }
 
-    public async Task<Venue> GetVenue(
-        IMemberChapterAdminServiceRequest request, Guid venueId)
-        => await GetChapterVenue(request, venueId);
-
     public async Task<VenueEventsAdminPageViewModel> GetVenueEventsViewModel(
-        IMemberChapterAdminServiceRequest request, Guid venueId)
+        IMemberChapterAdminServiceRequest request, Guid chapterVenueId)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var (venue, events) = await GetChapterAdminRestrictedContent(
+        var (chapterVenue, events) = await GetChapterAdminRestrictedContent(
             request,
-            x => ChapterVenueQuery(x, chapter.Id, venueId),
-            x => x.EventRepository.GetByVenueId(venueId));
+            x => x.ChapterVenueRepository.GetById(chapterVenueId),
+            x => x.EventRepository.Query().ForChapterVenue(chapterVenueId).GetAll());
 
-        OdkAssertions.Exists(venue);
+        OdkAssertions.BelongsToChapter(chapterVenue, chapter.Id);
 
         return new VenueEventsAdminPageViewModel
         {
             Chapter = chapter,
+            ChapterVenue = chapterVenue,
             Events = events,
-            Platform = platform,
-            Venue = venue
+            Platform = platform
         };
     }
 
@@ -165,7 +166,6 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             request,
             x => x.ChapterVenueRepository
                 .Query(x => x.ForChapter(chapter.Id).Archived(archived))
-                .ToVenue()
                 .WithEventSummary()
                 .GetAll(),
             x => x.ChapterVenueRepository
@@ -183,34 +183,63 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     }
 
     public async Task<VenueAdminPageViewModel> GetVenueViewModel(
-        IMemberChapterAdminServiceRequest request, Guid venueId)
+        IMemberChapterAdminServiceRequest request, Guid chapterVenueId)
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var (chapterVenue, location) = await GetChapterAdminRestrictedContent(
+        var dto = await GetChapterAdminRestrictedContent(
             request,
-            x => x.ChapterVenueRepository
-                .Query(q => q.ForChapter(chapter.Id).ForVenue(venueId))
-                .GetSingle(),
-            x => x.VenueLocationRepository.GetByVenueId(venueId));
+            x => x.ChapterVenueRepository.Query()
+                .ById(chapterVenueId)
+                .WithLocation()
+                .GetSingle());
+
+        OdkAssertions.BelongsToChapter(dto.ChapterVenue, chapter.Id);
 
         return new VenueAdminPageViewModel
         {
             Chapter = chapter,
-            ChapterVenue = chapterVenue,
-            Location = location,
-            Platform = platform,
-            Venue = chapterVenue.Venue
+            ChapterVenue = dto.ChapterVenue,
+            Location = dto.Location,
+            Platform = platform
         };
     }
 
-    public async Task<ServiceResult> RestoreVenue(IMemberChapterAdminServiceRequest request, Guid venueId)
+    public async Task<ServiceResult> RemoveVenue(IMemberChapterAdminServiceRequest request, Guid chapterVenueId)
+    {
+        var chapter = request.Chapter;
+
+        var (chapterVenue, hasEvents) = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.ChapterVenueRepository.GetById(chapterVenueId),
+            x => x.EventRepository.Query().ForChapterVenue(chapterVenueId).Any());
+
+        OdkAssertions.BelongsToChapter(chapterVenue, chapter.Id);
+
+        // This chapter's events, because the venue is staying: another chapter's are not its business.
+        if (hasEvents)
+        {
+            return ServiceResult.Failure("Cannot remove a venue with events");
+        }
+
+        /* Only the link. The venue is site-level and other chapters may be using it, so one of them
+           tidying up cannot take it away from the rest. A venue nothing links to any more is an orphan,
+           and deleting those is the site admin's. */
+        _unitOfWork.ChapterVenueRepository.Delete(chapterVenue);
+        await _unitOfWork.SaveChanges();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> RestoreVenue(IMemberChapterAdminServiceRequest request, Guid chapterVenueId)
     {
         var chapter = request.Chapter;
 
         var chapterVenue = await GetChapterAdminRestrictedContent(
             request,
-            x => x.ChapterVenueRepository.Query().ForChapter(chapter.Id).ForVenue(venueId).GetSingle());
+            x => x.ChapterVenueRepository.GetById(chapterVenueId));
+
+        OdkAssertions.BelongsToChapter(chapterVenue, chapter.Id);
 
         if (chapterVenue.ArchivedUtc == null)
         {
@@ -225,13 +254,15 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     }
 
     public async Task<ServiceResult> UpdateVenue(
-        IMemberChapterAdminServiceRequest request, Guid id, VenueUpdateModel model)
+        IMemberChapterAdminServiceRequest request, Guid chapterVenueId, VenueUpdateModel model)
     {
         var chapter = request.Chapter;
 
         var chapterVenue = await GetChapterAdminRestrictedContent(
             request,
-            x => x.ChapterVenueRepository.Query(x => x.ForChapter(chapter.Id).ForVenue(id)).GetSingle());
+            x => x.ChapterVenueRepository.GetById(chapterVenueId));
+
+        OdkAssertions.BelongsToChapter(chapterVenue, chapter.Id);
 
         /* Only the link. The venue's name, slug and position are what the lookup returned, and are shared
            with every other chapter using the place. */
@@ -243,18 +274,6 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
         return ServiceResult.Successful();
     }
-
-    /// <summary>
-    /// A venue of this chapter's, by id. Membership is a row in ChapterVenues rather than a column on
-    /// the venue, so the query carries it: a venue no chapter link joins to this one is simply a miss,
-    /// which is the 404 that asserting on a loaded venue used to produce.
-    /// </summary>
-    private static IDeferredQuerySingleOrDefault<Venue> ChapterVenueQuery(
-        IUnitOfWork unitOfWork, Guid chapterId, Guid venueId)
-        => unitOfWork.ChapterVenueRepository
-            .Query(x => x.ForChapter(chapterId).ForVenue(venueId))
-            .ToVenue()
-            .GetSingleOrDefault();
 
     /// <summary>
     /// What this chapter calls the venue, or null where it calls it what the place is called. Stored as
@@ -277,58 +296,13 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             : null;
     }
 
-    /// <summary>
-    /// A slug unique across the site, from the place's name and the town it is in - "The Oak" in Sheffield
-    /// gives <c>the-oak-sheffield</c>. <paramref name="candidates"/> is every venue whose slug starts with
-    /// <paramref name="slugBase"/>, which is the whole set a version of it could collide with.
-    /// </summary>
-    /// <remarks>
-    /// Compared case-insensitively to match SQL Server's default collation, so the slugs stay unique under
-    /// the unique index on Slug.
-    /// </remarks>
-    private static string CreateSlug(string slugBase, IReadOnlyCollection<Venue> candidates)
-    {
-        var taken = candidates
-            .Select(x => x.Slug)
-            .Where(x => !string.IsNullOrEmpty(x))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        // slugBase is already a slug and never empty, so this always produces one.
-        return UrlUtils.SlugifyUnique(slugBase, taken, Venue.SlugMaxLength)!;
-    }
-
-    /// <summary>
-    /// The slug a place takes before versioning, and so the prefix that finds every slug it could collide
-    /// with. A place whose name and town have nothing sluggable between them falls back to a generic slug
-    /// that the versioning then keeps unique.
-    /// </summary>
-    private static string SlugBase(Place place)
-    {
-        var source = !string.IsNullOrEmpty(place.Locality)
-            ? $"{place.Name} {place.Locality}"
-            : place.Name;
-
-        return UrlUtils.SlugBase(source, Venue.SlugMaxLength) ?? Venue.SlugFallback;
-    }
-
-    private async Task<Venue> GetChapterVenue(
-        IMemberChapterAdminServiceRequest request, Guid venueId)
-    {
-        var venue = await GetChapterAdminRestrictedContent(
-            request,
-            x => ChapterVenueQuery(x, request.Chapter.Id, venueId));
-
-        return OdkAssertions.Exists(venue);
-    }
-
     private Venue CreateVenue(Place place, string slugBase, IReadOnlyCollection<Venue> slugCandidates)
     {
         var venue = _unitOfWork.VenueRepository.Add(new Venue
         {
             CreatedUtc = DateTime.UtcNow,
-            MapQuery = place.FormattedAddress,
             Name = place.Name,
-            Slug = CreateSlug(slugBase, slugCandidates)
+            Slug = _venueSlugService.CreateSlug(slugBase, slugCandidates)
         });
 
         _unitOfWork.VenueLocationRepository.Add(new VenueLocation

@@ -141,9 +141,9 @@
 
                         <h4 class="mb-0 mt-1">@nextEvent.Name</h4>
 
-                        @if (Model.NextEvent.Venue != null)
+                        @if (Model.NextEvent.ChapterVenue != null)
                         {
-                            @await Html.PartialAsync("Components/_Location", Model.NextEvent.Venue.Name)
+                            @await Html.PartialAsync("Components/_Location", Model.NextEvent.ChapterVenue.GetName())
                         }
                     </div>
 

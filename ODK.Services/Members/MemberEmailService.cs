@@ -1,4 +1,4 @@
-﻿using System.Web;
+﻿using System.Net;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Emails;
@@ -314,7 +314,7 @@ public class MemberEmailService : IMemberEmailService
     public async Task SendEventInvites(
         IChapterServiceRequest request,
         Event @event,
-        Venue venue,
+        ChapterVenue chapterVenue,
         IEnumerable<Member> members)
     {
         var chapter = request.Chapter;
@@ -333,7 +333,7 @@ public class MemberEmailService : IMemberEmailService
 
         foreach (var group in memberList.GroupBy(x => cultures[x.Id]))
         {
-            var parameters = new EventInviteParameters(chapter, @event, venue, group.Key)
+            var parameters = new EventInviteParameters(chapter, @event, chapterVenue, group.Key)
             {
                 RsvpUrl = rsvpUrl,
                 UnsubscribeUrl = unsubscribeUrl,
@@ -684,7 +684,7 @@ public class MemberEmailService : IMemberEmailService
         var parameters = new NewMemberParameters
         {
             EventsUrl = eventsUrl,
-            FirstName = HttpUtility.HtmlEncode(member.FirstName)
+            FirstName = WebUtility.HtmlEncode(member.FirstName)
         };
 
         await _emailService.SendEmail(
@@ -798,23 +798,18 @@ public class MemberEmailService : IMemberEmailService
         SiteContactMessage originalMessage,
         string reply)
     {
-        var to = new[]
-        {
-            new EmailAddressee(originalMessage.FromAddress, string.Empty)
-        };
-
-        var parameters = new ContactRequestReplyParameters
-        {
-            ReplyHtml = reply,
-            Text = originalMessage.Message
-        };
-
         return await _emailService.SendEmail(
             request,
-            chapter: null,
-            to,
-            EmailType.SiteContactRequestReply,
-            parameters);
+            new SendEmailOptions
+            {
+                Parameters = new ContactRequestReplyParameters
+                {
+                    ReplyHtml = reply,
+                    Text = originalMessage.Message
+                },
+                To = [new EmailAddressee(originalMessage.FromAddress, string.Empty)],
+                Type = EmailType.SiteContactRequestReply
+            });
     }
 
     public async Task SendSiteSubscriptionExpiredEmail(

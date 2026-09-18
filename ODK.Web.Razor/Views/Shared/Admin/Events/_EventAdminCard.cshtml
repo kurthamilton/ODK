@@ -32,7 +32,7 @@
             </span>
         </div>
 
-        @await Html.PartialAsync("Components/_Location", summary.Venue.Name)
+        @await Html.PartialAsync("Components/_Location", summary.ChapterVenue.GetName())
 
         <div class="mt-auto">
             <span class="badge bg-success">@responses.Yes going</span>

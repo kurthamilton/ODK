@@ -1,6 +1,6 @@
 ﻿namespace ODK.Core.Chapters;
 
-public class ChapterLinks : IVersioned, IChapterEntity
+public class ChapterLinks : IChapterEntity
 {
     public Guid ChapterId { get; set; }
 
@@ -15,8 +15,6 @@ public class ChapterLinks : IVersioned, IChapterEntity
     public string? InstagramName { get; set; }
 
     public string? TwitterName { get; set; }
-
-    public byte[] Version { get; set; } = [];
 
     public string? WhatsApp { get; set; }
 }

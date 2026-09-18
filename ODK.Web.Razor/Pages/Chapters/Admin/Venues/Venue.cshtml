@@ -9,7 +9,7 @@
     Model.Title = "Edit Venue | Admin";
 
     var request = Model.MemberChapterAdminServiceRequest;
-    var viewModel = await VenueAdminService.GetVenueViewModel(request, Model.Venue.Id);
+    var viewModel = await VenueAdminService.GetVenueViewModel(request, Model.ChapterVenue.Id);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel

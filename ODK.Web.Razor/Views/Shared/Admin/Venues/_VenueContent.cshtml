@@ -10,7 +10,7 @@
 {
     Chapter = Model.Chapter,
     Platform = Model.Platform,
-    Venue = Model.Venue
+    ChapterVenue = Model.ChapterVenue
 })
 
 <form method="post">
@@ -22,7 +22,7 @@
         Lat = Model.Location?.LatLong.Lat,
         LocationName = Model.Location?.Name ?? Model.Location?.MapQuery ?? string.Empty,
         Long = Model.Location?.LatLong.Long,
-        Name = Model.ChapterVenue.Name ?? Model.Venue.Name
+        Name = Model.ChapterVenue.GetName()
     })
     
     <button type="submit" class="btn btn-primary">Update</button>

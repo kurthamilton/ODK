@@ -9,7 +9,7 @@ namespace ODK.Services.Emails;
 /// </summary>
 public class RenderEmailOptions
 {
-    public required string BodyHtml { get; init; }
+    public string? BodyHtml { get; init; }
 
     public Chapter? Chapter { get; init; }
 
@@ -28,7 +28,7 @@ public class RenderEmailOptions
     /// </summary>
     public EmailRecipientType RecipientType { get; init; }
 
-    public required string Subject { get; init; }
+    public string? Subject { get; init; }
 
     public EmailType Type { get; init; } = EmailType.Layout;
 }

@@ -74,7 +74,7 @@
                                 Events = Model.UpcomingEvents
                                     .Select(x => new EventResponseViewModel(
                                         @event: x.Event,
-                                        venue: x.Venue,
+                                        chapterVenue: x.ChapterVenue,
                                         response: x.Response?.Type ?? EventResponseType.None,
                                         invited: false,
                                         responseSummary: x.ResponseSummary))
@@ -103,7 +103,7 @@
                                 Events = Model.RecentEvents
                                     .Select(x => new EventResponseViewModel(
                                         @event: x.Event,
-                                        venue: x.Venue,
+                                        chapterVenue: x.ChapterVenue,
                                         response: x.Response?.Type ?? EventResponseType.None,
                                         invited: false,
                                         responseSummary: x.ResponseSummary))

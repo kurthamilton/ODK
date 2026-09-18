@@ -6,7 +6,8 @@ namespace ODK.E2E.Tests.Pages;
 /// The admin create-event page (Default <c>/my/groups/{slug}/events/new</c>, DrunkenKnitwits
 /// <c>/{chapterName}/admin/events/create</c>). The shared form is identical on both platforms; the
 /// caller passes the platform-correct create path. The required fields are Name, Venue (a
-/// SlimSelect-enhanced dropdown) and Date (a flatpickr date+time input). On success the app redirects
+/// SlimSelect-enhanced dropdown of the group's venues, whose values are ChapterVenue ids - a venue is
+/// site-level and the group reaches it through the link) and Date (a flatpickr date+time input). On success the app redirects
 /// to the events list.
 /// </summary>
 internal class EventAdminPage
@@ -19,12 +20,13 @@ internal class EventAdminPage
     }
 
     public async Task CreateEvent(
-        string createUrl, string name, Guid venueId, string date, bool draft = false, int? attendeeLimit = null)
+        string createUrl, string name, Guid chapterVenueId, string date, bool draft = false,
+        int? attendeeLimit = null)
     {
         await _page.Navigate(createUrl);
 
         await _page.FillAsync("#Name", name);
-        await _page.SetEnhancedSelect("#Venue", venueId.ToString());
+        await _page.SetEnhancedSelect("#ChapterVenue", chapterVenueId.ToString());
         await _page.SetDatePicker("#Date", date);
 
         if (attendeeLimit != null)

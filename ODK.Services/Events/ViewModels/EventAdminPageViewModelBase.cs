@@ -9,9 +9,9 @@ public abstract class EventAdminPageViewModelBase
 {
     public required Chapter Chapter { get; init; }
 
+    public required ChapterVenue ChapterVenue { get; init; }
+
     public required Event Event { get; init; }
 
     public required IReadOnlyCollection<SiteFeatureType> OwnerSubscriptionFeatures { get; init; }
-
-    public required Venue Venue { get; init; }
 }

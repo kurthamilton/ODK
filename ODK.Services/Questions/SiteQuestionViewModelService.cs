@@ -1,4 +1,4 @@
-﻿using System.Web;
+﻿using System.Net;
 using ODK.Core.Exceptions;
 using ODK.Core.Utils;
 using ODK.Data.Core;
@@ -41,7 +41,7 @@ public class SiteQuestionViewModelService : ISiteQuestionViewModelService
                 {
                     // The answer is HTML the page renders unencoded, so its values are encoded going in.
                     // The name is rendered as text, which Razor encodes for itself.
-                    AnswerHtml = x.AnswerHtml.Interpolate(parameters, HttpUtility.HtmlEncode),
+                    AnswerHtml = x.AnswerHtml.Interpolate(parameters, WebUtility.HtmlEncode),
                     Name = x.Name.Interpolate(parameters)
                 })
                 .ToArray()

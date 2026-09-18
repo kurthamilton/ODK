@@ -15,6 +15,12 @@ public class LocationPickerViewModel
 
     public double? Long { get; set; }
 
+    /// <summary>
+    /// What to search for, for a form that knows it but must not put it in the box: a value there is a
+    /// location the picker has resolved, and text it never resolved would post no place at all.
+    /// </summary>
+    public string? Placeholder { get; set; }
+
     [DisplayName("Location")]
     [Required]
     public string LocationName { get; set; } = string.Empty;

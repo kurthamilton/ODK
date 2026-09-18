@@ -59,17 +59,18 @@
                 </tr>
             }
 
-            @foreach (var venueDto in Model.Venues.OrderBy(x => x.Venue.Name))
+            @foreach (var venueDto in Model.Venues.OrderBy(x => x.ChapterVenue.GetName()))
             {
-                var (venue, location, lastEvent) = (venueDto.Venue, venueDto.Location, venueDto.LastEvent);
+                var (chapterVenue, location, lastEvent) = (venueDto.ChapterVenue, venueDto.Location, venueDto.LastEvent);
+                var name = chapterVenue.GetName();
 
                 <tr>
                     <td>
-                        <span class="d-none" data-sort-value="@venue.Name"></span>
+                        <span class="d-none" data-sort-value="@name"></span>
                         @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
                         {
-                            Route = OdkRoutes.GroupAdmin.Venue(Model.Chapter, venue.Id),
-                            Text = venue.Name
+                            Route = OdkRoutes.GroupAdmin.Venue(Model.Chapter, chapterVenue.Id),
+                            Text = name
                         })
                     </td>
                     <td>@location?.MapQuery</td>
@@ -85,7 +86,7 @@
                         <div class="button-container">
                             @if (!Model.Archived)
                             {
-                                <form method="post" action="/groups/@Model.Chapter.Id/venues/@venue.Id/archive">
+                                <form method="post" action="/groups/@Model.Chapter.Id/venues/@chapterVenue.Id/archive">
                                     @Html.AntiForgeryToken()
                                     <button type="submit" class="btn btn-icon">
                                         <span data-bs-toggle="tooltip" data-bs-title="Archive">
@@ -96,7 +97,7 @@
                             }
                             else
                             {
-                                <form method="post" action="/groups/@Model.Chapter.Id/venues/@venue.Id/restore">
+                                <form method="post" action="/groups/@Model.Chapter.Id/venues/@chapterVenue.Id/restore">
                                     @Html.AntiForgeryToken()
                                     <button type="submit" class="btn btn-icon">
                                         <span data-bs-toggle="tooltip" data-bs-title="Restore">
@@ -108,14 +109,16 @@
 
                             @if (venueDto.EventCount == 0)
                             {
-                                <form method="post" action="/groups/@Model.Chapter.Id/venues/@venue.Id/delete">
+                                @* Removes this group's link to the venue. The venue is site-level and other
+                                   groups may use it, so nothing here deletes it. *@
+                                <form method="post" action="/groups/@Model.Chapter.Id/venues/@chapterVenue.Id/remove">
                                     @Html.AntiForgeryToken()
                                     @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
                                     {
-                                        Message = $"Are you sure you want to delete '{venue.Name}'?",
-                                        Title = "Delete venue"
+                                        Message = $"Remove '{name}' from this group?",
+                                        Title = "Remove venue"
                                     })
-                                    <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger">
+                                    <button data-bs-toggle="tooltip" data-bs-title="Remove" class="btn-icon text-danger">
                                         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
                                     </button>
                                 </form>

@@ -20,7 +20,7 @@ public class VenueModel : VenueAdminPageModel
     public async Task<IActionResult> OnPostAsync(VenueFormViewModel viewModel)
     {
         var request = MemberChapterAdminServiceRequest;
-        var result = await VenueAdminService.UpdateVenue(request, Venue.Id, new VenueUpdateModel
+        var result = await VenueAdminService.UpdateVenue(request, ChapterVenue.Id, new VenueUpdateModel
         {
             AdditionalInfo = viewModel.AdditionalInfo,
             Name = viewModel.Name

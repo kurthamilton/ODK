@@ -43,11 +43,11 @@
                     })
                 </td>
                 <td>
-                    @if (response.VenueId != null && !string.IsNullOrEmpty(response.VenueName))
+                    @if (response.ChapterVenueId != null && !string.IsNullOrEmpty(response.VenueName))
                     {
                         @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
                         {
-                            Route = OdkRoutes.GroupAdmin.Venue(Model.Chapter, response.VenueId.Value),
+                            Route = OdkRoutes.GroupAdmin.Venue(Model.Chapter, response.ChapterVenueId.Value),
                             Text = response.VenueName
                         })                        
                     }                 

@@ -11,6 +11,10 @@ public class EventCreateAdminPageViewModel
 
     public required Chapter Chapter { get; init; }
 
+    public Guid? ChapterVenueId { get; set; }
+
+    public required IReadOnlyCollection<ChapterVenue> ChapterVenues { get; init; }
+
     public required Currency Currency { get; init; }
 
     public required DateTime Date { get; init; }
@@ -18,8 +22,4 @@ public class EventCreateAdminPageViewModel
     public required ChapterEventSettings? EventSettings { get; init; }
 
     public required IReadOnlyCollection<SiteFeatureType> OwnerSubscriptionFeatures { get; init; }
-
-    public Guid? VenueId { get; set; }
-
-    public required IReadOnlyCollection<Venue> Venues { get; init; }
 }

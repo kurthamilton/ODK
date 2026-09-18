@@ -35,6 +35,7 @@ internal static class TestSiteEmailSettingsProvider
         {
             AdminTitle = adminTitle ?? AdminTitle,
             FromEmailAddress = fromEmailAddress,
+            FromEmailAddresses = new Dictionary<EmailType, string>(),
             MemberTitle = memberTitle ?? MemberTitle
         };
 

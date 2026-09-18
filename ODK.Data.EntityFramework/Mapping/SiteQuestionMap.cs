@@ -15,8 +15,5 @@ public class SiteQuestionMap : IEntityTypeConfiguration<SiteQuestion>
         builder.Property(x => x.Platform)
             .HasColumnName("PlatformTypeId")
             .HasConversion<int>();
-
-        builder.Property(x => x.Version)
-            .IsRowVersion();
     }
 }

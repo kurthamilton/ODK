@@ -1,6 +1,5 @@
 ﻿using System.Collections.Specialized;
 using System.Text;
-using System.Web;
 
 namespace ODK.Core.Web;
 
@@ -34,7 +33,7 @@ public class UrlBuilder
                 .AllKeys
                 .SelectMany(key => _query
                     .GetValues(key)?
-                    .Select(value => $"{key}={HttpUtility.UrlEncode(value)}") ?? []);
+                    .Select(value => $"{key}={Uri.EscapeDataString(value)}") ?? []);
 
             var queryString = string.Join('&', keyValues);
 

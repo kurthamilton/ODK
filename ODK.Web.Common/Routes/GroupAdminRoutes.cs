@@ -555,8 +555,8 @@ public class GroupAdminRoutes
         _ => Settings(chapter).Child("#topics", ChapterAdminSecurable.Topics, PlatformType.GroupSquirrel)
     };
 
-    public GroupAdminRoute Venue(Chapter chapter, Guid venueId) =>
-        Venues(chapter).Child($"/{venueId}");
+    public GroupAdminRoute Venue(Chapter chapter, Guid chapterVenueId) =>
+        Venues(chapter).Child($"/{chapterVenueId}");
 
     public GroupAdminRoute VenueCreate(Chapter chapter) =>
         Venues(chapter).Child(Platform switch
@@ -565,8 +565,8 @@ public class GroupAdminRoutes
             _ => "/new"
         });
 
-    public GroupAdminRoute VenueEvents(Chapter chapter, Guid venueId)
-        => Venue(chapter, venueId).Child("/events");
+    public GroupAdminRoute VenueEvents(Chapter chapter, Guid chapterVenueId)
+        => Venue(chapter, chapterVenueId).Child("/events");
 
     public GroupAdminRoute Venues(Chapter chapter) => Venues(chapter, archived: false);
 

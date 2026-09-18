@@ -73,7 +73,7 @@ public class EventViewModelService : IEventViewModelService
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id));
 
-        var (@event, venue) = (eventDto.Event, eventDto.Venue);
+        var (@event, chapterVenue) = (eventDto.Event, eventDto.ChapterVenue);
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -145,14 +145,14 @@ public class EventViewModelService : IEventViewModelService
             ApiPublicKey = publicApiKey,
             Chapter = chapter,
             ChapterPages = chapterPages,
+            ChapterVenue = canViewVenue ? chapterVenue : null,
             ClientSecret = externalCheckoutSession.ClientSecret,
             CurrentMember = currentMember,
             Event = @event,
             HasProfiles = hasProfiles,
             HasQuestions = hasQuestions,
             IsAdmin = isAdmin,
-            PaymentProvider = payment.PaymentProvider,
-            Venue = canViewVenue ? venue : null,
+            PaymentProvider = payment.PaymentProvider
         };
     }
 
@@ -201,7 +201,7 @@ public class EventViewModelService : IEventViewModelService
                 : new DefaultDeferredQueryMultiple<EventTicketPayment>(),
             x => x.EventWaitlistMemberRepository.GetByEventShortcode(shortcode));
 
-        var (@event, venue) = (eventDto.Event, eventDto.Venue);
+        var (@event, chapterVenue) = (eventDto.Event, eventDto.ChapterVenue);
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -273,7 +273,7 @@ public class EventViewModelService : IEventViewModelService
                     .ToArray());
 
         var venueLocation = canViewVenue
-            ? await _unitOfWork.VenueLocationRepository.GetByVenueId(venue.Id).Run()
+            ? await _unitOfWork.VenueLocationRepository.GetByVenueId(chapterVenue.VenueId).Run()
             : null;
 
         if (notifications.Count > 0)
@@ -294,6 +294,7 @@ public class EventViewModelService : IEventViewModelService
             CanView = canViewEvent,
             Chapter = chapter,
             ChapterPages = chapterPages,
+            ChapterVenue = canViewVenue ? chapterVenue : null,
             Comments = new EventCommentsDto
             {
                 Comments = comments,
@@ -313,7 +314,6 @@ public class EventViewModelService : IEventViewModelService
             SpacesLeft = responseDictionary.TryGetValue(EventResponseType.Yes, out var attendees)
                 ? @event.NumberOfSpacesLeft(attendees.Count)
                 : @event.NumberOfSpacesLeft(0),
-            Venue = canViewVenue ? venue : null,
             VenueLocation = venueLocation,
             WaitlistLength = waitlist.Count
         };
@@ -385,7 +385,7 @@ public class EventViewModelService : IEventViewModelService
         var viewModels = new List<EventResponseViewModel>();
         foreach (var eventDto in eventDtos)
         {
-            var (@event, venue) = (eventDto.Event, eventDto.Venue);
+            var (@event, chapterVenue) = (eventDto.Event, eventDto.ChapterVenue);
 
             var canViewEvent = _authorizationService
                 .CanViewEvent(@event, currentMember, memberSubscription, membershipSettings, chapterPrivacySettings);
@@ -404,7 +404,7 @@ public class EventViewModelService : IEventViewModelService
 
             var viewModel = new EventResponseViewModel(
                 @event: @event,
-                venue: canViewVenue ? venue : null,
+                chapterVenue: canViewVenue ? chapterVenue : null,
                 response: responseType,
                 invited: invited,
                 responseSummary: responseSummary);

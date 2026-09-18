@@ -17,9 +17,4 @@ public class VenueLocationRepository : WriteRepositoryBase<VenueLocation>, IVenu
         => Set()
             .Where(x => x.VenueId == venueId)
             .DeferredSingleOrDefault();
-
-    public IDeferredQueryMultiple<VenueLocation> GetByVenueIds(IEnumerable<Guid> venueIds)
-        => Set()
-            .Where(x => venueIds.Contains(x.VenueId))
-            .DeferredMultiple();
 }

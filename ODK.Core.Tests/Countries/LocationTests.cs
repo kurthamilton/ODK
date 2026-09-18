@@ -44,18 +44,22 @@ public static class LocationTests
         result.Lat.Should().NotBe(result.Long);
     }
 
+    /* Named by argument rather than by SetName, which replaces the whole test name: both tests here draw
+       on this source, so naming the case outright gives the two of them the same name. They still run -
+       the console runner tells them apart by id - but Visual Studio keys on the name, so it lists them and
+       then has no unique test to run. */
     private static IEnumerable<TestCaseData> Locations()
     {
         yield return new TestCaseData(
             new ChapterLocation { Latitude = Latitude, Longitude = Longitude, Name = "Sheffield" })
-            .SetName("ChapterLocation");
+            .SetArgDisplayNames(nameof(ChapterLocation));
 
         yield return new TestCaseData(
             new MemberLocation { Latitude = Latitude, Longitude = Longitude, Name = "Sheffield" })
-            .SetName("MemberLocation");
+            .SetArgDisplayNames(nameof(MemberLocation));
 
         yield return new TestCaseData(
             new VenueLocation { Latitude = Latitude, Longitude = Longitude, Name = "Sheffield" })
-            .SetName("VenueLocation");
+            .SetArgDisplayNames(nameof(VenueLocation));
     }
 }

@@ -10,5 +10,7 @@ public class SiteEmailSettings
 
     public required string FromEmailAddress { get; init; }
 
+    public required IReadOnlyDictionary<EmailType, string> FromEmailAddresses { get; init; }
+
     public required string MemberTitle { get; init; }
 }

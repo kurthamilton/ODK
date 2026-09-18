@@ -1,0 +1,112 @@
+﻿@using ODK.Services.Venues.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.SiteAdmin
+@model VenueSiteAdminPageViewModel
+@inject IOdkRoutes OdkRoutes
+@{
+    var venue = Model.Venue;
+    var location = Model.Location;
+    var resolved = !string.IsNullOrEmpty(location?.ExternalId);
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Icon = IconType.ArrowLeft,
+            Link = OdkRoutes.SiteAdmin.Venues.Path,
+            Text = "Back to venues"
+        }
+    }
+})
+
+<h2 class="content-heading">@venue.Name</h2>
+
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "What this venue is, and the place it resolves to. Backfilling sets its name, address and position " +
+    "from the place, the way creating one today would.")
+
+@await Html.PartialAsync("Components/_Section", new SectionViewModel
+{
+    Heading = new HeadingViewModel { Title = "As recorded", Type = HeadingType.H3 },
+    BodyContentFunc = @<dl class="row mb-0">
+        <dt class="col-sm-3">Name</dt>
+        <dd class="col-sm-9">@venue.Name</dd>
+
+        <dt class="col-sm-3">Slug</dt>
+        <dd class="col-sm-9"><code>@venue.Slug</code></dd>
+
+        <dt class="col-sm-3">Address</dt>
+        <dd class="col-sm-9">@(location?.MapQuery ?? "-")</dd>
+
+        <dt class="col-sm-3">Place</dt>
+        <dd class="col-sm-9"><code>@(location?.ExternalId ?? "-")</code></dd>
+
+        <dt class="col-sm-3">Groups</dt>
+        <dd class="col-sm-9">@Model.ChapterCount</dd>
+    </dl>
+})
+
+@await Html.PartialAsync("Components/_Section", new SectionViewModel
+{
+    Heading = new HeadingViewModel { Title = "Backfill", Type = HeadingType.H3 },
+    BodyContentFunc =
+    @<div>
+        @if (resolved)
+        {
+            @* Said rather than hidden: a venue that already resolves can still be pointed at a different
+               place, and a reader needs to know that is what they would be doing. *@
+            <p class="text-muted">
+                This venue already resolves to a place. Picking another one replaces its name, address
+                and position with that place's.
+            </p>
+        }
+
+        <p class="text-muted">
+            Search for the venue and pick it from the list, the way its group would have. What is recorded
+            above is only what somebody typed - until a place is picked there is nothing to resolve.
+        </p>
+
+        <p class="text-muted">
+            @Model.ChapterCount @(Model.ChapterCount == 1 ? "group uses" : "groups use") this venue.
+            Each keeps the name it sees today, so only the venue itself changes.
+        </p>
+
+        <form method="post" action="@OdkRoutes.SiteAdmin.VenueBackfill(venue.Id).Path">
+            @Html.AntiForgeryToken()
+
+            @* The box starts empty and carries what to search for as a placeholder. Filling it in would
+               read as a place already chosen while posting none, which is a backfill refused for a reason
+               the screen contradicts. The hidden fields still carry where the venue is, so the map opens
+               on it. *@
+            <div class="form-group mb-3 required">
+                @await Html.PartialAsync("Components/_LocationPicker", new VenueBackfillFormViewModel
+                {
+                    ExternalId = location?.ExternalId,
+                    Lat = location?.Latitude,
+                    LocationName = string.Empty,
+                    Long = location?.Longitude,
+                    Placeholder = location?.MapQuery ?? venue.Name
+                })
+            </div>
+
+            @* Where the venue is now, and where the picker moves it to - so what is about to be adopted is
+               looked at before it is, which is the whole of what a site admin brings to a backfill. The
+               coordinates are what a venue awaiting a backfill has instead of a place, and are what the
+               picker seeds its map query with, so the two agree on the first render. *@
+            <div class="my-3">
+                @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
+                {
+                    ExternalId = location?.ExternalId,
+                    LatLong = location?.LatLong,
+                    QuerySource = "#map-place-query"
+                })
+            </div>
+
+            <button type="submit" class="btn btn-primary">Backfill</button>
+        </form>
+    </div>
+})

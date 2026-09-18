@@ -9,9 +9,9 @@ public class EventsAdminPageViewModel
 {
     public required Chapter Chapter { get; init; }
 
+    public required IReadOnlyCollection<ChapterVenue> ChapterVenues { get; init; }
+
     public required PagedResult<EventSummaryDto> Events { get; init; }
 
     public required EventAdminFilter Filter { get; init; }
-
-    public required IReadOnlyCollection<Venue> Venues { get; init; }
 }
