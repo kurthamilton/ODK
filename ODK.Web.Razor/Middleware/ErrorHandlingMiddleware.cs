@@ -187,6 +187,13 @@ public class ErrorHandlingMiddleware
         Exception ex,
         ILoggingService loggingService)
     {
+        // A request whose client has gone is not a failure of the app, and there is nobody left to serve
+        // either way.
+        if (httpContext.ClientDisconnected(ex))
+        {
+            return;
+        }
+
         var requestContext = HttpRequestContext.Create(httpContext.Request);
 
         if (loggingService.IgnoreException(ex, requestContext))
@@ -215,6 +222,18 @@ public class ErrorHandlingMiddleware
             if (ex is OdkNotFoundException)
             {
                 await loggingService.Warn(ex.Message);
+            }
+            else if (ex is OdkNotAuthenticatedException)
+            {
+                // The caller reached something they are not signed in for, and the app answered with the
+                // 401 page it has for exactly that. A member whose session ended with a tab open raises
+                // this routinely, so it is a warning and not something to be notified about.
+                await loggingService.Warn(
+                    $"{ex.GetType().Name}: {httpContext.Request.Method} {httpContext.Request.Path}",
+                    new Dictionary<string, string?>
+                    {
+                        ["Member"] = httpContext.User.MemberIdOrDefault()?.ToString()
+                    });
             }
             else
             {

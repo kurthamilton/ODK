@@ -1,5 +1,7 @@
-﻿using FluentAssertions;
+﻿using System.Security.Claims;
+using FluentAssertions;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
@@ -118,14 +120,108 @@ public static class LoggingAntiforgeryTests
         VerifyLoggedError(logger, Times.Never());
     }
 
+    [Test]
+    public static async Task ValidateRequestAsync_RequestAborted_DoesNotLog()
+    {
+        // Arrange - the client went away mid-request, so no token was ever read and nothing was validated.
+        var logger = new Mock<ILogger<LoggingAntiforgery>>();
+        var antiforgery = CreateAntiforgery(logger, out var httpContext);
+        httpContext.Request.Headers["Origin"] = "https://example.com";
+        httpContext.RequestAborted = new CancellationToken(canceled: true);
+
+        // Act
+        var act = async () => await antiforgery.ValidateRequestAsync(httpContext);
+
+        // Assert
+        await act.Should().ThrowAsync<AntiforgeryValidationException>();
+        VerifyLoggedError(logger, Times.Never());
+    }
+
+    [Test]
+    public static async Task ValidateRequestAsync_ClientDisconnectedBeforeTheAbortTokenFired_DoesNotLog()
+    {
+        // Arrange - IIS reports a disconnected client as the inner exception of the read that failed, and
+        // it can arrive before the abort token is raised.
+        var logger = new Mock<ILogger<LoggingAntiforgery>>();
+        var antiforgery = CreateAntiforgery(
+            logger,
+            out var httpContext,
+            out _,
+            new ConnectionResetException("The client has disconnected"));
+        httpContext.Request.Headers["Origin"] = "https://example.com";
+
+        // Act
+        var act = async () => await antiforgery.ValidateRequestAsync(httpContext);
+
+        // Assert
+        await act.Should().ThrowAsync<AntiforgeryValidationException>();
+        VerifyLoggedError(logger, Times.Never());
+    }
+
+    [Test]
+    public static async Task ValidateRequestAsync_TokenValidForAnAnonymousVisitor_DoesNotLog()
+    {
+        // Arrange - the form was rendered before the member signed in, so its token is bound to nobody
+        // while the member posting it is somebody. The inner validation answers for whichever principal it
+        // is handed, so it passes only if the probe really did swap an anonymous one in.
+        var logger = new Mock<ILogger<LoggingAntiforgery>>();
+        var antiforgery = CreateAntiforgery(logger, out var httpContext, out var inner);
+        var user = SignedInMember();
+        httpContext.Request.Headers["Origin"] = "https://example.com";
+        httpContext.User = user;
+        inner
+            .Setup(x => x.IsRequestValidAsync(It.IsAny<HttpContext>()))
+            .ReturnsAsync((HttpContext x) => x.User.Identity?.IsAuthenticated != true);
+
+        // Act
+        var act = async () => await antiforgery.ValidateRequestAsync(httpContext);
+
+        // Assert
+        await act.Should().ThrowAsync<AntiforgeryValidationException>();
+        VerifyLoggedError(logger, Times.Never());
+        httpContext.User.Should().BeSameAs(user);
+    }
+
+    [Test]
+    public static async Task ValidateRequestAsync_TokenInvalidForAnyVisitor_Logs()
+    {
+        // Arrange - a token no principal can validate is a broken or forged form rather than a member who
+        // signed in while the page was open.
+        var logger = new Mock<ILogger<LoggingAntiforgery>>();
+        var antiforgery = CreateAntiforgery(logger, out var httpContext, out var inner);
+        httpContext.Request.Headers["Origin"] = "https://example.com";
+        httpContext.User = SignedInMember();
+        inner
+            .Setup(x => x.IsRequestValidAsync(It.IsAny<HttpContext>()))
+            .ReturnsAsync(false);
+
+        // Act
+        var act = async () => await antiforgery.ValidateRequestAsync(httpContext);
+
+        // Assert
+        await act.Should().ThrowAsync<AntiforgeryValidationException>();
+        VerifyLoggedError(logger, Times.Once());
+    }
+
     private static LoggingAntiforgery CreateAntiforgery(
         Mock<ILogger<LoggingAntiforgery>> logger, out HttpContext httpContext)
+        => CreateAntiforgery(logger, out httpContext, out _);
+
+    private static LoggingAntiforgery CreateAntiforgery(
+        Mock<ILogger<LoggingAntiforgery>> logger,
+        out HttpContext httpContext,
+        out Mock<IAntiforgery> inner,
+        Exception? innerException = null)
     {
         httpContext = CreateHttpContext();
 
-        var inner = new Mock<IAntiforgery>();
+        inner = new Mock<IAntiforgery>();
+        const string message = "The required antiforgery token was not provided.";
+
         inner.Setup(x => x.ValidateRequestAsync(It.IsAny<HttpContext>()))
-            .ThrowsAsync(new AntiforgeryValidationException("The required antiforgery token was not provided."));
+            .ThrowsAsync(innerException != null
+                ? new AntiforgeryValidationException(message, innerException)
+                : new AntiforgeryValidationException(message));
 
         return new LoggingAntiforgery(inner.Object, logger.Object);
     }
@@ -165,6 +261,10 @@ public static class LoggingAntiforgeryTests
             new EndpointMetadataCollection(descriptor),
             "test-page"));
     }
+
+    private static ClaimsPrincipal SignedInMember() => new(new ClaimsIdentity(
+        [new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString())],
+        authenticationType: "test"));
 
     // ILogger.LogError is an extension over the non-generic Log, so the verification has to match that
     // underlying call rather than the extension method.
