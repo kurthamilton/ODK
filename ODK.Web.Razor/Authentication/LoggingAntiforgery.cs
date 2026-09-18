@@ -1,3 +1,4 @@
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Net.Http.Headers;
@@ -49,7 +50,7 @@ public class LoggingAntiforgery : IAntiforgery
         }
         catch (AntiforgeryValidationException exception)
         {
-            LogFailure(httpContext, exception);
+            await LogFailure(httpContext, exception);
             throw;
         }
     }
@@ -83,8 +84,54 @@ public class LoggingAntiforgery : IAntiforgery
             string.Equals(x.HttpMethod, httpContext.Request.Method, StringComparison.OrdinalIgnoreCase));
     }
 
-    private void LogFailure(HttpContext httpContext, AntiforgeryValidationException exception)
+    /// <summary>
+    /// Whether the request carries a token set that is valid for an anonymous visitor but was posted by a
+    /// member who is signed in. A token is bound to the identity that rendered the form, so a member who
+    /// signs in between opening a login page and submitting it is holding one the app has to refuse - and
+    /// the refusal is the app working, not failing.
+    /// </summary>
+    /// <remarks>
+    /// Validating again under an empty principal rather than reading the exception message, which is the
+    /// framework's only account of which check failed and would have to be matched as a resource string.
+    /// Re-validating also keeps this narrow: a token that is invalid for anybody fails it too, so a
+    /// tampered token, one encrypted under a rotated key, and a form carrying two
+    /// __RequestVerificationToken fields all still reach the log.
+    /// </remarks>
+    private async Task<bool> IsAuthStateMismatch(HttpContext httpContext)
     {
+        if (!httpContext.User.Authenticated())
+        {
+            return false;
+        }
+
+        var user = httpContext.User;
+        httpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
+
+        try
+        {
+            return await _inner.IsRequestValidAsync(httpContext);
+        }
+        catch
+        {
+            // A diagnostic must not decide what the request does, so a probe that fails takes the failure
+            // it was asked about no further.
+            return false;
+        }
+        finally
+        {
+            httpContext.User = user;
+        }
+    }
+
+    private async Task LogFailure(HttpContext httpContext, AntiforgeryValidationException exception)
+    {
+        // The client went away before its request body had been read, so there was no form to find a token
+        // in and nothing was validated either way. Nothing happened here that anyone can act on.
+        if (httpContext.ClientDisconnected(exception))
+        {
+            return;
+        }
+
         // A browser always sends Origin on a POST navigation and Sec-Fetch-Site on a same-site submit;
         // a scripted POST typically sends neither, whatever its user agent claims. Referer names the page
         // whose form failed. Together with the exception message (which distinguishes a missing request
@@ -112,6 +159,13 @@ public class LoggingAntiforgery : IAntiforgery
         // that posts here, so there is no token to have lost - unlike the header test above this catches
         // a scanner that does send an Origin.
         if (!HasHandlerForMethod(httpContext))
+        {
+            return;
+        }
+
+        // The token and the member posting it disagree about who is signed in, which is a sign-in having
+        // happened between the two rather than anything wrong with the form.
+        if (await IsAuthStateMismatch(httpContext))
         {
             return;
         }
