@@ -44,11 +44,6 @@ public class EventMap : IEntityTypeConfiguration<Event>
             .HasForeignKey(x => x.ChapterVenueId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<Venue>()
-            .WithMany()
-            .HasForeignKey(x => x.VenueId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.HasOne(x => x.TicketSettings)
             .WithOne()
             .HasForeignKey<EventTicketSettings>(x => x.EventId);

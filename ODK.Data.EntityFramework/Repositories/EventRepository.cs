@@ -35,11 +35,6 @@ public class EventRepository : ReadWriteRepositoryBase<Event, IEventQueryBuilder
             .ForShortcode(shortcode)
             .GetSingle();
 
-    public IDeferredQueryMultiple<Event> GetByVenueId(Guid venueId)
-        => Query()
-            .ForVenue(venueId)
-            .GetAll();
-
     public IDeferredQuery<int> GetCountByChapterId(Guid chapterId, string? venueSlug, DateTime? fromUtc, DateTime? toUtcExclusive)
         => ApplyFilter(Query().ForChapter(chapterId), venueSlug, fromUtc, toUtcExclusive)
             .Count();

@@ -224,15 +224,15 @@ public static class VenueSiteAdminServiceTests
     }
 
     [Test]
-    public static async Task DeleteVenue_HasEvents_Fails()
+    public static async Task DeleteVenue_HeldEventsThere_IsRefusedAsInUse()
     {
-        // Arrange - an event outlives the link that made it, so a venue with no links can still be the
-        // place a past event was held. Deleting it would take that with it.
+        /* Arrange - a venue with a past event. The event holds the link it was booked through and the
+           link cannot go while it does, so a venue anything was ever held at still has one - which is
+           why events need no guard of their own here. */
         var (context, siteAdmin) = CreateContextWithSiteAdmin();
         var chapter = context.CreateChapter();
         var venue = context.CreateVenue("The Oak", "the-oak");
         context.CreateEvent(chapter, context.CreateChapterVenue(chapter, venue));
-        RemoveLinks(context, venue);
         var (service, request) = CreateService(context, siteAdmin);
 
         // Act
@@ -240,7 +240,7 @@ public static class VenueSiteAdminServiceTests
 
         // Assert
         result.Success.Should().BeFalse();
-        result.Message.Should().Be("Cannot delete a venue with events");
+        result.Message.Should().Be("Cannot delete a venue a group is using");
         context.Set<Venue>().Should().Contain(x => x.Id == venue.Id);
     }
 
@@ -331,20 +331,5 @@ public static class VenueSiteAdminServiceTests
         var service = new VenueSiteAdminService(unitOfWork, placesService.Object, new VenueSlugService());
 
         return (service, request.Object);
-    }
-
-    /* An event is made through a link, so a venue with events but no links has to be arranged in that
-       order rather than declared. */
-    private static void RemoveLinks(MockOdkContext context, Venue venue)
-    {
-        // The helpers only track what they create, so the rows have to exist before they can be removed.
-        context.SaveChanges();
-
-        foreach (var link in context.Set<ChapterVenue>().Where(x => x.VenueId == venue.Id).ToArray())
-        {
-            context.Remove(link);
-        }
-
-        context.SaveChanges();
     }
 }

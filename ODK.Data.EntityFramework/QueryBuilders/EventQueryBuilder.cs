@@ -46,14 +46,7 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
 
     public IEventQueryBuilder ForChapterVenue(Guid chapterVenueId)
     {
-        Query =
-            from @event in Query
-            from chapterVenue in Set<ChapterVenue>()
-                .Include(x => x.Venue)
-                .Where(x => x.ChapterId == @event.ChapterId && x.VenueId == @event.VenueId)
-            where chapterVenue.Id == chapterVenueId
-            select @event;
-
+        Query = Query.Where(x => x.ChapterVenueId == chapterVenueId);
         return this;
     }
 
@@ -63,15 +56,31 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
         return this;
     }
 
+    /// <summary>
+    /// Every chapter's events at a venue, reached through the links - a venue is site-level and an event
+    /// holds the link rather than the venue.
+    /// </summary>
     public IEventQueryBuilder ForVenue(Guid venueId)
     {
-        Query = Query.Where(x => x.VenueId == venueId);
+        Query =
+            from @event in Query
+            from chapterVenue in Set<ChapterVenue>()
+                .Where(x => x.Id == @event.ChapterVenueId && x.VenueId == venueId)
+            select @event;
+
         return this;
     }
 
     public IEventQueryBuilder ForVenueSlug(string slug)
     {
-        Query = Query.Where(x => Set<Venue>().Any(v => v.Id == x.VenueId && v.Slug == slug));
+        Query =
+            from @event in Query
+            from chapterVenue in Set<ChapterVenue>()
+                .Where(x => x.Id == @event.ChapterVenueId)
+            from venue in Set<Venue>()
+                .Where(x => x.Id == chapterVenue.VenueId && x.Slug == slug)
+            select @event;
+
         return this;
     }
 
@@ -119,7 +128,7 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
             from @event in Query
             from chapterVenue in Set<ChapterVenue>()
                 .Include(x => x.Venue)
-                .Where(x => x.VenueId == @event.VenueId && x.ChapterId == @event.ChapterId)
+                .Where(x => x.Id == @event.ChapterVenueId)
             from email in Set<EventEmail>()
                 .Where(x => x.EventId == @event.Id)
                 .DefaultIfEmpty()
@@ -157,8 +166,10 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
     {
         var query =
             from @event in Query
+            from chapterVenue in Set<ChapterVenue>()
+                .Where(x => x.Id == @event.ChapterVenueId)
             from venue in Set<Venue>()
-                .Where(x => x.Id == @event.VenueId)
+                .Where(x => x.Id == chapterVenue.VenueId)
             select venue;
         return CreateQueryBuilder<IVenueQueryBuilder, Venue>(
             context => new VenueQueryBuilder(context, query));
@@ -170,7 +181,7 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
             from @event in Query
             from chapterVenue in Set<ChapterVenue>()
                 .Include(x => x.Venue)
-                .Where(x => x.ChapterId == @event.ChapterId && x.VenueId == @event.VenueId)
+                .Where(x => x.Id == @event.ChapterVenueId)
             select new EventWithVenueDto
             {
                 ChapterVenue = chapterVenue,

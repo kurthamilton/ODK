@@ -319,8 +319,7 @@ internal class MockOdkContext : OdkContext
             ChapterVenueId = chapterVenue.Id,
             DateUtc = date ?? DateTime.UtcNow.AddDays(5),
             Id = Guid.NewGuid(),
-            PublishedUtc = DateTime.UtcNow,
-            VenueId = chapterVenue.VenueId
+            PublishedUtc = DateTime.UtcNow
         });
     }
 

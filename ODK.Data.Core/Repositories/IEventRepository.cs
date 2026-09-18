@@ -13,8 +13,6 @@ public interface IEventRepository : IReadWriteRepository<Event, IEventQueryBuild
 
     IDeferredQuerySingle<Event> GetByShortcode(string shortcode);
 
-    IDeferredQueryMultiple<Event> GetByVenueId(Guid venueId);
-
     /// <summary>
     /// The group's earliest created event, or null where it has none. The checklist reads its
     /// <see cref="Event.CreatedUtc"/>, dating the step by when it actually happened rather than by when

@@ -129,25 +129,19 @@ public class VenueSiteAdminService : OdkAdminServiceBase, IVenueSiteAdminService
     /// </summary>
     public async Task<ServiceResult> DeleteVenue(IMemberServiceRequest request, Guid venueId)
     {
-        var (venue, chapterCount, hasEvents) = await GetSiteAdminRestrictedContent(
+        var (venue, chapterCount) = await GetSiteAdminRestrictedContent(
             request,
             x => x.VenueRepository.GetByIdOrDefault(venueId),
-            x => x.ChapterVenueRepository.Query(q => q.ForVenue(venueId)).Count(),
-            x => x.EventRepository.Query().ForVenue(venueId).Any());
+            x => x.ChapterVenueRepository.Query(q => q.ForVenue(venueId)).Count());
 
         OdkAssertions.Exists(venue);
 
+        /* The only thing that can stop a delete, and it covers events too: an event holds the link it was
+           booked through and the link cannot go while the event points at it, so a venue anything has
+           ever been held at still has a link and is still in use. */
         if (chapterCount > 0)
         {
             return ServiceResult.Failure("Cannot delete a venue a group is using");
-        }
-
-        /* An event outlives the link that made it: a chapter can remove a venue it no longer uses while
-           its past events still point at it. An event's venue is required and its foreign key restricts,
-           so this is what the database would refuse anyway - said here, where it can be read. */
-        if (hasEvents)
-        {
-            return ServiceResult.Failure("Cannot delete a venue with events");
         }
 
         _unitOfWork.VenueRepository.Delete(venue);

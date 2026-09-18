@@ -11,7 +11,7 @@ public class Event : IDatabaseEntity, IChapterEntity
 
     public Guid ChapterId { get; set; }
 
-    public Guid? ChapterVenueId { get; set; }
+    public Guid ChapterVenueId { get; set; }
 
     public string CreatedBy { get; set; } = string.Empty;
 
@@ -50,8 +50,6 @@ public class Event : IDatabaseEntity, IChapterEntity
     public EventTicketSettings? TicketSettings { get; set; }
 
     public string? Time { get; set; }
-
-    public Guid VenueId { get; set; }
 
     public bool WaitlistDisabled { get; set; }
 
