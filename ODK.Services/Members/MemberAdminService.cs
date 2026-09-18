@@ -365,7 +365,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         var inviteDictionary = invites.ToDictionary(x => x.EventId);
         var responseDictionary = memberResponses.ToDictionary(x => x.EventId);
-        var chapterVenueDictionary = chapterVenues.ToDictionary(x => x.VenueId);
+        var chapterVenueDictionary = chapterVenues.ToDictionary(x => x.Id);
 
         foreach (var @event in events)
         {
@@ -376,7 +376,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 continue;
             }
 
-            chapterVenueDictionary.TryGetValue(@event.VenueId, out var venue);
+            chapterVenueDictionary.TryGetValue(@event.ChapterVenueId, out var venue);
 
             var responseViewModel = new EventResponseViewModel(
                 @event: @event,

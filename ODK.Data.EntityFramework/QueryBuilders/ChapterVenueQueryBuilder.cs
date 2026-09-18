@@ -54,10 +54,10 @@ public class ChapterVenueQueryBuilder
             {
                 ChapterVenue = chapterVenue,
                 EventCount = Set<Event>()
-                    .Where(x => x.VenueId == chapterVenue.VenueId)
+                    .Where(x => x.ChapterVenueId == chapterVenue.Id)
                     .Count(),
                 LastEvent = Set<Event>()
-                    .Where(x => x.VenueId == chapterVenue.VenueId)
+                    .Where(x => x.ChapterVenueId == chapterVenue.Id)
                     .OrderByDescending(x => x.DateUtc)
                     .FirstOrDefault(),
                 Location = location

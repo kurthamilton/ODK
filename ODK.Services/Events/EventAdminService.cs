@@ -125,8 +125,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             PublishedUtc = !draft ? DateTime.UtcNow : null,
             RsvpDeadlineUtc = model.RsvpDeadline != null ? chapter.FromLocalTime(model.RsvpDeadline.Value) : null,
             RsvpDisabled = model.RsvpDisabled,
-            Time = model.Time,
-            VenueId = chapterVenue.VenueId
+            Time = model.Time
         });
 
         if (hasEventTickets)
@@ -386,7 +385,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             Chapter = chapter,
             ChapterAdminMembers = adminMembers,
-            ChapterVenue = chapterVenues.First(x => x.VenueId == @event.VenueId),
+            ChapterVenue = chapterVenues.First(x => x.Id == @event.ChapterVenueId),
             ChapterVenues = chapterVenues,
             Currency = currency,
             Event = @event,
@@ -574,9 +573,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
 
         var (chapterVenue, members, notificationSettings) = await _unitOfWork.Run(
-            x => x.ChapterVenueRepository
-                .Query(x => x.ForVenue(@event.VenueId).ForChapter(@event.ChapterId))
-                .GetSingle(),
+            x => x.ChapterVenueRepository.GetById(@event.ChapterVenueId),
             x => x.MemberRepository.GetAllByChapterId(@event.ChapterId),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(@event.ChapterId, NotificationType.NewEvent));
 
@@ -762,9 +759,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 .HasFeature(SiteFeatureType.ScheduledEventEmails),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
-            x => x.ChapterVenueRepository
-                .Query(q => q.ForVenue(@event.VenueId).ForChapter(@event.ChapterId))
-                .GetSingle(),
+            x => x.ChapterVenueRepository.GetById(@event.ChapterVenueId),
             x => x.EventResponseRepository.GetByEventId(@event.Id),
             x => x.EventInviteRepository.GetByEventId(@event.Id),
             x => x.MemberRepository.GetByChapterId(@event.ChapterId),
@@ -901,7 +896,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         @event.RsvpDeadlineUtc = model.RsvpDeadline != null ? chapter.FromLocalTime(model.RsvpDeadline.Value) : null;
         @event.RsvpDisabled = model.RsvpDisabled;
         @event.Time = model.Time;
-        @event.VenueId = chapterVenue.VenueId;
+        @event.ChapterVenueId = chapterVenue.Id;
 
         if (hasEventTickets && model.TicketCost != null)
         {
