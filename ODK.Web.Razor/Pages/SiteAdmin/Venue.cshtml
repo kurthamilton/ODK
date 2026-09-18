@@ -1,0 +1,17 @@
+﻿@page "/siteadmin/venues/{id:guid}"
+@using ODK.Services.Venues
+@model VenueModel
+@inject IVenueSiteAdminService VenueSiteAdminService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Venue | Site Admin";
+
+    var viewModel = await VenueSiteAdminService.GetVenueViewModel(Model.MemberServiceRequest, Model.VenueId);
+}
+
+@await Html.PartialAsync("SiteAdmin/_SiteAdminVenueContent", viewModel)
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/Scripts/_GoogleLocation")
+}

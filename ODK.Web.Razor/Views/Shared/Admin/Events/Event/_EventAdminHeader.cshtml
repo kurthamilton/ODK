@@ -9,7 +9,7 @@
     <h5 class="d-flex flex-column flex-md-row me-md-auto gap-2">
         <span>@Model.Event.DateUtc.EventDate(Model.Chapter.TimeZone)</span>
         <span class="d-none d-md-block">|</span>
-        <span>@Model.Venue.Name</span>
+        <span>@Model.ChapterVenue.GetName()</span>
     </h5>
     <a href="@OdkRoutes.Groups.Event(Model.Chapter, Model.Event.Shortcode)">
         @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Home))

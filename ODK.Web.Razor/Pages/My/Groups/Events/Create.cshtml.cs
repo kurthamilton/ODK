@@ -19,11 +19,11 @@ public class CreateModel : OdkGroupAdminPageModel
 
     public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Events;
 
-    public Guid? VenueId { get; private set; }
+    public Guid? ChapterVenueId { get; private set; }
 
-    public void OnGet([FromQuery] Guid? venueId = null)
+    public void OnGet([FromQuery] Guid? chapterVenueId = null)
     {
-        VenueId = venueId;
+        ChapterVenueId = chapterVenueId;
     }
 
     public async Task<IActionResult> OnPostAsync([FromForm] EventFormSubmitViewModel viewModel)
@@ -32,6 +32,7 @@ public class CreateModel : OdkGroupAdminPageModel
         var result = await _eventAdminService.CreateEvent(request, new EventCreateModel
         {
             AttendeeLimit = viewModel.AttendeeLimit,
+            ChapterVenueId = viewModel.ChapterVenue,
             Date = viewModel.Date,
             DescriptionHtml = viewModel.DescriptionHtml,
             EndTime = TimeSpanUtils.FromString(viewModel.EndTime),
@@ -43,8 +44,7 @@ public class CreateModel : OdkGroupAdminPageModel
             RsvpDisabled = viewModel.RsvpDisabled,
             TicketCost = viewModel.TicketCost,
             TicketDepositCost = viewModel.TicketDepositCost,
-            Time = viewModel.Time,
-            VenueId = viewModel.Venue
+            Time = viewModel.Time
         }, viewModel.Draft);
 
         if (!result.Success)

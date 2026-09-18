@@ -6,9 +6,9 @@
     var localTime = Model.Event.ToLocalTime(Model.Chapter.TimeZone);
 }
 
-@if (Model.Venue != null)
+@if (Model.ChapterVenue != null)
 {
-    <h3>@Model.Venue.Name</h3>
+    <h3>@Model.ChapterVenue.GetName()</h3>
 }
 else
 {

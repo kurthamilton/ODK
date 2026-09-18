@@ -1099,7 +1099,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 _authorizationService.CanViewVenue(x.Event.ChapterId, currentMember, memberSubscription, membershipSettings, privacySettings))
             .Select(x => new EventResponseViewModel(
                 @event: x.Event,
-                venue: x.Venue,
+                chapterVenue: x.ChapterVenue,
                 response: memberResponseDictionary.TryGetValue(x.Event.Id, out var response) ? response.Type : EventResponseType.None,
                 invited: false,
                 responseSummary: responseSummaryDictionary.TryGetValue(x.Event.Id, out var responseSummary) ? responseSummary : null))
@@ -1230,7 +1230,7 @@ public class ChapterViewModelService : IChapterViewModelService
 
         foreach (var eventDto in eventDtos)
         {
-            var (@event, venue) = (eventDto.Event, eventDto.Venue);
+            var (@event, chapterVenue) = (eventDto.Event, eventDto.ChapterVenue);
 
             var canViewEvent = _authorizationService.CanViewEvent(
                 @event, currentMember, memberSubscription, membershipSettings, privacySettings);
@@ -1246,10 +1246,10 @@ public class ChapterViewModelService : IChapterViewModelService
                 @event.ChapterId, currentMember, memberSubscription, membershipSettings, privacySettings);
             viewModels.Add(new GroupPageListEventViewModel
             {
+                ChapterVenue = canViewVenue ? chapterVenue : null,
                 Event = @event,
                 Response = memberResponse,
-                ResponseSummary = responseSummary,
-                Venue = canViewVenue ? venue : null
+                ResponseSummary = responseSummary
             });
         }
 

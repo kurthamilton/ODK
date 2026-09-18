@@ -43,6 +43,16 @@ public class ChapterDataHelper : DataHelperBase
         return await builder.ExecuteScalar<DateTime?>();
     }
 
+    public async Task<DateTime?> GetSubmittedForApprovalUtc(Guid chapterId)
+    {
+        const string sql = "SELECT SubmittedForApprovalUtc FROM Chapters WHERE Id = @id";
+
+        await using var builder = Builder(sql)
+            .AddParameter("@id", chapterId);
+
+        return await builder.ExecuteScalar<DateTime?>();
+    }
+
     public async Task<string> GetTimeZoneId(Guid chapterId)
     {
         // The TimeZoneId property maps to the "TimeZone" column.

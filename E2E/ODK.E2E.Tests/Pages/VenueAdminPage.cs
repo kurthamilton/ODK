@@ -29,11 +29,11 @@ internal class VenueAdminPage
 
         await _page.FillAsync("#Name", name);
 
-        /* Set directly, raising only a `change` event, so the autocomplete - which listens on focus and
-           input - never fires a billable Places call from the browser. The server still makes one. */
-        await _page.EvalOnSelectorAsync(
-            "#ExternalId",
-            "el => { el.value = '" + externalId + "'; el.dispatchEvent(new Event('change', { bubbles: true })); }");
+        /* The location picker posts a visible name and a hidden id. Only the id decides anything - the
+           server resolves the place from it - but the name is the required field, so a create that sets
+           only the id is refused with "The Location field is required". What it says is immaterial. */
+        await SetWithoutSearching("#LocationName", "E2E location");
+        await SetWithoutSearching("#ExternalId", externalId);
 
         await _page.ClickAsync("button:has-text('Create')");
 
@@ -56,4 +56,11 @@ internal class VenueAdminPage
                 $"Body: {body[..Math.Min(500, body.Length)]}");
         }
     }
+
+    /* Set directly, raising only a `change` event, so the autocomplete - which listens on focus and
+       input - never fires a billable Places call from the browser. The server still makes one. */
+    private Task SetWithoutSearching(string selector, string value) => _page.EvalOnSelectorAsync(
+        selector,
+        "(el, value) => { el.value = value; el.dispatchEvent(new Event('change', { bubbles: true })); }",
+        value);
 }

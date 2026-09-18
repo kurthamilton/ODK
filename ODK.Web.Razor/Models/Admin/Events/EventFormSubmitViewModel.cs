@@ -12,6 +12,10 @@ public class EventFormSubmitViewModel
     [Range(1, int.MaxValue, ErrorMessage = "{0} cannot be less than 1")]
     public int? AttendeeLimit { get; set; }
 
+    [DisplayName("Venue")]
+    [Required]
+    public Guid ChapterVenue { get; set; }
+
     public DateTime Date { get; set; }
 
     [DisplayName("Description")]
@@ -50,7 +54,4 @@ public class EventFormSubmitViewModel
     public decimal? TicketDepositCost { get; set; }
 
     public string? Time { get; set; } = string.Empty;
-
-    [Required]
-    public Guid Venue { get; set; }
 }

@@ -31,14 +31,14 @@ public class VenueAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("groups/{chapterId:guid}/venues/{id:guid}/delete")]
-    public async Task<IActionResult> DeleteVenue(Guid chapterId, Guid id)
+    [HttpPost("groups/{chapterId:guid}/venues/{id:guid}/remove")]
+    public async Task<IActionResult> RemoveVenue(Guid chapterId, Guid id)
     {
         var request = MemberChapterAdminServiceRequest.Create(
             ChapterAdminSecurable.Venues,
             MemberChapterServiceRequest);
-        var result = await _venueAdminService.DeleteVenue(request, id);
-        AddFeedback(result, "Venue deleted");
+        var result = await _venueAdminService.RemoveVenue(request, id);
+        AddFeedback(result, "Venue removed");
         return RedirectToReferrer();
     }
 

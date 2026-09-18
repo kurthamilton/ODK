@@ -2,7 +2,6 @@
 using ODK.Services.Security;
 using ODK.Services.Venues;
 using ODK.Services.Venues.Models;
-using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Venues;
 
 namespace ODK.Web.Razor.Pages.My.Groups.Events.Venues.Venue;
@@ -18,11 +17,11 @@ public class VenueModel : OdkGroupAdminPageModel
 
     public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Venues;
 
-    public Guid VenueId { get; private set; }
+    public Guid ChapterVenueId { get; private set; }
 
-    public void OnGet(Guid venueId)
+    public void OnGet(Guid chapterVenueId)
     {
-        VenueId = venueId;
+        ChapterVenueId = chapterVenueId;
     }
 
     public async Task<IActionResult> OnPostAsync(Guid venueId, VenueFormViewModel viewModel)

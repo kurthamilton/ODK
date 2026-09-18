@@ -4,6 +4,8 @@ public class EventCreateModel
 {
     public required int? AttendeeLimit { get; init; }
 
+    public required Guid ChapterVenueId { get; init; }
+
     public required DateTime Date { get; init; }
 
     public required string? DescriptionHtml { get; init; }
@@ -27,6 +29,4 @@ public class EventCreateModel
     public required decimal? TicketDepositCost { get; init; }
 
     public required string? Time { get; init; }
-
-    public required Guid VenueId { get; init; }
 }

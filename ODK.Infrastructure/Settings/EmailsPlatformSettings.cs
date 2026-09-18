@@ -1,10 +1,14 @@
-﻿namespace ODK.Infrastructure.Settings;
+﻿using ODK.Core.Emails;
+
+namespace ODK.Infrastructure.Settings;
 
 public class EmailsPlatformSettings
 {
     public required string AdminTitle { get; init; }
 
     public required string FromEmailAddress { get; init; }
+
+    public required Dictionary<EmailType, string> FromEmailAddresses { get; init; }
 
     public required string MemberTitle { get; init; }
 }

@@ -5,10 +5,12 @@
         ? $"{Model.Lat},{Model.Long}"
         : null;
 
-    /* The Maps Embed API takes a place id directly, so a map of a picked place needs no coordinates. */
+    /* The best way to point a map at this location: the Maps Embed API takes a place id directly, and
+       coordinates where there is no place - a location recorded before the lookup was the source, which
+       would otherwise have a map that never appears. Null only when neither is known. */
     var placeQuery = !string.IsNullOrEmpty(Model.ExternalId)
         ? $"place_id:{Model.ExternalId}"
-        : null;
+        : latLong;
 }
 
 <div class="input-group" data-location-container>
@@ -23,7 +25,8 @@
         {
             @class = "form-control",
             data_location = "",
-            data_bs_toggle = "dropdown"
+            data_bs_toggle = "dropdown",
+            placeholder = Model.Placeholder ?? string.Empty
         })
 
         <ul class="dropdown-menu google-places-suggestions" data-location-options></ul>

@@ -13,6 +13,8 @@ public interface IEventQueryBuilder : IDatabaseEntityQueryBuilder<Event, IEventQ
 
     IEventQueryBuilder ForChapters(IEnumerable<Guid> chapterIds);
 
+    IEventQueryBuilder ForChapterVenue(Guid chapterVenueId);
+
     IEventQueryBuilder ForShortcode(string shortcode);
 
     IEventQueryBuilder ForVenue(Guid venueId);

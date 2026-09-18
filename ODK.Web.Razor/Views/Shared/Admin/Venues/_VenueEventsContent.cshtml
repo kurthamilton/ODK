@@ -1,9 +1,5 @@
-﻿@using ODK.Core.Events
-@using ODK.Core.Utils
-@using ODK.Services
-@using ODK.Services.Events
+﻿@using ODK.Core.Utils
 @using ODK.Services.Venues.ViewModels
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Events
@@ -17,8 +13,8 @@
 @await Html.PartialAsync("Admin/Venues/_VenueAdminTabs", new VenueAdminTabsViewModel
 {
     Chapter = Model.Chapter,
-    Platform = Model.Platform,
-    Venue = Model.Venue
+    ChapterVenue = Model.ChapterVenue,
+    Platform = Model.Platform
 })
 
 <p>
@@ -26,7 +22,7 @@
     {
         Class = "btn btn-primary",
         Icon = IconType.Plus,
-        QueryString = $"venueId={Model.Venue.Id}",
+        QueryString = $"chapterVenueId={Model.ChapterVenue.Id}",
         Route = OdkRoutes.GroupAdmin.EventCreate(Model.Chapter),
         Text = "Create event"
     })

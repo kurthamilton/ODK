@@ -13,5 +13,5 @@ public class VenuesAdminPageViewModel
 
     public required Chapter Chapter { get; init; }
 
-    public required IReadOnlyCollection<VenueWithEventSummaryDto> Venues { get; init; }
+    public required IReadOnlyCollection<ChapterVenueWithEventSummaryDto> Venues { get; init; }
 }

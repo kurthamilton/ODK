@@ -218,6 +218,26 @@ internal class MockOdkContext : OdkContext
         });
     }
 
+    /// <summary>
+    /// The only way a chapter comes to use a venue. A venue is site-level and exists without any chapter,
+    /// so creating one links nothing - a test that wants a link asks for one here.
+    /// </summary>
+    internal ChapterVenue CreateChapterVenue(
+        Chapter chapter,
+        Venue? venue = null,
+        bool archived = false)
+    {
+        venue ??= CreateVenue();
+
+        return Create(new ChapterVenue
+        {
+            ArchivedUtc = archived ? DateTime.UtcNow : null,
+            ChapterId = chapter.Id,
+            Venue = venue,
+            VenueId = venue.Id
+        });
+    }
+
     internal ChapterTexts CreateChapterTexts(
         Chapter chapter,
         string? shortDescription = null,
@@ -287,19 +307,20 @@ internal class MockOdkContext : OdkContext
 
     internal Event CreateEvent(
         Chapter? chapter = null,
-        Venue? venue = null,
+        ChapterVenue? chapterVenue = null,
         DateTime? date = null)
     {
         chapter ??= CreateChapter();
-        venue ??= CreateVenue(chapter);
+        chapterVenue ??= CreateChapterVenue(chapter);
 
         return Create(new Event
         {
             ChapterId = chapter.Id,
+            ChapterVenueId = chapterVenue.Id,
             DateUtc = date ?? DateTime.UtcNow.AddDays(5),
             Id = Guid.NewGuid(),
             PublishedUtc = DateTime.UtcNow,
-            VenueId = venue.Id
+            VenueId = chapterVenue.VenueId
         });
     }
 
@@ -481,10 +502,8 @@ internal class MockOdkContext : OdkContext
     }
 
     internal Venue CreateVenue(
-        Chapter chapter,
         string name = "",
         string slug = "",
-        bool archived = false,
         string? externalId = null,
         double lat = 0,
         double @long = 0,
@@ -504,14 +523,6 @@ internal class MockOdkContext : OdkContext
             Latitude = lat,
             Longitude = @long,
             Name = name,
-            VenueId = venue.Id
-        });
-
-        Create(new ChapterVenue
-        {
-            ArchivedUtc = archived ? DateTime.UtcNow : null,
-            ChapterId = chapter.Id,
-            Venue = venue,
             VenueId = venue.Id
         });
 

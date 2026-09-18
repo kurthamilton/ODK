@@ -6,7 +6,7 @@
 @{
     var query = Model.GoogleMapsQuery();
 
-    if (string.IsNullOrEmpty(query) && 
+    if (string.IsNullOrEmpty(query) &&
         string.IsNullOrEmpty(Model.QuerySource))
     {
         return;
@@ -15,22 +15,26 @@
     var urlBuilder = UrlBuilder.Base("https://www.google.com/maps/embed/v1/place")
         .Query("key", Settings.ApiKey);
 
-    if (!string.IsNullOrEmpty(query))
-    {
-        urlBuilder.Query("q", query);
-    }
-
     if (Model.Zoom >= 0)
     {
         urlBuilder.Query("zoom", Model.Zoom.Value.ToString());
     }
 
-    var url = urlBuilder.Build();
+    /* Everything except the place, which odk.maps.js appends again each time the picker moves it. The
+       place is appended rather than substituted into a built url: Build() url-encodes every value it is
+       given, so a placeholder passed through it comes back encoded and no substitution can find it.
+       EscapeDataString to match the encodeURIComponent the script appends with, so a place reached by
+       either route gives the same url. */
+    var baseUrl = urlBuilder.Build();
+
+    var url = !string.IsNullOrEmpty(query)
+        ? $"{baseUrl}&q={Uri.EscapeDataString(query)}"
+        : baseUrl;
 }
 
 <iframe height="450" frameborder="0" style="border:0; width: 100%;"
         src="@url"
-        data-map-baseurl="@url"
+        data-map-base-url="@baseUrl"
         data-map-query="@Model.QuerySource"
         allowfullscreen>
 </iframe>

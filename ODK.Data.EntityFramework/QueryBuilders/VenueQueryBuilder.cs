@@ -39,29 +39,24 @@ public class VenueQueryBuilder
         return this;
     }
 
-    public IQueryBuilder<VenueWithLocationDto> WithLocation()
+    public IQueryBuilder<VenueWithChapterCountDto> WithChapterCount()
     {
-        var query = ToVenueWithLocationDto();
-        return ProjectTo(query);
-    }
-
-    public IQueryBuilder<VenueWithEventSummaryDto> WithEventSummary()
-    {
-        var query =
-            ToVenueWithLocationDto()
-            .Select(dto => new VenueWithEventSummaryDto
+        var query = ToVenueWithLocationDto()
+            .Select(dto => new VenueWithChapterCountDto
             {
-                EventCount = Set<Event>()
+                ChapterCount = Set<ChapterVenue>()
                     .Where(x => x.VenueId == dto.Venue.Id)
                     .Count(),
-                LastEvent = Set<Event>()
-                    .Where(x => x.VenueId == dto.Venue.Id)
-                    .OrderByDescending(x => x.DateUtc)
-                    .FirstOrDefault(),
                 Location = dto.Location,
                 Venue = dto.Venue
             });
 
+        return ProjectTo(query);
+    }
+
+    public IQueryBuilder<VenueWithLocationDto> WithLocation()
+    {
+        var query = ToVenueWithLocationDto();
         return ProjectTo(query);
     }
 

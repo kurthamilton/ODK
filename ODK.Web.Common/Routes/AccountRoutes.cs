@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
@@ -16,7 +15,7 @@ public class AccountRoutes : RoutesBase
     public string Activate(Chapter? chapter, string token)
         => AccountPath(
             Platform == PlatformType.DrunkenKnitwits ? chapter : null,
-            $"/activate?token={HttpUtility.UrlEncode(token)}");
+            $"/activate?token={Uri.EscapeDataString(token)}");
 
     public string Create() => Platform switch
     {
@@ -70,7 +69,7 @@ public class AccountRoutes : RoutesBase
             : EmailPreferences(chapter);
 
     public string EmailAddressChangeConfirm(Chapter? chapter, string token)
-        => AccountPath(chapter, $"/email/change/confirm?token={HttpUtility.UrlEncode(token)}");
+        => AccountPath(chapter, $"/email/change/confirm?token={Uri.EscapeDataString(token)}");
 
     public string EmailPreferences(Chapter? chapter) => AccountPath(chapter, "/emails");
 
@@ -100,7 +99,7 @@ public class AccountRoutes : RoutesBase
         var url = Login(chapter);
         return string.IsNullOrEmpty(returnUrl)
             ? url
-            : $"{url}?ReturnUrl={HttpUtility.UrlEncode(returnUrl)}";
+            : $"{url}?ReturnUrl={Uri.EscapeDataString(returnUrl)}";
     }
 
     public string Logout(Chapter? chapter) => AccountPath(Platform switch
@@ -120,7 +119,7 @@ public class AccountRoutes : RoutesBase
     public string PasswordChange(Chapter? chapter) => AccountPath(chapter, "/password/change");
 
     public string PasswordReset(Chapter? chapter, string token)
-        => AccountPath(chapter, $"/password/reset?token={HttpUtility.UrlEncode(token)}");
+        => AccountPath(chapter, $"/password/reset?token={Uri.EscapeDataString(token)}");
 
     public string Payments(Chapter? chapter) => AccountPath(chapter, "/payments");
 

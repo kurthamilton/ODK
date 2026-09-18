@@ -64,4 +64,8 @@ public interface IEmailService
         string body,
         EmailRecipientType recipientType,
         IEmailParameters? parameters);
+
+    Task<ServiceResult> SendEmail(
+        IServiceRequest request,
+        SendEmailOptions options);
 }

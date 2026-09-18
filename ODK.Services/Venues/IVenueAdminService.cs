@@ -6,21 +6,21 @@ namespace ODK.Services.Venues;
 
 public interface IVenueAdminService
 {
-    Task<ServiceResult> ArchiveVenue(IMemberChapterAdminServiceRequest request, Guid venueId);
+    Task<ServiceResult> ArchiveVenue(IMemberChapterAdminServiceRequest request, Guid chapterVenueId);
 
     Task<ServiceResult> CreateVenue(IMemberChapterAdminServiceRequest request, VenueCreateModel venue);
 
-    Task<ServiceResult> DeleteVenue(IMemberChapterAdminServiceRequest request, Guid venueId);
+    Task<ChapterVenue> GetChapterVenue(IMemberChapterAdminServiceRequest request, Guid chapterVenueId);
 
-    Task<Venue> GetVenue(IMemberChapterAdminServiceRequest request, Guid venueId);
-
-    Task<VenueEventsAdminPageViewModel> GetVenueEventsViewModel(IMemberChapterAdminServiceRequest request, Guid venueId);
+    Task<VenueEventsAdminPageViewModel> GetVenueEventsViewModel(IMemberChapterAdminServiceRequest request, Guid chapterVenueId);
 
     Task<VenuesAdminPageViewModel> GetVenuesViewModel(IMemberChapterAdminServiceRequest request, bool archived);
 
-    Task<VenueAdminPageViewModel> GetVenueViewModel(IMemberChapterAdminServiceRequest request, Guid venueId);
+    Task<VenueAdminPageViewModel> GetVenueViewModel(IMemberChapterAdminServiceRequest request, Guid chapterVenueId);
 
-    Task<ServiceResult> RestoreVenue(IMemberChapterAdminServiceRequest request, Guid venueId);
+    Task<ServiceResult> RemoveVenue(IMemberChapterAdminServiceRequest request, Guid chapterVenueId);
 
-    Task<ServiceResult> UpdateVenue(IMemberChapterAdminServiceRequest request, Guid id, VenueUpdateModel venue);
+    Task<ServiceResult> RestoreVenue(IMemberChapterAdminServiceRequest request, Guid chapterVenueId);
+
+    Task<ServiceResult> UpdateVenue(IMemberChapterAdminServiceRequest request, Guid chapterVenueId, VenueUpdateModel venue);
 }

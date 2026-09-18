@@ -19,17 +19,11 @@ public class VenueMap : IEntityTypeConfiguration<Venue>
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
-        builder.Property(x => x.MapQuery)
-            .HasMaxLength(255);
-
         builder.Property(x => x.Name)
             .HasMaxLength(Venue.NameMaxLength);
 
         builder.Property(x => x.Slug)
             .HasMaxLength(Venue.SlugMaxLength);
-
-        builder.Property(x => x.Version)
-            .IsRowVersion();
 
         builder.HasIndex(x => x.Slug)
             .IsUnique();

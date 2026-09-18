@@ -20,8 +20,8 @@
                 @await Html.PartialAsync("Events/_EventHeader", new EventHeaderViewModel
                 {
                     Chapter = Model.Chapter,
-                    Event = Model.Event,
-                    Venue = Model.Venue
+                    ChapterVenue = Model.ChapterVenue,
+                    Event = Model.Event
                 })
 
                 @if (!string.IsNullOrEmpty(Model.Event.DescriptionHtml) || !string.IsNullOrEmpty(Model.Event.ImageUrl))

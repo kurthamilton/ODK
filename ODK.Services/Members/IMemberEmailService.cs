@@ -75,7 +75,7 @@ public interface IMemberEmailService
     Task SendEventInvites(
         IChapterServiceRequest request,
         Event @event,
-        Venue venue,
+        ChapterVenue chapterVenue,
         IEnumerable<Member> members);
 
     Task SendEventWaitlistPromotionNotification(

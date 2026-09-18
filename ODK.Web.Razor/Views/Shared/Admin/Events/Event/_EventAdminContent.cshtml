@@ -38,6 +38,8 @@
     {
         AttendeeLimit = Model.Event.AttendeeLimit,
         Chapter = Model.Chapter,
+        ChapterVenue = Model.ChapterVenue.Id,
+        ChapterVenues = Model.ChapterVenues,
         Currency = Model.Currency,
         Date = Model.Event.ToLocalTime(Model.Chapter.TimeZone),
         DescriptionHtml = Model.Event.DescriptionHtml,
@@ -54,9 +56,7 @@
         RsvpDisabled = Model.Event.RsvpDisabled,
         TicketCost = Model.Event.TicketSettings?.Cost,
         TicketDepositCost = Model.Event.TicketSettings?.Deposit,
-        Time = Model.Event.Time,
-        Venue = Model.Event.VenueId,
-        Venues = Model.Venues
+        Time = Model.Event.Time
     })
     
     <div class="d-flex">

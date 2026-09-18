@@ -7,7 +7,7 @@ using ODK.Data.EntityFramework.QueryBuilders;
 namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterVenueRepository
-    : WriteRepositoryBase<ChapterVenue, IChapterVenueQueryBuilder>, IChapterVenueRepository
+    : ReadWriteRepositoryBase<ChapterVenue, IChapterVenueQueryBuilder>, IChapterVenueRepository
 {
     public ChapterVenueRepository(DbContext context)
         : base(context)

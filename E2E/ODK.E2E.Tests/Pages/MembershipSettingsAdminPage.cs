@@ -25,11 +25,17 @@ internal class MembershipSettingsAdminPage
     }
 
     /// <summary>
+    /// Opens the page without changing anything, which is what marks the group's membership settings as
+    /// reviewed - they have defaults that suit most groups, so there is nothing else to go on.
+    /// </summary>
+    public Task Open(TestGroup group) => _page.Navigate($"/my/groups/{group.Slug}/membership");
+
+    /// <summary>
     /// Turns on "new members need approval" and saves, leaving the group vetting whoever joins next.
     /// </summary>
     public async Task RequireApproval(TestGroup group)
     {
-        await _page.Navigate($"/my/groups/{group.Slug}/membership");
+        await Open(group);
 
         // Absent rather than merely unchecked when the owner's subscription does not carry the feature, so
         // say which it is - a bare timeout here looks like a slow page rather than a mis-provisioned group.

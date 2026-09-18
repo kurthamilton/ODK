@@ -6,8 +6,8 @@
 @await Html.PartialAsync("Events/_EventHeader", new EventHeaderViewModel
 {
     Chapter = Model.Chapter,
-    Event = Model.Event,
-    Venue = Model.Venue
+    ChapterVenue = Model.ChapterVenue,
+    Event = Model.Event
 })
 
 @await Html.PartialAsync("Components/_StripeCheckout", new StripeCheckoutViewModel

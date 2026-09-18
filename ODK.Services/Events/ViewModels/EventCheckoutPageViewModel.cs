@@ -12,11 +12,11 @@ public class EventCheckoutPageViewModel : GroupPageViewModel
     /// </summary>
     public required string ApiPublicKey { get; init; }
 
+    public required ChapterVenue? ChapterVenue { get; init; }
+
     public required string ClientSecret { get; init; }
 
     public required PaymentProviderType PaymentProvider { get; init; }
 
     public required Event Event { get; init; }
-
-    public required Venue? Venue { get; init; }
 }

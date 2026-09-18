@@ -351,11 +351,11 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var (member, events, venues, memberResponses, invites) = await GetChapterAdminRestrictedContent(
+        var (member, events, chapterVenues, memberResponses, invites) = await GetChapterAdminRestrictedContent(
             request,
             x => x.MemberRepository.GetById(memberId),
             x => x.EventRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterVenueRepository.Query(x => x.ForChapter(chapter.Id)).ToVenue().GetAll(),
+            x => x.ChapterVenueRepository.Query(x => x.ForChapter(chapter.Id)).GetAll(),
             x => x.EventResponseRepository.GetAllByMemberId(memberId, chapter.Id),
             x => x.EventInviteRepository.GetAllByMemberId(memberId, chapter.Id));
 
@@ -365,7 +365,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         var inviteDictionary = invites.ToDictionary(x => x.EventId);
         var responseDictionary = memberResponses.ToDictionary(x => x.EventId);
-        var venueDictionary = venues.ToDictionary(x => x.Id);
+        var chapterVenueDictionary = chapterVenues.ToDictionary(x => x.VenueId);
 
         foreach (var @event in events)
         {
@@ -376,11 +376,11 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 continue;
             }
 
-            venueDictionary.TryGetValue(@event.VenueId, out var venue);
+            chapterVenueDictionary.TryGetValue(@event.VenueId, out var venue);
 
             var responseViewModel = new EventResponseViewModel(
                 @event: @event,
-                venue: venue,
+                chapterVenue: venue,
                 response: response?.Type ?? EventResponseType.None,
                 invited: invite != null,
                 responseSummary: null);

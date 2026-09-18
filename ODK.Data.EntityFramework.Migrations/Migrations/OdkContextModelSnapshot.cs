@@ -419,12 +419,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
                     b.Property<string>("WhatsApp")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
@@ -800,12 +794,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
-
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
 
                     b.HasKey("Id");
 
@@ -1202,6 +1190,9 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<Guid>("ChapterId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("ChapterVenueId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -1258,6 +1249,8 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ChapterId");
+
+                    b.HasIndex("ChapterVenueId");
 
                     b.HasIndex("VenueId");
 
@@ -1602,12 +1595,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("TimeZone");
-
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
 
                     b.HasKey("Id");
 
@@ -3035,11 +3022,10 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
 
             modelBuilder.Entity("ODK.Core.Venues.ChapterVenue", b =>
                 {
-                    b.Property<Guid>("ChapterId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("VenueId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<string>("AdditionalInfo")
                         .HasMaxLength(4000)
@@ -3048,13 +3034,24 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<DateTime?>("ArchivedUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("ChapterId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Name")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.HasKey("ChapterId", "VenueId");
+                    b.Property<Guid>("VenueId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id");
 
                     b.HasIndex("VenueId");
+
+                    b.HasIndex("ChapterId", "VenueId")
+                        .IsUnique();
 
                     b.ToTable("ChapterVenues", (string)null);
                 });
@@ -3068,10 +3065,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<DateTime>("CreatedUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("MapQuery")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -3081,12 +3074,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
-
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
 
                     b.HasKey("Id");
 
@@ -3154,12 +3141,6 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                     b.Property<int>("Platform")
                         .HasColumnType("int")
                         .HasColumnName("PlatformTypeId");
-
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
 
                     b.HasKey("Id");
 
@@ -3539,6 +3520,11 @@ namespace ODK.Data.EntityFramework.Migrations.Migrations
                         .HasForeignKey("ChapterId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("ODK.Core.Venues.ChapterVenue", null)
+                        .WithMany()
+                        .HasForeignKey("ChapterVenueId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("ODK.Core.Venues.Venue", null)
                         .WithMany()

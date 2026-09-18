@@ -52,9 +52,10 @@
             data-select data-searchable data-clearable data-placeholder="All venues"
             data-autosubmit>
             <option value=""></option>
-            @foreach (var venue in Model.Venues)
+            @foreach (var chapterVenue in Model.ChapterVenues)
             {
-                <option value="@venue.Slug" selected="@(venue.Slug == Model.Filter.VenueSlug)">@venue.Name</option>
+                var venue = chapterVenue.Venue;
+                <option value="@venue.Slug" selected="@(venue.Slug == Model.Filter.VenueSlug)">@chapterVenue.GetName()</option>
             }
         </select>
     </div>
@@ -132,7 +133,7 @@
             @foreach (var dto in Model.Events.Items)
             {
                 var @event = dto.Event;
-                var venue = dto.Venue;
+                var chapterVenue = dto.ChapterVenue;
                 var invites = dto.Invites;
                 var email = dto.Email;
                 var responses = dto.Responses;
@@ -155,8 +156,8 @@
                     <td>
                         @await Html.PartialAsync("Admin/_AdminLink", new AdminLinkViewModel
                         {
-                            Route = OdkRoutes.GroupAdmin.Venue(Model.Chapter, venue.Id),
-                            Text = venue.Name
+                            Route = OdkRoutes.GroupAdmin.Venue(Model.Chapter, chapterVenue.Id),
+                            Text = chapterVenue.GetName()
                         })
                     </td>
                     <td>

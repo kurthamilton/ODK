@@ -44,8 +44,5 @@ public class MemberMap : IEntityTypeConfiguration<Member>
             .WithMany()
             .HasForeignKey(x => x.ReferralId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Property(x => x.Version)
-            .IsRowVersion();
     }
 }

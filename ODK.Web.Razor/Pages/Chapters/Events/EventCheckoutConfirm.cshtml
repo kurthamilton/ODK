@@ -32,8 +32,8 @@
             @await Html.PartialAsync("Events/_EventHeader", new EventHeaderViewModel
             {
                 Chapter = viewModel.Chapter,
-                Event = viewModel.Event,
-                Venue = viewModel.Venue
+                ChapterVenue = viewModel.ChapterVenue,
+                Event = viewModel.Event
             })
             @await Html.PartialAsync("Payments/_PaymentConfirmContent", new PaymentConfirmViewModel
             {

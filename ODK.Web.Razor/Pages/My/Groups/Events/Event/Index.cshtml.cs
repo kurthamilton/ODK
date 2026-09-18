@@ -31,6 +31,7 @@ public class IndexModel : OdkGroupAdminPageModel
         var result = await _eventAdminService.UpdateEvent(request, eventId, new EventCreateModel
         {
             AttendeeLimit = viewModel.AttendeeLimit,
+            ChapterVenueId = viewModel.ChapterVenue,
             Date = viewModel.Date,
             DescriptionHtml = viewModel.DescriptionHtml,
             EndTime = TimeSpanUtils.FromString(viewModel.EndTime),
@@ -42,8 +43,7 @@ public class IndexModel : OdkGroupAdminPageModel
             RsvpDisabled = viewModel.RsvpDisabled,
             TicketCost = viewModel.TicketCost,
             TicketDepositCost = viewModel.TicketDepositCost,
-            Time = viewModel.Time,
-            VenueId = viewModel.Venue
+            Time = viewModel.Time
         });
 
         AddFeedback(result, "Event updated");

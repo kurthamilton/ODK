@@ -181,9 +181,14 @@
 
         if ($externalId) $externalId.value = location.externalId ?? '';
 
-        // The embed takes a place id directly, so the map follows the place, not the typed text.
+        /* The embed takes a place id directly, so the map follows the place, not the typed text - and
+           the coordinates where the lookup gave no place id, which is what the server seeds too. */
         if ($mapQuery) {
-            $mapQuery.value = location.externalId ? `place_id:${location.externalId}` : '';
+            $mapQuery.value = location.externalId
+                ? `place_id:${location.externalId}`
+                : location.lat != null && location.long != null
+                    ? `${location.lat},${location.long}`
+                    : '';
             $mapQuery.dispatchEvent(new Event('change'));
         }
 

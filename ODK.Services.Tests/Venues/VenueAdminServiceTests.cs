@@ -30,11 +30,14 @@ public static class VenueAdminServiceTests
     {
         // Arrange - no link joins the venue to this chapter, so it is not this chapter's to archive.
         var (context, currentMember, chapter) = CreateChapterWithOwner();
-        var otherVenue = context.CreateVenue(context.CreateChapter(), "The Oak", "the-oak");
+        var otherChapter = context.CreateChapter();
+        var otherChapterVenue = context.CreateChapterVenue(
+            otherChapter,
+            context.CreateVenue("The Oak", "the-oak"));
         var (service, request) = CreateService(context, currentMember, chapter);
 
         // Act
-        var act = async () => await service.ArchiveVenue(request, otherVenue.Id);
+        var act = async () => await service.ArchiveVenue(request, otherChapterVenue.Id);
 
         // Assert
         await act.Should().ThrowAsync<OdkNotFoundException>();
@@ -45,11 +48,12 @@ public static class VenueAdminServiceTests
     {
         // Arrange - archiving is per chapter, so the link is what has to carry it.
         var (context, currentMember, chapter) = CreateChapterWithOwner();
-        var venue = context.CreateVenue(chapter, "The Oak", "the-oak");
+        var venue = context.CreateVenue("The Oak", "the-oak");
+        var chapterVenue = context.CreateChapterVenue(chapter, venue);
         var (service, request) = CreateService(context, currentMember, chapter);
 
         // Act
-        var result = await service.ArchiveVenue(request, venue.Id);
+        var result = await service.ArchiveVenue(request, chapterVenue.Id);
 
         // Assert
         result.Success.Should().BeTrue();
@@ -61,7 +65,9 @@ public static class VenueAdminServiceTests
     {
         // Arrange - the chapter already uses this place, so there is nothing to add.
         var (context, currentMember, chapter) = CreateChapterWithOwner();
-        context.CreateVenue(chapter, "The Oak", "the-oak", externalId: OakExternalId);
+        context.CreateChapterVenue(
+            chapter,
+            context.CreateVenue("The Oak", "the-oak", externalId: OakExternalId));
         var (service, request) = CreateService(context, currentMember, chapter);
 
         // Act
@@ -81,8 +87,7 @@ public static class VenueAdminServiceTests
         // to be shown the coordinates that were actually stored.
         var (context, currentMember, chapter) = CreateChapterWithOwner();
         context.CreateVenue(
-            context.CreateChapter(), "The Oak", "the-oak-sheffield",
-            externalId: OakExternalId, lat: 53.0, @long: -1.0);
+            "The Oak", "the-oak-sheffield", externalId: OakExternalId, lat: 53.0, @long: -1.0);
 
         var comparisons = new List<(LatLong Stored, LatLong Place)>();
         var (service, request) = CreateService(
@@ -110,8 +115,7 @@ public static class VenueAdminServiceTests
         // with tracking, which resolves the instance and hides it.
         var (context, currentMember, chapter) = CreateChapterWithOwner(noTracking: true);
         context.CreateVenue(
-            context.CreateChapter(), "The Oak", "the-oak-sheffield",
-            externalId: OakExternalId, lat: 53.3811, @long: -1.4701);
+            "The Oak", "the-oak-sheffield", externalId: OakExternalId, lat: 53.3811, @long: -1.4701);
         var (service, request) = CreateService(context, currentMember, chapter);
 
         // Act
@@ -132,8 +136,7 @@ public static class VenueAdminServiceTests
     {
         // Arrange
         var (context, currentMember, chapter) = CreateChapterWithOwner();
-        context.CreateVenue(
-            context.CreateChapter(), "The Oak", "the-oak-sheffield", externalId: OakExternalId);
+        context.CreateVenue("The Oak", "the-oak-sheffield", externalId: OakExternalId);
         var (service, request) = CreateService(
             context, currentMember, chapter, metresApart: metresApart);
 
@@ -235,8 +238,7 @@ public static class VenueAdminServiceTests
     {
         // Arrange - a relocation is a different building, so the old record stands and a new one is made.
         var (context, currentMember, chapter) = CreateChapterWithOwner();
-        context.CreateVenue(
-            context.CreateChapter(), "The Oak", "the-oak-sheffield", externalId: OakExternalId);
+        context.CreateVenue("The Oak", "the-oak-sheffield", externalId: OakExternalId);
         var (service, request) = CreateService(context, currentMember, chapter, metresApart: 400);
 
         // Act
@@ -252,8 +254,7 @@ public static class VenueAdminServiceTests
     {
         // Arrange - a few metres is the lookup locating the same place more precisely, not a move.
         var (context, currentMember, chapter) = CreateChapterWithOwner();
-        var existing = context.CreateVenue(
-            context.CreateChapter(), "The Oak", "the-oak-sheffield", externalId: OakExternalId);
+        var existing = context.CreateVenue("The Oak", "the-oak-sheffield", externalId: OakExternalId);
         var (service, request) = CreateService(context, currentMember, chapter, metresApart: 8);
 
         // Act
@@ -287,8 +288,7 @@ public static class VenueAdminServiceTests
     {
         // Arrange - an event held at the old name was held at the old name, so the record is not rewritten.
         var (context, currentMember, chapter) = CreateChapterWithOwner();
-        context.CreateVenue(
-            context.CreateChapter(), "The Old Oak", "the-old-oak-sheffield", externalId: OakExternalId);
+        context.CreateVenue("The Old Oak", "the-old-oak-sheffield", externalId: OakExternalId);
         var (service, request) = CreateService(context, currentMember, chapter);
 
         // Act
@@ -306,8 +306,8 @@ public static class VenueAdminServiceTests
         // Arrange - the same place described the same way is one venue, however many chapters reach it.
         var (context, currentMember, chapter) = CreateChapterWithOwner();
         var existing = context.CreateVenue(
-            context.CreateChapter(), "The Oak", "the-oak-sheffield",
-            externalId: OakExternalId, lat: 53.3811, @long: -1.4701);
+            "The Oak", "the-oak-sheffield", externalId: OakExternalId, lat: 53.3811, @long: -1.4701);
+        context.CreateChapterVenue(context.CreateChapter(), existing);
         var (service, request) = CreateService(context, currentMember, chapter);
 
         // Act
@@ -325,8 +325,7 @@ public static class VenueAdminServiceTests
     {
         // Arrange - a different place whose name and town slug to the same value.
         var (context, currentMember, chapter) = CreateChapterWithOwner();
-        context.CreateVenue(
-            context.CreateChapter(), "The Oak", "the-oak-sheffield", externalId: "ChIJother");
+        context.CreateVenue("The Oak", "the-oak-sheffield", externalId: "ChIJother");
         var (service, request) = CreateService(context, currentMember, chapter);
 
         // Act
@@ -339,76 +338,98 @@ public static class VenueAdminServiceTests
     }
 
     [Test]
-    public static async Task DeleteVenue_RemovesTheVenueAndItsChapterLink()
+    public static async Task RemoveVenue_AnotherChapterHasEventsThere_Removes()
     {
-        // Arrange
+        // Arrange - the venue stays, so another chapter's events are no reason to keep this link.
         var (context, currentMember, chapter) = CreateChapterWithOwner();
-        var venue = context.CreateVenue(chapter, "The Oak", "the-oak");
+        var otherChapter = context.CreateChapter();
+        var venue = context.CreateVenue("The Oak", "the-oak");
+        var otherChapterVenue = context.CreateChapterVenue(otherChapter, venue);
+        var chapterVenue = context.CreateChapterVenue(chapter, venue);
+        context.CreateEvent(otherChapter, otherChapterVenue);
         var (service, request) = CreateService(context, currentMember, chapter);
 
         // Act
-        var result = await service.DeleteVenue(request, venue.Id);
+        var result = await service.RemoveVenue(request, chapterVenue.Id);
 
-        // Assert - the venue goes, not only this chapter's link to it.
+        // Assert
         result.Success.Should().BeTrue();
-        context.Set<Venue>().Should().NotContain(x => x.Id == venue.Id);
-        context.Set<ChapterVenue>().Should().NotContain(x => x.VenueId == venue.Id);
+        context.Set<ChapterVenue>().Should().NotContain(x => x.Id == chapterVenue.Id);
+        context.Set<ChapterVenue>().Should().Contain(x => x.Id == otherChapterVenue.Id);
     }
 
     [Test]
-    public static async Task DeleteVenue_VenueHasEvents_Fails()
+    public static async Task RemoveVenue_RemovesOnlyTheChapterLink()
     {
-        // Arrange
+        // Arrange - the venue is site-level, so one chapter tidying up cannot take it from the others.
         var (context, currentMember, chapter) = CreateChapterWithOwner();
-        var venue = context.CreateVenue(chapter, "The Oak", "the-oak");
-        context.CreateEvent(chapter, venue);
+        var venue = context.CreateVenue("The Oak", "the-oak");
+        var chapterVenue = context.CreateChapterVenue(chapter, venue);
         var (service, request) = CreateService(context, currentMember, chapter);
 
         // Act
-        var result = await service.DeleteVenue(request, venue.Id);
+        var result = await service.RemoveVenue(request, chapterVenue.Id);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Message.Should().Be("Cannot delete a venue with events");
+        result.Success.Should().BeTrue();
+        context.Set<ChapterVenue>().Should().NotContain(x => x.Id == chapterVenue.Id);
         context.Set<Venue>().Should().Contain(x => x.Id == venue.Id);
     }
 
     [Test]
-    public static async Task GetVenue_NotLinkedToThisChapter_Throws()
+    public static async Task RemoveVenue_ThisChapterHasEventsThere_Fails()
     {
-        // Arrange - a venue that exists but which no link joins to this chapter.
+        // Arrange
         var (context, currentMember, chapter) = CreateChapterWithOwner();
-        var venue = context.Create(new Venue
-        {
-            CreatedUtc = DateTime.UtcNow,
-            Id = Guid.NewGuid(),
-            Name = "The Oak",
-            Slug = "the-oak"
-        });
+        var chapterVenue = context.CreateChapterVenue(
+            chapter,
+            context.CreateVenue("The Oak", "the-oak"));
+        context.CreateEvent(chapter, chapterVenue);
         var (service, request) = CreateService(context, currentMember, chapter);
 
         // Act
-        var act = async () => await service.GetVenue(request, venue.Id);
+        var result = await service.RemoveVenue(request, chapterVenue.Id);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("Cannot remove a venue with events");
+        context.Set<ChapterVenue>().Should().Contain(x => x.Id == chapterVenue.Id);
+    }
+
+    [Test]
+    public static async Task GetChapterVenue_NotLinkedToThisChapter_Throws()
+    {
+        // Arrange - another chapter's link, which is the only thing a venue is reached through.
+        var (context, currentMember, chapter) = CreateChapterWithOwner();
+        var otherChapterVenue = context.CreateChapterVenue(
+            context.CreateChapter(),
+            context.CreateVenue("The Oak", "the-oak"));
+        var (service, request) = CreateService(context, currentMember, chapter);
+
+        // Act
+        var act = async () => await service.GetChapterVenue(request, otherChapterVenue.Id);
 
         // Assert
         await act.Should().ThrowAsync<OdkNotFoundException>();
     }
 
     [Test]
-    public static async Task GetVenue_SharedWithAnotherChapter_IsFound()
+    public static async Task GetChapterVenue_SharedWithAnotherChapter_IsFound()
     {
         // Arrange - a venue another chapter already uses, linked to this one as well. The link is the
         // only thing that makes it this chapter's.
         var (context, currentMember, chapter) = CreateChapterWithOwner();
-        var venue = context.CreateVenue(context.CreateChapter(), "The Oak", "the-oak");
-        context.Create(new ChapterVenue { ChapterId = chapter.Id, VenueId = venue.Id, Venue = venue });
+        var venue = context.CreateVenue("The Oak", "the-oak");
+        context.CreateChapterVenue(context.CreateChapter(), venue);
+        var chapterVenue = context.CreateChapterVenue(chapter, venue);
         var (service, request) = CreateService(context, currentMember, chapter);
 
         // Act
-        var result = await service.GetVenue(request, venue.Id);
+        var result = await service.GetChapterVenue(request, chapterVenue.Id);
 
         // Assert
-        result.Id.Should().Be(venue.Id);
+        result.Id.Should().Be(chapterVenue.Id);
+        result.VenueId.Should().Be(venue.Id);
     }
 
     [Test]
@@ -416,11 +437,12 @@ public static class VenueAdminServiceTests
     {
         // Arrange
         var (context, currentMember, chapter) = CreateChapterWithOwner();
-        var venue = context.CreateVenue(chapter, "The Oak", "the-oak", archived: true);
+        var venue = context.CreateVenue("The Oak", "the-oak");
+        var chapterVenue = context.CreateChapterVenue(chapter, venue, archived: true);
         var (service, request) = CreateService(context, currentMember, chapter);
 
         // Act
-        var result = await service.RestoreVenue(request, venue.Id);
+        var result = await service.RestoreVenue(request, chapterVenue.Id);
 
         // Assert
         result.Success.Should().BeTrue();
@@ -432,11 +454,12 @@ public static class VenueAdminServiceTests
     {
         // Arrange
         var (context, currentMember, chapter) = CreateChapterWithOwner();
-        var venue = context.CreateVenue(chapter, "The Oak", "the-oak-sheffield");
+        var venue = context.CreateVenue("The Oak", "the-oak-sheffield");
+        var chapterVenue = context.CreateChapterVenue(chapter, venue);
         var (service, request) = CreateService(context, currentMember, chapter);
 
         // Act
-        var result = await service.UpdateVenue(request, venue.Id, new VenueUpdateModel
+        var result = await service.UpdateVenue(request, chapterVenue.Id, new VenueUpdateModel
         {
             AdditionalInfo = "Side door",
             Name = "Thursday pub"
@@ -454,13 +477,15 @@ public static class VenueAdminServiceTests
     [Test]
     public static async Task UpdateVenue_NotThisChaptersVenue_Throws()
     {
-        // Arrange - the venue exists, but no link joins it to this chapter.
+        // Arrange - the venue exists, but the link is another chapter's.
         var (context, currentMember, chapter) = CreateChapterWithOwner();
-        var otherVenue = context.CreateVenue(context.CreateChapter(), "The Oak", "the-oak");
+        var otherChapterVenue = context.CreateChapterVenue(
+            context.CreateChapter(),
+            context.CreateVenue("The Oak", "the-oak"));
         var (service, request) = CreateService(context, currentMember, chapter);
 
         // Act
-        var act = async () => await service.UpdateVenue(request, otherVenue.Id, new VenueUpdateModel
+        var act = async () => await service.UpdateVenue(request, otherChapterVenue.Id, new VenueUpdateModel
         {
             AdditionalInfo = null,
             Name = "Renamed"
@@ -529,7 +554,7 @@ public static class VenueAdminServiceTests
         request.Setup(x => x.Securable).Returns(ChapterAdminSecurable.Venues);
 
         var service = new VenueAdminService(
-            unitOfWork, placesService.Object, latLongCalculator.Object);
+            unitOfWork, placesService.Object, latLongCalculator.Object, new VenueSlugService());
 
         return (service, request.Object);
     }

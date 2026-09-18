@@ -8,11 +8,12 @@ public class EventResponseViewModel
 {
     public EventResponseViewModel(
         Event @event,
-        Venue? venue,
+        ChapterVenue? chapterVenue,
         EventResponseType response,
         bool invited,
         EventResponseSummaryDto? responseSummary)
     {
+        ChapterVenueId = chapterVenue?.Id;
         Date = @event.DateUtc;
         EndTime = @event.EndTime;
         EventId = @event.Id;
@@ -23,9 +24,10 @@ public class EventResponseViewModel
         ResponseSummary = responseSummary;
         Ticketed = @event.Ticketed;
         Time = @event.Time;
-        VenueId = venue?.Id;
-        VenueName = venue?.Name;
+        VenueName = chapterVenue?.GetName();
     }
+
+    public Guid? ChapterVenueId { get; }
 
     public DateTime Date { get; }
 
@@ -48,8 +50,6 @@ public class EventResponseViewModel
     public bool Ticketed { get; }
 
     public string? Time { get; }
-
-    public Guid? VenueId { get; }
 
     public string? VenueName { get; }
 }

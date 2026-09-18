@@ -4,7 +4,7 @@ using ODK.Core.Utils;
 
 namespace ODK.Core.Members;
 
-public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
+public class Member : IDatabaseEntity, ITimeZoneEntity
 {
     public const string DefaultTimeZoneId = "GMT Standard Time";
 
@@ -60,8 +60,6 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
     }
 
     public string TimeZoneId { get; set; } = DefaultTimeZoneId;
-
-    public byte[] Version { get; set; } = [];
 
     public bool CanBeViewedBy(Member other) => IsCurrent() && SharesChapterWith(other);
 

@@ -31,7 +31,7 @@
     Events = Model.Events
         .Select(x => new EventResponseViewModel(
             @event: x.Event,
-            venue: x.Venue,
+            chapterVenue: x.ChapterVenue,
             response: x.Response?.Type ?? EventResponseType.None,
             invited: false,
             responseSummary: x.ResponseSummary))

@@ -28,6 +28,8 @@ public class EventPageViewModel : GroupPageViewModel
 
     public required bool CanView { get; init; }
 
+    public required ChapterVenue? ChapterVenue { get; init; }
+
     public required EventCommentsDto Comments { get; init; }
 
     public required Event Event { get; init; }
@@ -43,8 +45,6 @@ public class EventPageViewModel : GroupPageViewModel
     public IReadOnlyCollection<EventResponseType> ResponseTypes { get; } = [EventResponseType.Yes, EventResponseType.Maybe, EventResponseType.No];
 
     public required int? SpacesLeft { get; init; }
-
-    public required Venue? Venue { get; init; }
 
     public required VenueLocation? VenueLocation { get; init; }
 

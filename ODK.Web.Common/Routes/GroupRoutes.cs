@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Platforms;
 
@@ -38,7 +37,7 @@ public class GroupRoutes
             _ => GroupPath(chapter, "/accept-invite")
         };
 
-        return $"{path}?token={HttpUtility.UrlEncode(inviteToken)}";
+        return $"{path}?token={Uri.EscapeDataString(inviteToken)}";
     }
 
     public string HeaderImage(Guid chapterId, int version) => $"/groups/{chapterId}/header-image?v={version}";
@@ -136,7 +135,7 @@ public class GroupRoutes
     public string Questions(Chapter chapter) => GroupPath(chapter, "/faq");
 
     public string RefuseInvite(Chapter chapter, string inviteToken)
-        => $"{GroupPath(chapter, "/refuse-invite")}?token={HttpUtility.UrlEncode(inviteToken)}";
+        => $"{GroupPath(chapter, "/refuse-invite")}?token={Uri.EscapeDataString(inviteToken)}";
 
     public string Subscription(Chapter chapter) => Platform switch
     {

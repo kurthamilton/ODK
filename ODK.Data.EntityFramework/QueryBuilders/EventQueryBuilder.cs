@@ -44,6 +44,19 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
         return this;
     }
 
+    public IEventQueryBuilder ForChapterVenue(Guid chapterVenueId)
+    {
+        Query =
+            from @event in Query
+            from chapterVenue in Set<ChapterVenue>()
+                .Include(x => x.Venue)
+                .Where(x => x.ChapterId == @event.ChapterId && x.VenueId == @event.VenueId)
+            where chapterVenue.Id == chapterVenueId
+            select @event;
+
+        return this;
+    }
+
     public IEventQueryBuilder ForShortcode(string shortcode)
     {
         Query = Query.Where(x => x.Shortcode == shortcode);
@@ -104,13 +117,15 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
     {
         var query =
             from @event in Query
-            from venue in Set<Venue>()
-                .Where(x => x.Id == @event.VenueId)
+            from chapterVenue in Set<ChapterVenue>()
+                .Include(x => x.Venue)
+                .Where(x => x.VenueId == @event.VenueId && x.ChapterId == @event.ChapterId)
             from email in Set<EventEmail>()
                 .Where(x => x.EventId == @event.Id)
                 .DefaultIfEmpty()
             select new EventSummaryDto
             {
+                ChapterVenue = chapterVenue,
                 Email = email,
                 Event = @event,
                 Invites = new EventInviteSummaryDto
@@ -132,8 +147,7 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
                     Yes = Set<EventResponse>()
                         .Where(x => x.EventId == @event.Id && x.Type == EventResponseType.Yes)
                         .Count()
-                },
-                Venue = venue
+                }
             };
 
         return ProjectTo(query);
@@ -154,12 +168,13 @@ public class EventQueryBuilder : DatabaseEntityQueryBuilder<Event, IEventQueryBu
     {
         var query =
             from @event in Query
-            from venue in Set<Venue>()
-                .Where(x => x.Id == @event.VenueId)
+            from chapterVenue in Set<ChapterVenue>()
+                .Include(x => x.Venue)
+                .Where(x => x.ChapterId == @event.ChapterId && x.VenueId == @event.VenueId)
             select new EventWithVenueDto
             {
-                Event = @event,
-                Venue = venue
+                ChapterVenue = chapterVenue,
+                Event = @event
             };
 
         return ProjectTo(query);

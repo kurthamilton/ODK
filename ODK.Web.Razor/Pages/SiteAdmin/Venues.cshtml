@@ -1,0 +1,10 @@
+﻿@page "/siteadmin/venues"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@model VenuesModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Venues | Site Admin";
+}
+
+@await Html.PartialAsync("SiteAdmin/_SiteAdminVenuesContent")

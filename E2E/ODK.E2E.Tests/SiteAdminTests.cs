@@ -13,10 +13,11 @@ public class SiteAdminTests : DefaultPageTest
     [Category("ChapterPublicationWorkflows")]
     public async Task ApproveGroup_SetsApprovedUtcTimestamp()
     {
-        // Arrange - a group owner creates a group, which starts unapproved. A fresh owner each time,
-        // because the default (Free) subscription's group limit is 1.
+        /* Arrange - a group owner creates a group and offers it for approval, which is what puts it in
+           the site admin's queue; it is still unapproved. A fresh owner each time, because the default
+           (Free) subscription's group limit is 1. */
         var owner = await Provisioning.NewAccount(SharedAccounts.GroupOwner);
-        var group = await Provisioning.CreateGroup(owner, $"E2E {Guid.NewGuid():N}");
+        var group = await Provisioning.CreateSubmittedGroup(owner, $"E2E {Guid.NewGuid():N}");
         var approvedUtc = await ChapterDataHelper.GetApprovedUtc(group.ChapterId);
         approvedUtc.Should().BeNull("group should start unapproved");
 

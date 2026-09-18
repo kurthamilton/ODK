@@ -75,7 +75,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var (
             hasEventTickets,
             chapterAdminMembers,
-            venue,
+            chapterVenue,
             settings,
             members,
             notificationSettings,
@@ -86,9 +86,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
                 .HasFeature(SiteFeatureType.EventTickets),
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
-            x => x.ChapterVenueRepository.Query(x => x.ForVenue(model.VenueId).ForChapter(chapter.Id))
-                .ToVenue()
-                .GetSingleOrDefault(),
+            x => x.ChapterVenueRepository.GetByIdOrDefault(model.ChapterVenueId),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetAllByChapterId(chapter.Id),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.NewEvent),
@@ -98,6 +96,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         AssertMemberIsChapterAdmin(
             request,
             chapterAdminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id));
+
+        if (chapterVenue == null || chapterVenue.ChapterId != chapter.Id)
+        {
+            return ServiceResult.Failure("Venue not found");
+        }
 
         var htmlResult = _htmlValidator.Validate(model.DescriptionHtml, DefaultHtmlValidatorOptions);
         if (!htmlResult.Success)
@@ -110,6 +113,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             AttendeeLimit = model.AttendeeLimit,
             ChapterId = chapter.Id,
+            ChapterVenueId = chapterVenue.Id,
             CreatedBy = currentMember.FullName,
             CreatedUtc = DateTime.UtcNow,
             DateUtc = date,
@@ -122,7 +126,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             RsvpDeadlineUtc = model.RsvpDeadline != null ? chapter.FromLocalTime(model.RsvpDeadline.Value) : null,
             RsvpDisabled = model.RsvpDisabled,
             Time = model.Time,
-            VenueId = model.VenueId
+            VenueId = chapterVenue.VenueId
         });
 
         if (hasEventTickets)
@@ -137,11 +141,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             @event.WaitlistDisabled = @event.Ticketed;
         }
 
-        if (venue == null)
-        {
-            return ServiceResult.Failure("Venue not found");
-        }
-
         var validationResult = ValidateEvent(@event);
         if (!validationResult.Success)
         {
@@ -154,7 +153,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         if (@event.IsPublished)
         {
-            await _notificationService.AddNewEventNotifications(@event, venue, members, notificationSettings);
+            await _notificationService.AddNewEventNotifications(@event, chapterVenue, members, notificationSettings);
         }
 
         _unitOfWork.EventTopicRepository.AddMany(chapterTopics.Select(x => new EventTopic
@@ -248,7 +247,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventWaitlistMemberRepository.GetByEventId(eventId));
 
-        var (@event, venue) = (eventDto.Event, eventDto.Venue);
+        var (@event, chapterVenue) = (eventDto.Event, eventDto.ChapterVenue);
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -265,6 +264,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return new EventAttendeesAdminPageViewModel
         {
             Chapter = chapter,
+            ChapterVenue = chapterVenue,
             Event = @event,
             Members = members
                 .Where(x =>
@@ -282,7 +282,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 .Select(x => x.Feature)
                 .ToArray(),
             Responses = responses,
-            Venue = venue,
             Waitlist = waitlist
         };
     }
@@ -301,19 +300,19 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 .Features()
                 .GetAll());
 
-        var (@event, venue) = (eventDto.Event, eventDto.Venue);
+        var (@event, chapterVenue) = (eventDto.Event, eventDto.ChapterVenue);
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
         return new EventCommentsAdminPageViewModel
         {
             Chapter = chapter,
+            ChapterVenue = chapterVenue,
             Comments = comments,
             Event = @event,
             OwnerSubscriptionFeatures = ownerSubscriptionFeatures
                 .Select(x => x.Feature)
-                .ToArray(),
-            Venue = venue,
+                .ToArray()
         };
     }
 
@@ -323,16 +322,13 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var (platform, chapter) = (request.Platform, request.Chapter);
 
         var (
-            venues,
+            chapterVenues,
             adminMembers,
             eventSettings,
             currency,
             ownerSubscriptionFeatures) = await GetChapterAdminRestrictedContent(
             request,
-            x => x.ChapterVenueRepository
-                .Query(x => x.ForChapter(chapter.Id).Archived(false))
-                .ToVenue()
-                .GetAll(),
+            x => x.ChapterVenueRepository.Query(x => x.ForChapter(chapter.Id).Archived(false)).GetAll(),
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapter.Id),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
@@ -346,13 +342,13 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             AdminMembers = adminMembers,
             Chapter = chapter,
+            ChapterVenues = chapterVenues,
             Currency = currency,
             Date = await GetNextAvailableEventDate(request),
             EventSettings = eventSettings,
             OwnerSubscriptionFeatures = ownerSubscriptionFeatures
                 .Select(x => x.Feature)
-                .ToArray(),
-            Venues = venues
+                .ToArray()
         };
     }
 
@@ -367,7 +363,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             adminMembers,
             currency,
             hosts,
-            venues
+            chapterVenues
         ) = await _unitOfWork.Run(
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
@@ -378,8 +374,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
             x => x.EventHostRepository.GetByEventId(eventId),
-            x => x.ChapterVenueRepository.Query(
-                x => x.ForChapter(chapter.Id)).ToVenue().GetAll());
+            x => x.ChapterVenueRepository.Query().ForChapter(chapter.Id).GetAll());
 
         AssertMemberIsChapterAdmin(
             request,
@@ -391,14 +386,14 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             Chapter = chapter,
             ChapterAdminMembers = adminMembers,
+            ChapterVenue = chapterVenues.First(x => x.VenueId == @event.VenueId),
+            ChapterVenues = chapterVenues,
             Currency = currency,
             Event = @event,
             Hosts = hosts,
             OwnerSubscriptionFeatures = ownerSubscriptionFeatures
                 .Select(x => x.Feature)
-                .ToArray(),
-            Venue = venues.First(x => x.Id == @event.VenueId),
-            Venues = venues
+                .ToArray()
         };
     }
 
@@ -418,13 +413,14 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventEmailRepository.GetByEventId(eventId),
             x => x.EventInviteRepository.GetByEventId(eventId));
 
-        var (@event, venue) = (eventDto.Event, eventDto.Venue);
+        var (@event, chapterVenue) = (eventDto.Event, eventDto.ChapterVenue);
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
         return new EventInvitesAdminPageViewModel
         {
             Chapter = chapter,
+            ChapterVenue = chapterVenue,
             CurrentMember = currentMember,
             Event = @event,
             Invites = new EventInvitesDto
@@ -436,8 +432,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             },
             OwnerSubscriptionFeatures = ownerSubscriptionFeatures
                 .Select(x => x.Feature)
-                .ToArray(),
-            Venue = venue
+                .ToArray()
         };
     }
 
@@ -452,15 +447,18 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var fromUtc = filter.FromDateLocal?.Date.ToUtc(timeZone);
         var toUtcExclusive = filter.ToDateLocal?.Date.AddDays(1).ToUtc(timeZone);
 
-        var (eventSummaries, totalCount, venues) = await GetChapterAdminRestrictedContent(
+        var (eventSummaries, totalCount, chapterVenues) = await GetChapterAdminRestrictedContent(
             request,
             x => x.EventRepository.GetSummariesByChapterId(chapter.Id, filter.VenueSlug, fromUtc, toUtcExclusive, pageFilter),
             x => x.EventRepository.GetCountByChapterId(chapter.Id, filter.VenueSlug, fromUtc, toUtcExclusive),
-            x => x.ChapterVenueRepository.Query(x => x.ForChapter(chapter.Id)).ToVenue().GetAll());
+            x => x.ChapterVenueRepository.Query().ForChapter(chapter.Id).GetAll());
 
         return new EventsAdminPageViewModel
         {
             Chapter = chapter,
+            ChapterVenues = chapterVenues
+                .OrderBy(x => x.GetName())
+                .ToArray(),
             Events = new PagedResult<EventSummaryDto>
             {
                 Items = eventSummaries,
@@ -468,10 +466,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 PageSize = pageFilter.PageSize,
                 TotalCount = totalCount
             },
-            Filter = filter,
-            Venues = venues
-                .OrderBy(x => x.Name)
-                .ToArray()
+            Filter = filter
         };
     }
 
@@ -519,7 +514,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.Query(x => x.ById(eventId)).WithVenue().GetSingle(),
             x => x.EventTicketPaymentRepository.GetConfirmedPayments(eventId));
 
-        var (@event, venue) = (eventDto.Event, eventDto.Venue);
+        var (@event, chapterVenue) = (eventDto.Event, eventDto.ChapterVenue);
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -530,6 +525,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return new EventTicketsAdminPageViewModel
         {
             Chapter = chapter,
+            ChapterVenue = chapterVenue,
             Event = @event,
             Payments = members
                 .Where(x => memberPayments.ContainsKey(x.Member.Id))
@@ -543,8 +539,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 .ToArray(),
             OwnerSubscriptionFeatures = ownerSubscriptionFeatures
                 .Select(x => x.Feature)
-                .ToArray(),
-            Venue = venue
+                .ToArray()
         };
     }
 
@@ -578,10 +573,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return;
         }
 
-        var (venue, members, notificationSettings) = await _unitOfWork.Run(
+        var (chapterVenue, members, notificationSettings) = await _unitOfWork.Run(
             x => x.ChapterVenueRepository
                 .Query(x => x.ForVenue(@event.VenueId).ForChapter(@event.ChapterId))
-                .ToVenue()
                 .GetSingle(),
             x => x.MemberRepository.GetAllByChapterId(@event.ChapterId),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(@event.ChapterId, NotificationType.NewEvent));
@@ -589,7 +583,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         @event.PublishedUtc = DateTime.UtcNow;
         _unitOfWork.EventRepository.Update(@event);
 
-        await _notificationService.AddNewEventNotifications(@event, venue, members, notificationSettings);
+        await _notificationService.AddNewEventNotifications(@event, chapterVenue, members, notificationSettings);
 
         await _unitOfWork.SaveChanges();
     }
@@ -665,7 +659,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventResponseRepository.GetByEventId(eventId),
             x => x.EventInviteRepository.GetByEventId(eventId));
 
-        var (@event, venue) = (eventDto.Event, eventDto.Venue);
+        var (@event, chapterVenue) = (eventDto.Event, eventDto.ChapterVenue);
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -685,7 +679,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             await _memberEmailService.SendEventInvites(
                 request,
                 @event,
-                venue,
+                chapterVenue,
                 [currentMember]);
             return ServiceResult.Successful();
         }
@@ -699,7 +693,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             request,
             chapter,
             @event,
-            venue,
+            chapterVenue,
             eventEmail,
             membershipSettings,
             privacySettings,
@@ -756,7 +750,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             hasAccess,
             membershipSettings,
             privacySettings,
-            venue,
+            chapterVenue,
             responses,
             invites,
             members,
@@ -770,7 +764,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterVenueRepository
                 .Query(q => q.ForVenue(@event.VenueId).ForChapter(@event.ChapterId))
-                .ToVenue()
                 .GetSingle(),
             x => x.EventResponseRepository.GetByEventId(@event.Id),
             x => x.EventInviteRepository.GetByEventId(@event.Id),
@@ -790,7 +783,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 request,
                 chapter,
                 @event,
-                venue,
+                chapterVenue,
                 eventEmail,
                 membershipSettings,
                 privacySettings,
@@ -848,9 +841,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             chapterAdminMembers,
             @event,
             hosts,
-            venueExists,
             currency,
-            attendees
+            attendees,
+            chapterVenue
         ) = await _unitOfWork.Run(
             x => x.MemberSiteSubscriptionRecordRepository
                 .Query(x => x.Current().ForChapterOwner(chapter.Id).Active(_siteSubscriptionCooldown))
@@ -858,15 +851,20 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.ChapterAdminMemberRepository.GetByChapterId(platform, chapter.Id),
             x => x.EventRepository.GetById(id),
             x => x.EventHostRepository.GetByEventId(id),
-            x => x.ChapterVenueRepository.Query(q => q.ForVenue(model.VenueId).ForChapter(chapter.Id)).Any(),
             x => x.CurrencyRepository.GetByChapterId(chapter.Id),
-            x => x.EventResponseRepository.GetByEventId(id, EventResponseType.Yes));
+            x => x.EventResponseRepository.GetByEventId(id, EventResponseType.Yes),
+            x => x.ChapterVenueRepository.GetByIdOrDefault(model.ChapterVenueId));
 
         AssertMemberIsChapterAdmin(
             request,
             chapterAdminMembers.FirstOrDefault(x => x.MemberId == currentMember.Id));
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
+
+        if (chapterVenue == null || chapterVenue.ChapterId != chapter.Id)
+        {
+            return ServiceResult.Failure("Venue not found");
+        }
 
         if (model.AttendeeLimit < attendees.Count)
         {
@@ -893,6 +891,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var previousAttendeeLimit = @event.AttendeeLimit;
 
         @event.AttendeeLimit = model.AttendeeLimit;
+        @event.ChapterVenueId = chapterVenue.Id;
         @event.DateUtc = date;
         @event.DescriptionHtml = model.DescriptionHtml;
         @event.EndTime = model.EndTime;
@@ -902,7 +901,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         @event.RsvpDeadlineUtc = model.RsvpDeadline != null ? chapter.FromLocalTime(model.RsvpDeadline.Value) : null;
         @event.RsvpDisabled = model.RsvpDisabled;
         @event.Time = model.Time;
-        @event.VenueId = model.VenueId;
+        @event.VenueId = chapterVenue.VenueId;
 
         if (hasEventTickets && model.TicketCost != null)
         {
@@ -922,7 +921,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             @event.TicketSettings = null;
         }
 
-        if (!venueExists)
+        if (chapterVenue == null)
         {
             return ServiceResult.Failure("Venue not found");
         }
@@ -1276,7 +1275,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         IServiceRequest request,
         Chapter chapter,
         Event @event,
-        Venue venue,
+        ChapterVenue chapterVenue,
         EventEmail? eventEmail,
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings,
@@ -1314,7 +1313,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         await _memberEmailService.SendEventInvites(
             ChapterServiceRequest.Create(chapter, request),
             @event,
-            venue,
+            chapterVenue,
             invitees);
 
         var sentDate = DateTime.UtcNow;

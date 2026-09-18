@@ -13,9 +13,9 @@ public abstract class VenueAdminPageModel : AdminPageModel
         VenueAdminService = venueAdminService;
     }
 
-    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Venues;
+    public ChapterVenue ChapterVenue { get; private set; } = null!;
 
-    public Venue Venue { get; private set; } = null!;
+    public override ChapterAdminSecurable Securable => ChapterAdminSecurable.Venues;
 
     protected IVenueAdminService VenueAdminService { get; }
 
@@ -33,7 +33,7 @@ public abstract class VenueAdminPageModel : AdminPageModel
 
         try
         {
-            Venue = await VenueAdminService.GetVenue(request, id);
+            ChapterVenue = await VenueAdminService.GetChapterVenue(request, id);
             await next();
         }
         catch

@@ -1,4 +1,4 @@
-﻿@page "/my/groups/{slug}/events/venues/{venueId:guid}"
+﻿@page "/my/groups/{slug}/events/venues/{chapterVenueId:guid}"
 @using ODK.Services.Venues
 @using ODK.Web.Razor.Models.Components
 @model VenueModel
@@ -7,12 +7,12 @@
     Layout = "_GroupAdminLayout";
 
     var request = Model.MemberChapterAdminServiceRequest;
-    var viewModel = await VenueAdminService.GetVenueViewModel(request, Model.VenueId);
+    var viewModel = await VenueAdminService.GetVenueViewModel(request, Model.ChapterVenueId);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
-    Title = viewModel.Venue.Name,
+    Title = viewModel.ChapterVenue.GetName(),
     Breadcrumbs = new BreadcrumbsViewModel
     {
         Breadcrumbs = new[]

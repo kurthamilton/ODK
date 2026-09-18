@@ -412,6 +412,7 @@ public static class DependencyRegistrar
                     {
                         AdminTitle = x.Value.AdminTitle,
                         FromEmailAddress = x.Value.FromEmailAddress,
+                        FromEmailAddresses = x.Value.FromEmailAddresses,
                         MemberTitle = x.Value.MemberTitle
                     })
             })
@@ -433,7 +434,9 @@ public static class DependencyRegistrar
             .AddScoped<ISubscriptionsPageViewModelFactory, SubscriptionsPageViewModelFactory>()
             .AddScoped<ITopicAdminService, TopicAdminService>()
             .AddScoped<ITopicService, TopicService>()
-            .AddScoped<IVenueAdminService, VenueAdminService>();
+            .AddScoped<IVenueAdminService, VenueAdminService>()
+            .AddScoped<IVenueSlugService, VenueSlugService>()
+            .AddScoped<IVenueSiteAdminService, VenueSiteAdminService>();
     }
 
     private static void ConfigureServiceSettings(IServiceCollection services, AppSettings appSettings)

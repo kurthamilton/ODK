@@ -2,7 +2,7 @@
 
 namespace ODK.Data.Core.Venues;
 
-public class VenueWithEventSummaryDto : VenueWithLocationDto
+public class ChapterVenueWithEventSummaryDto : ChapterVenueWithLocationDto
 {
     public required int EventCount { get; init; }
 

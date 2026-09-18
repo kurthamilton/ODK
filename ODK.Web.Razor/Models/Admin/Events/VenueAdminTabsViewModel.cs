@@ -8,7 +8,7 @@ public class VenueAdminTabsViewModel
 {
     public required Chapter Chapter { get; init; }
 
-    public required PlatformType Platform { get; init; }
+    public required ChapterVenue ChapterVenue { get; init; }
 
-    public required Venue Venue { get; init; }
+    public required PlatformType Platform { get; init; }
 }

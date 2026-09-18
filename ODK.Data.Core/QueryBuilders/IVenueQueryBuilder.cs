@@ -9,7 +9,7 @@ public interface IVenueQueryBuilder : IDatabaseEntityQueryBuilder<Venue, IVenueQ
 
     IVenueQueryBuilder SlugStartingWith(string prefix);
 
-    IQueryBuilder<VenueWithLocationDto> WithLocation();
+    IQueryBuilder<VenueWithChapterCountDto> WithChapterCount();
 
-    IQueryBuilder<VenueWithEventSummaryDto> WithEventSummary();
+    IQueryBuilder<VenueWithLocationDto> WithLocation();
 }

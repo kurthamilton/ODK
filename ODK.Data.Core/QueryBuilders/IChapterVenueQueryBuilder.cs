@@ -1,8 +1,9 @@
 ﻿using ODK.Core.Venues;
+using ODK.Data.Core.Venues;
 
 namespace ODK.Data.Core.QueryBuilders;
 
-public interface IChapterVenueQueryBuilder : IQueryBuilder<ChapterVenue>
+public interface IChapterVenueQueryBuilder : IDatabaseEntityQueryBuilder<ChapterVenue, IChapterVenueQueryBuilder>
 {
     IChapterVenueQueryBuilder Archived(bool value);
 
@@ -11,4 +12,8 @@ public interface IChapterVenueQueryBuilder : IQueryBuilder<ChapterVenue>
     IChapterVenueQueryBuilder ForVenue(Guid venueId);
 
     IVenueQueryBuilder ToVenue();
+
+    IQueryBuilder<ChapterVenueWithEventSummaryDto> WithEventSummary();
+
+    IQueryBuilder<ChapterVenueWithLocationDto> WithLocation();
 }

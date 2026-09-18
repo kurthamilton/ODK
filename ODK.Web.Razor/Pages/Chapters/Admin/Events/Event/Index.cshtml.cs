@@ -24,6 +24,7 @@ public class IndexModel : EventAdminPageModel
         var result = await EventAdminService.UpdateEvent(request, id, new EventCreateModel
         {
             AttendeeLimit = viewModel.AttendeeLimit,
+            ChapterVenueId = viewModel.ChapterVenue,
             Date = viewModel.Date,
             DescriptionHtml = viewModel.DescriptionHtml,
             EndTime = TimeSpanUtils.FromString(viewModel.EndTime),
@@ -35,8 +36,7 @@ public class IndexModel : EventAdminPageModel
             RsvpDisabled = viewModel.RsvpDisabled,
             TicketCost = viewModel.TicketCost,
             TicketDepositCost = viewModel.TicketDepositCost,
-            Time = viewModel.Time,
-            VenueId = viewModel.Venue
+            Time = viewModel.Time
         });
 
         if (!result.Success)

@@ -144,11 +144,31 @@ internal static class Provisioning
 
     public static async Task<TestGroup> CreatePublishedGroup(TestAccount owner, string name)
     {
-        var group = await CreateGroup(owner, name);
+        var group = await CreateSubmittedGroup(owner, name);
         await ApproveGroup(group.ChapterId);
         await PublishGroup(owner, group);
         return group;
     }
+
+    /// <summary>
+    /// Creates a group and offers it for approval, which is the state a site admin can act on: a group
+    /// that has not been submitted is a draft, and the site admin's queue never shows it.
+    /// </summary>
+    public static async Task<TestGroup> CreateSubmittedGroup(TestAccount owner, string name)
+    {
+        var group = await CreateGroup(owner, name);
+        await SubmitGroup(owner, group);
+        return group;
+    }
+
+    /// <summary>
+    /// Creates a venue as the group owner, through the platform's admin UI, on a throwaway browser - so a
+    /// test keeps its own browser for the owner it is actually about. The place is resolved live, exactly
+    /// as it is for a real create.
+    /// </summary>
+    public static Task CreateVenue(
+        TestAccount owner, PlatformRoutes routes, string name, string externalId, string baseUrl)
+        => RunAs(owner, page => new VenueAdminPage(page).CreateVenue(routes.VenueCreate, name, externalId), baseUrl);
 
     /// <summary>
     /// Creates a draft (unpublished) event (with its own venue) as the group owner, through the
@@ -372,6 +392,25 @@ internal static class Provisioning
     }
 
     /// <summary>
+    /// Offers a group for approval on its owner's behalf, recording the checklist steps that stand in the
+    /// way rather than working through them.
+    /// </summary>
+    /// <remarks>
+    /// The submission itself is driven through the UI, so what a site admin then sees is what an owner
+    /// put there. The steps above it are recorded straight into the database because nearly every fixture
+    /// provisions a group and none of them are about how one is set up;
+    /// <c>GroupOwnerTests.SubmitGroup_ChecklistComplete_SubmitsForApproval</c> is the one that completes
+    /// them the way an owner does.
+    /// </remarks>
+    public static async Task SubmitGroup(TestAccount owner, TestGroup group)
+    {
+        await new ChapterChecklistDataHelper(E2ESettings.ConnectionString)
+            .ResolveStepsBeforeSubmit(group.ChapterId);
+
+        await RunAs(owner, page => new GroupAdminPage(page).SubmitForApproval(group));
+    }
+
+    /// <summary>
     /// Provisions a DrunkenKnitwits chapter. DrunkenKnitwits has no self-service chapter creation, so
     /// this creates a valid chapter through the Default UI (writing all dependent rows) then flips it to
     /// the DrunkenKnitwits platform and the required approval/publish state. Pass a URL-safe
@@ -403,10 +442,10 @@ internal static class Provisioning
             await new VenueAdminPage(page).CreateVenue(
                 routes.VenueCreate, venueName, E2ESettings.VenueExternalId(0));
 
-            var venueId = await new VenueDataHelper(E2ESettings.ConnectionString).GetVenueId(chapterId, venueName)
+            var chapterVenueId = await new VenueDataHelper(E2ESettings.ConnectionString).GetChapterVenueId(chapterId, venueName)
                 ?? throw new InvalidOperationException($"Venue '{venueName}' was not created.");
 
-            await new EventAdminPage(page).CreateEvent(routes.EventCreate, eventName, venueId, date, draft, attendeeLimit);
+            await new EventAdminPage(page).CreateEvent(routes.EventCreate, eventName, chapterVenueId, date, draft, attendeeLimit);
         }, baseUrl);
 
         var events = new EventDataHelper(E2ESettings.ConnectionString);

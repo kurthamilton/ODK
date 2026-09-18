@@ -17,6 +17,4 @@ public class VenueAdminPageViewModel
     public required VenueLocation? Location { get; init; }
 
     public required PlatformType Platform { get; init; }
-
-    public required Venue Venue { get; init; }
 }

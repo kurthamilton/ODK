@@ -39,6 +39,11 @@ public class EventMap : IEntityTypeConfiguration<Event>
         builder.Property(x => x.Time)
             .HasMaxLength(255);
 
+        builder.HasOne<ChapterVenue>()
+            .WithMany()
+            .HasForeignKey(x => x.ChapterVenueId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasOne<Venue>()
             .WithMany()
             .HasForeignKey(x => x.VenueId)

@@ -3,6 +3,6 @@ using ODK.Data.Core.QueryBuilders;
 
 namespace ODK.Data.Core.Repositories;
 
-public interface IChapterVenueRepository : IWriteRepository<ChapterVenue, IChapterVenueQueryBuilder>
+public interface IChapterVenueRepository : IReadWriteRepository<ChapterVenue, IChapterVenueQueryBuilder>
 {
 }

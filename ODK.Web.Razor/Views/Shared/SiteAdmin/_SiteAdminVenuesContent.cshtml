@@ -1,0 +1,75 @@
+﻿@using ODK.Services.Venues
+@using ODK.Web.Common.Routes
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models.Components
+@inject IOdkRoutes OdkRoutes
+@inject IRequestStore RequestStore
+@inject IVenueSiteAdminService VenueSiteAdminService
+@{
+    var viewModel = await VenueSiteAdminService.GetVenuesViewModel(RequestStore.MemberServiceRequest);
+
+    /* Grouped by place, because a venue is a record of one at a point in time and several of them can
+       describe the same pub. Ordered so the current record of a place comes first under it, and so venues
+       that never resolved to a place sit together at the end. */
+    var places = viewModel.Venues
+        .GroupBy(x => x.Location?.ExternalId)
+        .OrderBy(x => x.Key == null)
+        .ThenBy(x => x.First().Venue.Name)
+        .ToArray();
+}
+
+<h2 class="content-heading">Venues</h2>
+
+@await Html.PartialAsync("Components/_AdminPageDescription",
+    "Every venue on the site. A venue belongs to no one group - groups link to it, and the count says how " +
+    "many do. One nothing links to can be deleted. Open one to resolve it to a place.")
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Place</th>
+                <th class="text-end">Groups</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var place in places)
+            {
+                @foreach (var venueDto in place.OrderByDescending(x => x.Venue.CreatedUtc)
+                    .ThenByDescending(x => x.Venue.Id))
+                {
+                    var venue = venueDto.Venue;
+                    <tr>
+                        <td>
+                            <a href="@OdkRoutes.SiteAdmin.Venue(venue.Id).Path">@venue.Name</a>
+                        </td>
+                        <td>@venueDto.Location?.MapQuery</td>
+                        <td><code>@(venueDto.Location?.ExternalId ?? "-")</code></td>
+                        <td class="text-end">@venueDto.ChapterCount</td>
+                        <td class="text-end">
+                            @if (venueDto.ChapterCount == 0)
+                            {
+                                <form method="post" action="@OdkRoutes.SiteAdmin.VenueDelete(venue.Id)">
+                                    @Html.AntiForgeryToken()
+                                    @await Html.PartialAsync("Components/_Confirm", new ConfirmViewModel
+                                    {
+                                        Message = $"Permanently delete '{venue.Name}'?",
+                                        Title = "Delete venue"
+                                    })
+                                    <button data-bs-toggle="tooltip" data-bs-title="Delete"
+                                            class="btn-icon text-danger">
+                                        @await Html.PartialAsync("Components/_Icon",
+                                            new IconViewModel(IconType.Times))
+                                    </button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

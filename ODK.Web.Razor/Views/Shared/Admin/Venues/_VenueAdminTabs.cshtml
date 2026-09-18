@@ -1,13 +1,23 @@
 ﻿@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Events
+@using ODK.Web.Razor.Models.Components
 @model VenueAdminTabsViewModel
 @inject IOdkRoutes OdkRoutes
 
-<ul class="nav nav-underline my-3">
-    <li class="nav-item">
-        <a class="nav-link" data-menu-link="exact" href="@OdkRoutes.GroupAdmin.Venue(Model.Chapter, Model.Venue.Id).Path">Edit</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" data-menu-link href="@OdkRoutes.GroupAdmin.VenueEvents(Model.Chapter, Model.Venue.Id).Path">Events</a>
-    </li>
-</ul>
+@await Html.PartialAsync("Components/_Tabs", new TabsViewModel
+{
+    MenuItems = new[]
+    {
+        new MenuItem
+        {
+            ActiveIsExactMatch = true,
+            Link = OdkRoutes.GroupAdmin.Venue(Model.Chapter, Model.ChapterVenue.Id).Path,
+            Text = "Edit"
+        },
+        new MenuItem
+        {
+            Link = OdkRoutes.GroupAdmin.VenueEvents(Model.Chapter, Model.ChapterVenue.Id).Path,
+            Text = "Events"
+        }
+    }
+})

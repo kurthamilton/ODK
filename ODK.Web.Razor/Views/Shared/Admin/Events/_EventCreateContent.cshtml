@@ -1,12 +1,8 @@
 ﻿@using ODK.Core.Utils
-@using ODK.Services
-@using ODK.Services.Events
 @using ODK.Services.Events.ViewModels
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Events
-@using ODK.Web.Razor.Models.Components
 @model EventCreateAdminPageViewModel
 @inject IOdkRoutes OdkRoutes
 @await Html.PartialAsync("Components/_AdminPageDescription",
@@ -22,7 +18,7 @@
         .ToArray();
 }
 
-@if (Model.Venues.Count > 0)
+@if (Model.ChapterVenues.Count > 0)
 {
     <form method="post">
         @Html.AntiForgeryToken()
@@ -30,14 +26,14 @@
         @await Html.PartialAsync("Admin/Events/Event/_EventForm", new EventFormViewModel
         {
             Chapter = Model.Chapter,
+            ChapterVenue = Model.ChapterVenueId ?? default,
+            ChapterVenues = Model.ChapterVenues,
             Currency = Model.Currency,
             Date = Model.Date,
             DescriptionHtml = Model.EventSettings?.DefaultDescriptionHtml,
             EndTime = TimeSpanUtils.ToString(Model.EventSettings?.DefaultEndTime),
             HostOptions = hostOptions,
-            OwnerSubscriptionFeatures = Model.OwnerSubscriptionFeatures,
-            Venue = Model.VenueId ?? default,
-            Venues = Model.Venues
+            OwnerSubscriptionFeatures = Model.OwnerSubscriptionFeatures
         })
 
         <div class="button-container-md">

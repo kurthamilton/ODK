@@ -96,6 +96,7 @@ public static class MemberEmailServiceTests
                 It.Is<RenderEmailOptions>(x =>
                     x.Layout == layout &&
                     x.BodyHtml != layout &&
+                    x.BodyHtml != null &&
                     x.BodyHtml.Length > 0)),
             Times.Once);
     }
@@ -576,16 +577,17 @@ public static class MemberEmailServiceTests
         // Act
         await service.SendSiteMessageReply(request, originalMessage, "<p>An answer</p>");
 
-        // Assert
+        // Assert - no chapter on the options is the "no group" this is about: the reply is the site's own.
         emailService.Verify(
             x => x.SendEmail(
                 request,
-                null,
-                It.Is<IEnumerable<EmailAddressee>>(x => x.Single().Address == "asker@example.com"),
-                EmailType.SiteContactRequestReply,
-                It.Is<IEmailParameters>(x =>
-                    x.ToDictionary()["html:message.reply"] == "<p>An answer</p>" &&
-                    x.ToDictionary()["message.text"] == "The original question")),
+                It.Is<SendEmailOptions>(options =>
+                    options.Chapter == null &&
+                    options.Type == EmailType.SiteContactRequestReply &&
+                    options.To.Single().Address == "asker@example.com" &&
+                    options.Parameters != null &&
+                    options.Parameters.ToDictionary()["html:message.reply"] == "<p>An answer</p>" &&
+                    options.Parameters.ToDictionary()["message.text"] == "The original question")),
             Times.Once);
     }
 
@@ -928,6 +930,10 @@ public static class MemberEmailServiceTests
                 It.IsAny<EmailAddressee>(),
                 It.IsAny<EmailType>(),
                 It.IsAny<IEmailParameters>()))
+            .ReturnsAsync(ServiceResult.Successful());
+
+        mock
+            .Setup(x => x.SendEmail(It.IsAny<IServiceRequest>(), It.IsAny<SendEmailOptions>()))
             .ReturnsAsync(ServiceResult.Successful());
 
         // Set up rather than left to the mock's default, which hands back a null email and turns every

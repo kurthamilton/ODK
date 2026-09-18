@@ -21,9 +21,16 @@ namespace ODK.E2E.Tests;
 [SetUpFixture]
 public class E2ETestRunFixture
 {
+    /* Read before anything is provisioned, and compared against Venues.CreatedUtc to tell a venue this
+       run created from one that was already here. Both timestamps come from this machine - the app under
+       test runs on it - so there is no skew to allow for. */
+    private static DateTime _runStartUtc;
+
     [OneTimeSetUp]
     public async Task SetUp()
     {
+        _runStartUtc = DateTime.UtcNow;
+
         var admin = await SharedAccounts.Get(SharedAccounts.SiteAdmin);
         await new MemberAdminDataHelper(E2ESettings.ConnectionString)
             .SetSiteAdmin(admin.Email);
@@ -35,7 +42,7 @@ public class E2ETestRunFixture
         await Provisioning.DisposeSharedBrowser();
 
         var deleted = await new TestDataCleaner(E2ESettings.ConnectionString)
-            .DeleteTestData();
+            .DeleteTestData(_runStartUtc);
         TestContext.Progress.WriteLine($"E2E cleanup: removed {deleted} test row(s) (members, groups, sent emails).");
     }
 }

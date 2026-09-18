@@ -50,7 +50,7 @@ public static class EventAdminServiceTests
             timeZone: TimeZoneInfo.FindSystemTimeZoneById(timeZoneId),
             adminMembers: [currentMember]);
 
-        var venue = context.CreateVenue(chapter);
+        var chapterVenue = context.CreateChapterVenue(chapter);
 
         context.Create(new ChapterEventSettings
         {
@@ -71,6 +71,7 @@ public static class EventAdminServiceTests
         var model = new EventCreateModel
         {
             AttendeeLimit = null,
+            ChapterVenueId = chapterVenue.Id,
             Date = eventDate,
             DescriptionHtml = null,
             EndTime = null,
@@ -82,8 +83,7 @@ public static class EventAdminServiceTests
             RsvpDisabled = false,
             TicketCost = null,
             TicketDepositCost = null,
-            Time = null,
-            VenueId = venue.Id
+            Time = null
         };
 
         // Act
@@ -104,8 +104,10 @@ public static class EventAdminServiceTests
 
         var currentMember = context.CreateMember();
         var chapter = context.CreateChapter(adminMembers: [currentMember], members: [currentMember]);
-        var venue = context.CreateVenue(chapter, "The Oak", "the-oak");
-        var @event = context.CreateEvent(chapter, venue);
+        var chapterVenue = context.CreateChapterVenue(
+            chapter,
+            context.CreateVenue("The Oak", "the-oak"));
+        var @event = context.CreateEvent(chapter, chapterVenue);
         @event.PublishedUtc = null;
 
         var notificationService = new Mock<INotificationService>();
@@ -123,7 +125,7 @@ public static class EventAdminServiceTests
         context.Set<Event>().Single(x => x.Id == @event.Id).PublishedUtc.Should().NotBeNull();
         notificationService.Verify(x => x.AddNewEventNotifications(
             It.Is<Event>(e => e.Id == @event.Id),
-            It.Is<Venue>(v => v.Id == venue.Id),
+            It.Is<ChapterVenue>(v => v.Id == chapterVenue.Id),
             It.IsAny<IReadOnlyCollection<Member>>(),
             It.IsAny<IReadOnlyCollection<MemberNotificationSettings>>()));
     }
@@ -196,10 +198,10 @@ public static class EventAdminServiceTests
         var context = CreateMockOdkContext();
         var currentMember = context.CreateMember();
         var chapter = context.CreateChapter(adminMembers: [currentMember], timeZone: TimeZoneInfo.Utc);
-        var venue = context.CreateVenue(chapter);
-        context.CreateEvent(chapter, venue, new DateTime(2024, 1, 10, 12, 0, 0, DateTimeKind.Utc)); // in range
-        context.CreateEvent(chapter, venue, new DateTime(2024, 1, 20, 12, 0, 0, DateTimeKind.Utc)); // after To
-        context.CreateEvent(chapter, venue, new DateTime(2023, 12, 1, 12, 0, 0, DateTimeKind.Utc)); // before From
+        var chapterVenue = context.CreateChapterVenue(chapter);
+        context.CreateEvent(chapter, chapterVenue, new DateTime(2024, 1, 10, 12, 0, 0, DateTimeKind.Utc)); // in range
+        context.CreateEvent(chapter, chapterVenue, new DateTime(2024, 1, 20, 12, 0, 0, DateTimeKind.Utc)); // after To
+        context.CreateEvent(chapter, chapterVenue, new DateTime(2023, 12, 1, 12, 0, 0, DateTimeKind.Utc)); // before From
 
         var service = CreateService(context);
         var request = CreateMockMemberChapterAdminServiceRequest(
@@ -231,11 +233,11 @@ public static class EventAdminServiceTests
         var currentMember = context.CreateMember();
         var pacific = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
         var chapter = context.CreateChapter(adminMembers: [currentMember], timeZone: pacific);
-        var venue = context.CreateVenue(chapter);
+        var chapterVenue = context.CreateChapterVenue(chapter);
         // 03:00 UTC on the 11th = 19:00 on the 10th in Pacific -> local date is the 10th (within To).
-        var inRange = context.CreateEvent(chapter, venue, new DateTime(2024, 1, 11, 3, 0, 0, DateTimeKind.Utc));
+        var inRange = context.CreateEvent(chapter, chapterVenue, new DateTime(2024, 1, 11, 3, 0, 0, DateTimeKind.Utc));
         // 20:00 UTC on the 11th = 12:00 on the 11th in Pacific -> local date is the 11th (after To).
-        context.CreateEvent(chapter, venue, new DateTime(2024, 1, 11, 20, 0, 0, DateTimeKind.Utc));
+        context.CreateEvent(chapter, chapterVenue, new DateTime(2024, 1, 11, 20, 0, 0, DateTimeKind.Utc));
 
         var service = CreateService(context);
         var request = CreateMockMemberChapterAdminServiceRequest(
@@ -258,10 +260,10 @@ public static class EventAdminServiceTests
         var context = CreateMockOdkContext();
         var currentMember = context.CreateMember();
         var chapter = context.CreateChapter(adminMembers: [currentMember]);
-        var venue = context.CreateVenue(chapter);
+        var chapterVenue = context.CreateChapterVenue(chapter);
         for (var i = 0; i < 3; i++)
         {
-            context.CreateEvent(chapter, venue, DateTime.UtcNow.AddDays(i));
+            context.CreateEvent(chapter, chapterVenue, DateTime.UtcNow.AddDays(i));
         }
 
         var service = CreateService(context);
@@ -289,16 +291,20 @@ public static class EventAdminServiceTests
         var context = CreateMockOdkContext();
         var currentMember = context.CreateMember();
         var chapter = context.CreateChapter(adminMembers: [currentMember]);
-        var venue1 = context.CreateVenue(chapter, "Venue One", "venue-one");
-        var venue2 = context.CreateVenue(chapter, "Venue Two", "venue-two");
-        context.CreateEvent(chapter, venue1);
-        context.CreateEvent(chapter, venue1);
-        context.CreateEvent(chapter, venue2);
+        var chapterVenue1 = context.CreateChapterVenue(
+            chapter,
+            context.CreateVenue("Venue One", "venue-one"));
+        var chapterVenue2 = context.CreateChapterVenue(
+            chapter,
+            context.CreateVenue("Venue Two", "venue-two"));
+        context.CreateEvent(chapter, chapterVenue1);
+        context.CreateEvent(chapter, chapterVenue1);
+        context.CreateEvent(chapter, chapterVenue2);
 
         var service = CreateService(context);
         var request = CreateMockMemberChapterAdminServiceRequest(
             currentMember: currentMember, chapter: chapter, securable: ChapterAdminSecurable.Events);
-        var filter = new EventAdminFilter { VenueSlug = venue1.Slug };
+        var filter = new EventAdminFilter { VenueSlug = chapterVenue1.Venue.Slug };
         var pageFilter = new PageFilter { Page = 1, PageSize = 20 };
 
         // Act
@@ -306,7 +312,7 @@ public static class EventAdminServiceTests
 
         // Assert
         result.Events.TotalCount.Should().Be(2);
-        result.Events.Items.Should().OnlyContain(x => x.Venue.Id == venue1.Id);
+        result.Events.Items.Should().OnlyContain(x => x.ChapterVenue.Id == chapterVenue1.Id);
     }
 
     private static EventEmail CreateEventEmail(
