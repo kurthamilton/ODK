@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
 
@@ -53,8 +54,11 @@ public class IndexModel : OdkPageModel
             return;
         }
 
-        if (!double.TryParse(latLongParts[0], out var lat) ||
-            !double.TryParse(latLongParts[1], out var @long))
+        /* Invariant, matching how the pair is written - by LatLong.ToString and by the picker's script.
+           Not the ambient culture: that is the default locale rather than the request's, so a comma
+           decimal separator configured there would stop the site reading back what it just wrote. */
+        if (!double.TryParse(latLongParts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var lat) ||
+            !double.TryParse(latLongParts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var @long))
         {
             return;
         }

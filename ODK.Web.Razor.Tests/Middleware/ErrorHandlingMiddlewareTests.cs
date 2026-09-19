@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
+using ODK.Core.Exceptions;
 using ODK.Data.Core;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
@@ -24,11 +25,26 @@ public static class ErrorHandlingMiddlewareTests
         var exception = new ConnectionResetException("The client has disconnected");
 
         // Act
-        var loggingService = await Invoke(exception);
+        var (_, loggingService) = await Invoke(exception);
 
         // Assert
         VerifyWarned(loggingService, Times.Never());
         VerifyLoggedError(loggingService, Times.Never());
+    }
+
+    /// <summary>
+    /// The case an unmatched route produces: nothing throws, the pipeline simply responds 404, and the
+    /// middleware turns that into the error page. The status has to survive that, or every missing page
+    /// on the site answers 200.
+    /// </summary>
+    [Test]
+    public static async Task InvokeAsync_DownstreamResponds404_RespondsWith404()
+    {
+        // Act
+        var (httpContext, _) = await Invoke(x => x.Response.StatusCode = 404);
+
+        // Assert
+        httpContext.Response.StatusCode.Should().Be(404);
     }
 
     [Test]
@@ -38,11 +54,21 @@ public static class ErrorHandlingMiddlewareTests
         var exception = new OdkNotAuthenticatedException();
 
         // Act
-        var loggingService = await Invoke(exception);
+        var (_, loggingService) = await Invoke(exception);
 
         // Assert
         VerifyWarned(loggingService, Times.Once());
         VerifyLoggedError(loggingService, Times.Never());
+    }
+
+    [Test]
+    public static async Task InvokeAsync_NotAuthenticated_RespondsWith401()
+    {
+        // Act
+        var (httpContext, _) = await Invoke(new OdkNotAuthenticatedException());
+
+        // Assert
+        httpContext.Response.StatusCode.Should().Be(401);
     }
 
     [Test]
@@ -52,11 +78,52 @@ public static class ErrorHandlingMiddlewareTests
         var exception = new OdkNotAuthorizedException();
 
         // Act
-        var loggingService = await Invoke(exception);
+        var (_, loggingService) = await Invoke(exception);
 
         // Assert
         VerifyLoggedError(loggingService, Times.Once());
         VerifyWarned(loggingService, Times.Never());
+    }
+
+    [Test]
+    public static async Task InvokeAsync_NotAuthorized_RespondsWith403()
+    {
+        // Act
+        var (httpContext, _) = await Invoke(new OdkNotAuthorizedException());
+
+        // Assert
+        httpContext.Response.StatusCode.Should().Be(403);
+    }
+
+    /// <summary>
+    /// The error page is chosen from the status code, so it has to be the one the request failed with
+    /// rather than whatever the response carries by the time the page is resolved.
+    /// </summary>
+    [Test]
+    public static async Task InvokeAsync_NotFound_RendersTheErrorPageForThatStatus()
+    {
+        // Arrange
+        var odkRoutes = new Mock<IOdkRoutes>();
+        odkRoutes
+            .Setup(x => x.Error(It.IsAny<Chapter?>(), It.IsAny<int>()))
+            .Returns((Chapter? _, int statusCode) => $"/error/{statusCode}");
+
+        // Act
+        var (httpContext, _) = await Invoke(_ => throw new OdkNotFoundException("nope"), odkRoutes);
+
+        // Assert
+        odkRoutes.Verify(x => x.Error(It.IsAny<Chapter?>(), 404), Times.Once());
+        httpContext.Response.StatusCode.Should().Be(404);
+    }
+
+    [Test]
+    public static async Task InvokeAsync_NotFound_RespondsWith404()
+    {
+        // Act
+        var (httpContext, _) = await Invoke(new OdkNotFoundException("Path not found: /nope"));
+
+        // Assert
+        httpContext.Response.StatusCode.Should().Be(404);
     }
 
     [Test]
@@ -66,11 +133,21 @@ public static class ErrorHandlingMiddlewareTests
         var exception = new InvalidOperationException("something went wrong");
 
         // Act
-        var loggingService = await Invoke(exception);
+        var (_, loggingService) = await Invoke(exception);
 
         // Assert
         VerifyLoggedError(loggingService, Times.Once());
         VerifyWarned(loggingService, Times.Never());
+    }
+
+    [Test]
+    public static async Task InvokeAsync_UnexpectedException_RespondsWith500()
+    {
+        // Act
+        var (httpContext, _) = await Invoke(new InvalidOperationException("something went wrong"));
+
+        // Assert
+        httpContext.Response.StatusCode.Should().Be(500);
     }
 
     [Test]
@@ -99,42 +176,55 @@ public static class ErrorHandlingMiddlewareTests
         result["User-Agent"].Should().Be("test-agent");
     }
 
+    private static Task<(HttpContext HttpContext, Mock<ILoggingService> LoggingService)> Invoke(
+        Exception exception)
+        => Invoke(_ => throw exception);
+
     /// <summary>
-    /// Runs the middleware over a pipeline that throws <paramref name="exception"/> once, so the error
-    /// page it re-executes afterwards completes as it would in the app.
+    /// Runs the middleware over a pipeline that behaves as <paramref name="firstPass"/> says on the first
+    /// call and completes on the second, so the error page it re-executes afterwards completes as it would
+    /// in the app. The context comes back so a caller can assert on the response the middleware left.
     /// </summary>
-    private static async Task<Mock<ILoggingService>> Invoke(Exception exception)
+    private static async Task<(HttpContext HttpContext, Mock<ILoggingService> LoggingService)> Invoke(
+        Action<HttpContext> firstPass,
+        Mock<IOdkRoutes>? odkRoutes = null)
     {
         var loggingService = new Mock<ILoggingService>();
 
         var requestStore = new Mock<IRequestStore>();
         requestStore.Setup(x => x.Loaded).Returns(true);
 
-        var odkRoutes = new Mock<IOdkRoutes>();
-        odkRoutes
-            .Setup(x => x.Error(It.IsAny<Chapter?>(), It.IsAny<int>()))
-            .Returns("/error");
-
-        var thrown = false;
-        var middleware = new ErrorHandlingMiddleware(_ =>
+        if (odkRoutes == null)
         {
-            if (thrown)
+            odkRoutes = new Mock<IOdkRoutes>();
+            odkRoutes
+                .Setup(x => x.Error(It.IsAny<Chapter?>(), It.IsAny<int>()))
+                .Returns("/error");
+        }
+
+        var called = false;
+        var middleware = new ErrorHandlingMiddleware(context =>
+        {
+            if (called)
             {
                 return Task.CompletedTask;
             }
 
-            thrown = true;
-            throw exception;
+            called = true;
+            firstPass(context);
+            return Task.CompletedTask;
         });
 
+        var httpContext = new DefaultHttpContext();
+
         await middleware.InvokeAsync(
-            new DefaultHttpContext(),
+            httpContext,
             loggingService.Object,
             requestStore.Object,
             new Mock<IUnitOfWork>().Object,
             odkRoutes.Object);
 
-        return loggingService;
+        return (httpContext, loggingService);
     }
 
     private static void VerifyLoggedError(Mock<ILoggingService> loggingService, Times times)

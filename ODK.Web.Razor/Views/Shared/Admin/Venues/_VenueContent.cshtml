@@ -22,7 +22,8 @@
         Lat = Model.Location?.LatLong.Lat,
         LocationName = Model.Location?.Name ?? Model.Location?.MapQuery ?? string.Empty,
         Long = Model.Location?.LatLong.Long,
-        Name = Model.ChapterVenue.GetName()
+        Name = Model.ChapterVenue.GetName(),
+        SearchNear = Model.ChapterLocation?.LatLong
     })
     
     <button type="submit" class="btn btn-primary">Update</button>

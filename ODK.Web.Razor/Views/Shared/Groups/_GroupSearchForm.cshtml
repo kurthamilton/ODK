@@ -2,9 +2,14 @@
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Razor.Models.Components
 @model GroupsViewModel
+@{
+    /* Where the search already is - the member's location, or the one guessed from their IP - so typing
+       a place name offers the nearby one first. */
+    var searchNear = Model.Location?.LatLong.ToString();
+}
 
 <form method="get" data-odk-component="_GroupSearchForm" class="form-inline-md">
-    <div class="form-group" data-location-container>
+    <div class="form-group" data-location-container data-location-anchor="@searchNear">
         <div class="input-group input-group-sm">
             <span class="input-group-text">
                 <span data-bs-toggle="tooltip" data-bs-title="Location">

@@ -67,6 +67,22 @@ public static class LatLongTests
         result.Should().BeFalse();
     }
 
+    /// <summary>
+    /// The pair is split on commas at the other end, so a decimal comma would arrive as four values
+    /// rather than two. Formatting follows the request's locale everywhere else, which is what makes
+    /// this worth pinning.
+    /// </summary>
+    [SetCulture("de-DE")]
+    [Test]
+    public static void ToString_CultureWithDecimalComma_UsesDecimalPoints()
+    {
+        // Act
+        var result = new LatLong(53.3811, -1.4701).ToString();
+
+        // Assert
+        result.Should().Be("53.3811,-1.4701");
+    }
+
     [Test]
     public static void ToString_IsLatitudeThenLongitude()
     {

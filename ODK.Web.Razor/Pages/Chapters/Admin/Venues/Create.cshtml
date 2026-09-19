@@ -1,10 +1,14 @@
 ﻿@page "/{chapterName}/admin/events/venues/create"
+@using ODK.Services.Venues
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model CreateModel
+@inject IVenueAdminService VenueAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Create venue | Admin";
+
+    var viewModel = await VenueAdminService.GetVenueCreateViewModel(Model.MemberChapterAdminServiceRequest);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
@@ -19,7 +23,7 @@
             Icon = IconType.ArrowLeft
         }
     },
-    ContentFunc = @<div>@await Html.PartialAsync("Admin/Venues/_VenueCreateContent")</div>
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Venues/_VenueCreateContent", viewModel)</div>
 })
 
 @section scripts

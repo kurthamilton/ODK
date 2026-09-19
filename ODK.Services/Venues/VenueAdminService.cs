@@ -136,6 +136,19 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         return OdkAssertions.BelongsToChapter(chapterVenue, chapter.Id);
     }
 
+    public async Task<VenueCreateAdminPageViewModel> GetVenueCreateViewModel(
+        IMemberChapterAdminServiceRequest request)
+    {
+        var chapterLocation = await GetChapterAdminRestrictedContent(
+            request,
+            x => x.ChapterLocationRepository.GetByChapterId(request.Chapter.Id));
+
+        return new VenueCreateAdminPageViewModel
+        {
+            ChapterLocation = chapterLocation
+        };
+    }
+
     public async Task<VenueEventsAdminPageViewModel> GetVenueEventsViewModel(
         IMemberChapterAdminServiceRequest request, Guid chapterVenueId)
     {
@@ -187,18 +200,20 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     {
         var (platform, chapter) = (request.Platform, request.Chapter);
 
-        var dto = await GetChapterAdminRestrictedContent(
+        var (dto, chapterLocation) = await GetChapterAdminRestrictedContent(
             request,
             x => x.ChapterVenueRepository.Query()
                 .ById(chapterVenueId)
                 .WithLocation()
-                .GetSingle());
+                .GetSingle(),
+            x => x.ChapterLocationRepository.GetByChapterId(chapter.Id));
 
         OdkAssertions.BelongsToChapter(dto.ChapterVenue, chapter.Id);
 
         return new VenueAdminPageViewModel
         {
             Chapter = chapter,
+            ChapterLocation = chapterLocation,
             ChapterVenue = dto.ChapterVenue,
             Location = dto.Location,
             Platform = platform
