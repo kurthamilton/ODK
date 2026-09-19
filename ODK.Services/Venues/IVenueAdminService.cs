@@ -12,6 +12,8 @@ public interface IVenueAdminService
 
     Task<ChapterVenue> GetChapterVenue(IMemberChapterAdminServiceRequest request, Guid chapterVenueId);
 
+    Task<VenueCreateAdminPageViewModel> GetVenueCreateViewModel(IMemberChapterAdminServiceRequest request);
+
     Task<VenueEventsAdminPageViewModel> GetVenueEventsViewModel(IMemberChapterAdminServiceRequest request, Guid chapterVenueId);
 
     Task<VenuesAdminPageViewModel> GetVenuesViewModel(IMemberChapterAdminServiceRequest request, bool archived);

@@ -1,9 +1,13 @@
 ﻿@page "/my/groups/{slug}/events/venues/new"
+@using ODK.Services.Venues
 @using ODK.Web.Razor.Models.Components
 @model CreateModel
+@inject IVenueAdminService VenueAdminService
 @{
     Layout = "_GroupAdminLayout";
     Model.Title = "Create venue";
+
+    var viewModel = await VenueAdminService.GetVenueCreateViewModel(Model.MemberChapterAdminServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
@@ -21,7 +25,7 @@
             }
         }
     },
-    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Venues/_VenueCreateContent")</div>,
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Venues/_VenueCreateContent", viewModel)</div>,
     MenuTitle = "Admin",
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu")
 })

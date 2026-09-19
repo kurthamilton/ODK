@@ -154,9 +154,16 @@ public class ErrorHandlingMiddleware
         var originalMethod = request.Method;
         var originalPath = request.Path;
 
-        var path = await GetErrorPath(httpContext, requestStore, unitOfWork, odkRoutes);
+        /* Captured before the reset and re-applied after it, because Response.Clear() returns the status
+           code to 200 along with the headers and body. The error page is re-executed rather than
+           redirected to, so this response is still the failing URL's and has to carry its status. */
+        var statusCode = response.StatusCode;
+
+        var path = await GetErrorPath(httpContext, requestStore, unitOfWork, odkRoutes, statusCode);
 
         ResetHttpContext(httpContext, path);
+
+        response.StatusCode = statusCode;
 
         try
         {
@@ -174,10 +181,9 @@ public class ErrorHandlingMiddleware
         HttpContext httpContext,
         IRequestStore requestStore,
         IUnitOfWork unitOfWork,
-        IOdkRoutes odkRoutes)
+        IOdkRoutes odkRoutes,
+        int statusCode)
     {
-        var statusCode = httpContext.Response.StatusCode;
-
         var chapter = await FindChapter(httpContext, requestStore, unitOfWork);
         return odkRoutes.Error(chapter, statusCode);
     }

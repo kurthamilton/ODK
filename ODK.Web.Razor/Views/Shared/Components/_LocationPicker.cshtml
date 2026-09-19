@@ -1,9 +1,13 @@
-﻿@using ODK.Web.Razor.Models.Components
+﻿@using ODK.Core.Countries
+@using ODK.Web.Razor.Models.Components
 @model LocationPickerViewModel
 @{
-    var latLong = Model.Lat != null && Model.Long != null
-        ? $"{Model.Lat},{Model.Long}"
-        : null;
+    var location = LatLong.FromCoords(Model.Lat, Model.Long);
+    var latLong = location?.ToString();
+
+    /* The picker's own value where the page named nowhere better, so a form already holding a location
+       searches around it rather than from nothing. */
+    var searchNear = Model.SearchNear ?? location;
 
     /* The best way to point a map at this location: the Maps Embed API takes a place id directly, and
        coordinates where there is no place - a location recorded before the lookup was the source, which
@@ -13,7 +17,7 @@
         : latLong;
 }
 
-<div class="input-group" data-location-container>
+<div class="input-group" data-location-container data-location-anchor="@(searchNear?.ToString())">
     <span class="input-group-text">
         <span data-bs-toggle="tooltip" data-bs-title="Location">
             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.LocationPin))

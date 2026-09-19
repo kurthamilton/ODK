@@ -23,7 +23,5 @@ public class GoogleMapViewModel
             ? $"place_id:{ExternalId}"
             : !string.IsNullOrEmpty(Query)
                 ? Query
-                : LatLong != null
-                    ? $"{LatLong.Value.Lat},{LatLong.Value.Long}"
-                    : null;
+                : LatLong?.ToString();
 }

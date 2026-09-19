@@ -12,6 +12,9 @@
     async function bindInput($input) {
         const $container = $input.closest('[data-location-container]');
 
+        // Read once: the anchor is what the server rendered, so it stays put while the member searches.
+        const locationBias = parseBias($container);
+
         // Attempt to hide the native autocomplete - NB some browsers may ignore this
         const $form = $input.closest('form');
         $form.setAttribute('autocomplete', 'off');
@@ -54,6 +57,8 @@
                     input: searchTerm,
                     sessionToken: sessionToken
                 };
+
+                if (locationBias) request.locationBias = locationBias;
 
                 const response = await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
 
@@ -130,6 +135,21 @@
         $input.blur();
 
         setLocation($container, $input, location);
+    }
+
+    /* The point suggestions are preferred near, written by the server as "lat,long". locationBias rather
+       than locationRestriction: the API treats the second as a filter, so a place genuinely somewhere
+       else would stop being findable at all. The two cannot both be sent. */
+    function parseBias($container) {
+        if (!$container) return null;
+
+        const value = $container.getAttribute('data-location-anchor');
+        if (!value) return null;
+
+        const parts = value.split(',').map(Number);
+        if (parts.length !== 2 || !parts.every(Number.isFinite)) return null;
+
+        return { lat: parts[0], lng: parts[1] };
     }
 
     function parseLocation(place) {

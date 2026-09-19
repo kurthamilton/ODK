@@ -1,4 +1,6 @@
-﻿@using ODK.Web.Razor.Models.Admin.Venues
+﻿@using ODK.Services.Venues.ViewModels
+@using ODK.Web.Razor.Models.Admin.Venues
+@model VenueCreateAdminPageViewModel
 
 @await Html.PartialAsync("Components/_AdminPageDescription",
     "A new venue you can then pick when creating an event.")
@@ -6,7 +8,12 @@
 <form method="post">
     @Html.AntiForgeryToken()
 
-    @await Html.PartialAsync("Admin/Venues/_VenueForm", new VenueFormViewModel())
+    @* An empty form, apart from where to search: a group's venues are near the group, so the picker
+       starts there rather than offering the best-known place of that name anywhere in the world. *@
+    @await Html.PartialAsync("Admin/Venues/_VenueForm", new VenueFormViewModel
+    {
+        SearchNear = Model.ChapterLocation?.LatLong
+    })
 
     <button type="submit" class="btn btn-primary">Create</button>
 </form>
